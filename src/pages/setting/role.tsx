@@ -15,10 +15,10 @@ function DeleteComponent(props: {id: number, setTableRecord: (obj: object) => vo
   const handleOk = () => {
     setConfirmLoading(true);
     deleteRole(props.id).then(res => {
-      if(res.status){
+      if(res.code){
         props.initData()
         props.setTableRecord({})
-        message.success("操作成功！");
+        message.success("operation successful!");
       } else {
         throw res.message
       }

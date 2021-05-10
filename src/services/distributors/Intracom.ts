@@ -27,8 +27,8 @@ export async function update(params: {
 export async function deleteItem(id:number) {
   return request(`/api/vendor/Intracom_us/delete?id=${id}`) 
 }
-export async function downloadCsv(id:number) {
-  return `/api/vendor/Intracom_us/download_csv?tag_id=${id}`
+export function downloadCsv() {
+  return `http://api-multi.itmars.net/vendor/intracom_us/products`
 }
 
 export async function show() {

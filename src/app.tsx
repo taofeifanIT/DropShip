@@ -8,7 +8,7 @@ import Footer from '@/components/Footer';
 import type { ResponseError,RequestOptionsInit } from 'umi-request';
 import { currentUser as queryCurrentUser } from './services/user';
 import { getToken, getPublicParams, removeToken, setPublicKeys } from './utils/cookes'
-import { getMenu } from './utils/utils'
+import { getMenu, throwMenu } from './utils/utils'
 import { indexRouterMap } from '../config/router.config'
 import { getAllPop } from './services/publicKeys'
 // const isDev = process.env.NODE_ENV === 'development';
@@ -37,6 +37,7 @@ export async function getInitialState(): Promise<{
     getAmazonNormalDeliverTime: number;
   } | undefined;
   conText?: any;
+  indexPage?: string;
 }> {
   const pageHeight = document.body.clientHeight - 48 - 24 - 24;
   localStorage.setItem('umi_locale', 'en-US')
@@ -55,7 +56,15 @@ export async function getInitialState(): Promise<{
       const currentUser: any = await queryCurrentUser();
       localStorage.setItem('current', currentUser.data.adminuser.username)
       const menuList: any = getMenu(currentUser.data.menus).sort((a:any,b:any) => a.sort_num - b.sort_num)
-      return {...currentUser.data.adminuser, name: currentUser.data.adminuser.username, menuList};
+      const historyPath = history.location.pathname
+      if(historyPath === '/'){
+        history.location.pathname = menuList[0]['path']
+      }
+      let checkUrl = historyPath === '/' ? '/Dashboard' : historyPath
+      if (!throwMenu(menuList,checkUrl)){
+        history.location.pathname = menuList[0]['path']
+   }
+      return {...currentUser.data.adminuser, name: currentUser.data.adminuser.username, menuList, indexPage: menuList[0]['path']};
     } catch (error) {
       console.log(error)
       removeToken()
@@ -79,6 +88,7 @@ export async function getInitialState(): Promise<{
       pageHeight,
       menuList: currentUser.menuList,
       settings: {},
+      indexPage: currentUser.indexPage
     };
   }
   return {
@@ -104,7 +114,15 @@ export const layout = ({ initialState }: any) => {
       // 如果没有登录，重定向到 login
       if (!getToken() && location.pathname !== '/user/login') {
         history.push('/user/login');
+      } else {
+        // 如果不去登录页获取不去大屏页则处理无权限页面
+        if(location.pathname !== '/user/login' && location.pathname !== '/largeScreen/DataComparison'){
+          if (!throwMenu(routers,location.pathname)){
+            history.location.pathname = routers[0]['path']
+          }
+        }
       }
+     
     },
     menuHeaderRender: undefined,
     // 自定义 403 页面

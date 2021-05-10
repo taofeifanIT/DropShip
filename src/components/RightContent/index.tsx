@@ -6,7 +6,7 @@ import Avatar from './AvatarDropdown';
 import NoticeIconView from '../../components/NoticeIcon/index'
 import styles from './index.less';
 import { getPublicParams, setPublicParams } from '../../utils/cookes'
-import { getKesGroup, getKesValue } from '../../utils/utils'
+import { getKesGroup } from '../../utils/utils'
 // const TestContext= createContext();
 export type SiderTheme = 'light' | 'dark';
 
@@ -64,7 +64,7 @@ const GlobalHeaderRight: React.FC = () => {
   return (
     <Space className={className}>
       <span style={{margin: "0 12px"}}>
-        <NoticeIconView/>
+        {localStorage.getItem('current') !== 'operator' ? (<NoticeIconView/>) : null}
       </span>
       <Popover
         id="popPopover"

@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { InfoCircleOutlined, DownOutlined } from '@ant-design/icons';
-import { Button, Statistic, Row, Col, Tooltip, Table, Menu, Dropdown, Spin } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
+import { Button, Statistic, Row, Col, Tooltip, Table, Spin } from 'antd';
 import type { ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import { products, listing, update, deleteItem, downloadCsv, show } from '../../services/distributors/Intracom'
-import { useModel } from 'umi';  
-import { tags } from '../../services/publicKeys'
-import { getKesGroup } from '../../utils/utils'
+import type { FormInstance } from 'antd';
+import { useModel } from 'umi'; 
 import { createDownload } from '../../utils/utils'
 import Notes from '../../components/Notes'
 import { columns } from './supplierFunction'
@@ -66,30 +65,15 @@ const Head = () => {
 }
 export default () => {
     const actionRef = useRef<ActionType>();
+    const ref = useRef<FormInstance>();
     const { initialState } = useModel('@@initialState');
     const [drawerVisible, setDrawerVisible] = useState(false)
-    const [record, setRecord] = useState()
+    const [record, setRecord] = useState<any>()
     // 生成 intl 对象
     // const enUSIntl = createIntl('en_US', enUS);
     const refresh = (): void => {
         actionRef.current?.reload()
     }
-    function handleMenuClick(e: any) {
-        downloadCsv(e.key).then(res => {
-            createDownload(`${e.key}.csv`, res)
-        })
-      }
-    const menu = (
-        <Menu onClick={handleMenuClick}>
-            {getKesGroup('tagsData').map((item: tags) => {
-                return (
-                    <Menu.Item key={item.id}>
-                    {item.tag_name}
-                  </Menu.Item>
-                )
-            })}
-        </Menu>
-      );
       useEffect(() => {
         refresh()
       }, [initialState?.conText])
@@ -105,10 +89,10 @@ export default () => {
                 bordered
                 columns={columns({updateApi: update, listingApi: listing, deleteApi: deleteItem}, refresh)}
                 actionRef={actionRef}
+                formRef={ref}
                 request={async (
                     params = {},
                     sort,
-                    filter
                 ) =>
                     new Promise((resolve) => {
                         let sortParams: {
@@ -189,11 +173,33 @@ export default () => {
                 dateFormatter="string"
                 headerTitle="Intracom"
                 toolBarRender={() => [
-                    <Dropdown overlay={menu}>
-                        <Button>
-                            Download with tags <DownOutlined />
-                        </Button>
-                    </Dropdown>
+                    <Button onClick={() => {
+                        // console.log()
+                        const valObj = ref.current?.getFieldsValue()
+                        let tempParams: any = ''
+                        let index = 0
+                        for(let key in valObj){
+                            if(valObj[key]){
+                                let paramsStr = `${key}=${valObj[key]}`
+                                if(index === 1){
+                                    tempParams += `${paramsStr}`
+                                } else {
+                                    tempParams += '&'+paramsStr
+                                }
+                            }
+                            index ++
+                        }
+                        if(tempParams){
+                            tempParams = downloadCsv() + '?' + tempParams + '&is_download=1'
+                        } else {
+                            tempParams = downloadCsv()+ '?is_download=1'
+                        }
+                        createDownload(`test.csv`, tempParams)
+                        // console.log(tempParams)
+                        
+                    }}>
+                    Download
+                  </Button>
                 ]}
             />
         </>

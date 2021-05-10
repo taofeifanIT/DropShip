@@ -1,18 +1,20 @@
-import { Button, Result } from 'antd';
-import React from 'react';
-import { history } from 'umi';
-
-const NoFoundPage: React.FC = () => (
+import { Link } from 'umi';
+import { Result, Button } from 'antd';
+import { useModel } from 'umi';
+export default () => {
+  const { initialState } = useModel('@@initialState');
+  return (
   <Result
-    status="404"
-    title="404"
-    subTitle="Sorry, the page you visited does not exist."
+    status="403"
+    title="403"
+    style={{
+      background: 'none',
+    }}
+    subTitle="Sorry, you don't have access to this page."
     extra={
-      <Button type="primary" onClick={() => history.push('/')}>
-        Back Home
-      </Button>
+      <Link to={initialState.indexPage}>
+        <Button type="primary">Back to home</Button>
+      </Link>
     }
   />
-);
-
-export default NoFoundPage;
+)};

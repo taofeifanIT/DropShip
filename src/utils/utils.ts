@@ -90,3 +90,14 @@ export function getPageHeight() {
   const pageHeight = document.body.clientHeight - 48 - 24 - 24;
   return pageHeight
 }
+
+export function throwMenu(Arr: Array<any>, ID: string): any {
+	var _result = null;
+  for (let i = 0; i < Arr.length; i++) {
+    //console.log(Arr[i], Arr[i].id == ID)
+    if (Arr[i].path == ID) return Arr[i];
+    if (Arr[i].routes) _result = throwMenu(Arr[i].routes, ID)
+    if (_result != null) return _result;
+  }
+  return _result
+  }

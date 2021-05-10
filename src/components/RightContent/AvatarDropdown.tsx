@@ -79,10 +79,11 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu }) => {
         <UserOutlined />
         Personal Center
       </Menu.Item>
+        {localStorage.getItem('current') !== 'operator' ? (
       <Menu.Item key="toScreen">
         <FundOutlined />
         to Screen
-      </Menu.Item>
+      </Menu.Item>) : null}
       <Menu.Item key="logout">
         <LogoutOutlined />
         Log out

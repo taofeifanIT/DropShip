@@ -2,7 +2,7 @@ import {
   LockOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Alert, message } from 'antd';
+import { message } from 'antd';
 import React, {useState } from 'react';
 import { RocketOutlined } from '@ant-design/icons';
 import ProForm, {ProFormCheckbox, ProFormText } from '@ant-design/pro-form';
@@ -17,15 +17,11 @@ import { getAllPop } from '../../../services/publicKeys'
 import { setPublicKeys } from '../../../utils/cookes'
 
 /** 此方法会跳转到 redirect 参数所在的位置 */
-
+let INDEX_PAGE: string = ""
 const goto = () => {
   if (!history) return;
   setTimeout(() => {
-    const { query } = history.location;
-    const { redirect } = query as {
-      redirect: string;
-    };
-    history.push(redirect || '/');
+    history.push(INDEX_PAGE);
   }, 10);
 };
 
@@ -36,6 +32,7 @@ const Login: React.FC = () => {
   const fetchUserInfo = async () => {
     const userInfo: any = await currentUser()
     const menuList: any = getMenu(userInfo.data.menus).sort((a:any,b:any) => a.sort_num - b.sort_num)
+    INDEX_PAGE = menuList[0]['path']
     let allPop = await getAllPop()
     setPublicKeys(allPop)
     if (userInfo) {

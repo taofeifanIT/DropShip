@@ -29,8 +29,8 @@ export async function update(params: {
 export async function deleteItem(id:number) {
   return request(`/api/vendor/im/delete?id=${id}`) 
 }
-export async function downloadCsv(id:number) {
-  return `http://api-multi.itmars.net/vendor/im/download_csv?tag_id=${id}`
+export function downloadCsv() {
+  return `http://api-multi.itmars.net/vendor/im/products`
 }
 
 export async function log_vendor_quantity_and_price_change(params: {
