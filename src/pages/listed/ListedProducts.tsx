@@ -794,7 +794,14 @@ export default () => {
       const handleOk = () => {
         from
         .validateFields()
-        .then(async (updatedValues:any) => {
+        .then(async (updatedValues:{
+            quantity: number;
+            quantity_offset: number;
+        }) => {
+           if(!updatedValues.quantity && !updatedValues.quantity_offset){
+               message.warning('Please enter at least one of them!')
+               return
+           }
            setConfirmLoading(true)
            batchChangeQuantity({
                listing_ids: selectedRowKeys,
@@ -1013,7 +1020,7 @@ export default () => {
                 ]}
             />
             <Modal 
-                title="Basic Modal"
+                title="batch update"
                 visible={isModalVisible}
                 onOk={handleOk} 
                 confirmLoading={confirmLoading}
@@ -1028,7 +1035,14 @@ export default () => {
                         <Form.Item
                         name="quantity"
                         noStyle
-                        rules={[{ required: true, message: 'Please input your quantity!' }]}
+                        >
+                        <InputNumber style={{width: "200px"}}></InputNumber>
+                        </Form.Item>
+                    </Form.Item>
+                    <Form.Item label="quantity offset">
+                        <Form.Item
+                        name="quantity_offset"
+                        noStyle
                         >
                         <InputNumber style={{width: "200px"}}></InputNumber>
                         </Form.Item>

@@ -1,10 +1,10 @@
 import React, { useRef, useState } from 'react';
-import { Button, Select, Form, Modal, message, } from 'antd';
+import { Button, Select, Form, Modal, message, InputNumber } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import usePopInfo from '../../hooks/usePopInfo'
 import { getTagList } from '../../services/publicKeys'
-import { changeTagPriceAlgorithm } from '../../services/priceManage/tagPrice'
+import { edit } from '../../services/priceManage/tagPrice'
 import { getKesGroup } from '../../utils/utils'
 import { priceAlgorithms } from '../../services/publicKeys'
 const { Option } = Select
@@ -26,10 +26,7 @@ type GithubIssueItem = {
 
 
 
-const columns = (
-    refresh: () => void,
-    getMarkey: (id:number, key:string) => any,
-    editFn: (visible: boolean, id: number) => void): ProColumns<GithubIssueItem>[] => [
+const columns = (editFn: (visible: boolean, id: number) => void): ProColumns<GithubIssueItem>[] => [
     {
         dataIndex: 'index',
         valueType: 'indexBorder',
@@ -69,14 +66,18 @@ const columns = (
         }
     },
     {
+        title: 'quantity_offset',
+        dataIndex: 'quantity_offset',
+    },
+    {
         title: 'Action',
         dataIndex: 'action',
-        render: (text, record: {id: number}, _, action) => {
+        render: (_, record: any) => {
             return (
                 <>
-                   <Button size="small" onClick={() => {
-                       editFn(true, record)
-                   }}>Edit</Button>
+                    <Button size="small" onClick={() => {
+                        editFn(true, record)
+                    }}>Edit</Button>
                 </>
             )
         }
@@ -93,78 +94,83 @@ const BatchPriceModal = (props: {
     const [confirmLoading, setConfirmLoading] = useState(false)
     const [from] = Form.useForm();
     const handleCancel = () => {
-      setBatchPriceModalVisible(false);
-      from.resetFields()
+        setBatchPriceModalVisible(false);
+        from.resetFields()
     }
     const onEmit = () => {
-      // do something
-      from
-        .validateFields()
-        .then((updatedValues:any) => {
-            changeTagPriceAlgorithm({
-                tag_id: listingId.id,
-                ...updatedValues
-            }).then((res: {
-                code: number;
-                msg: string;
-                data: any;
-            }) => {
-                if(res.code){
-                    message.success("opetaion successful!")
-                } else {
-                    throw res.msg
-                }
-            }).catch(e => {
-                message.error(e)
-            }).finally(() => {
-                setConfirmLoading(false)
-                setBatchPriceModalVisible(false)
-                refresh()
+        setConfirmLoading(true)
+        // do something
+        from
+            .validateFields()
+            .then((updatedValues: any) => {
+                edit({
+                    tag_id: listingId.id,
+                    ...updatedValues
+                }).then((res: {
+                    code: number;
+                    msg: string;
+                    data: any;
+                }) => {
+                    if (res.code) {
+                        message.success("opetaion successful!")
+                    } else {
+                        throw res.msg
+                    }
+                }).catch(e => {
+                    message.error(e)
+                }).finally(() => {
+                    setConfirmLoading(false)
+                    setBatchPriceModalVisible(false)
+                    refresh()
+                })
             })
-        })
     };
     React.useEffect(() => {
-        if(batchPriceModalVisible && listingId){
+        if (batchPriceModalVisible && listingId) {
             from.setFieldsValue({
-                price_algorithm_id: listingId['price_algorithm_id']
+                price_algorithm_id: listingId['price_algorithm_id'],
+                quantity_offset: listingId['quantity_offset']
             })
         } else {
             return
         }
     }, [batchPriceModalVisible])
     return (
-      <Modal title="edit" visible={batchPriceModalVisible} onOk={onEmit} onCancel={handleCancel} confirmLoading={confirmLoading}>
-        <Form
-          form={from}
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 14 }}
-          layout="horizontal"
-        >
-          <Form.Item label="Price algorithm">
-            <Form.Item
-              name="price_algorithm_id"
-              noStyle
-              rules={[{ required: true, message: 'Please input your price algorithm!' }]}
+        <Modal title="edit" visible={batchPriceModalVisible} onOk={onEmit} onCancel={handleCancel} confirmLoading={confirmLoading}>
+            <Form
+                form={from}
+                labelCol={{ span: 8 }}
+                wrapperCol={{ span: 14 }}
             >
-              <Select
-                placeholder="Select a option and change input text above"
-                allowClear
+                <Form.Item
+                    label="Price algorithm"
+                    name="price_algorithm_id"
+                    rules={[{ required: true, message: 'Please input your price algorithm!' }]}
                 >
-                 {getKesGroup('priceAlgorithmsData').map((item: priceAlgorithms) => {
-                     return <Option key={`option${item.id}`} value={item.id}>{item.name}</Option>
-                 })}
-              </Select>
-            </Form.Item>
-          </Form.Item>
-        </Form>
-      </Modal>
+                    <Select
+                        placeholder="Select a option and change input text above"
+                        allowClear
+                    >
+                        {getKesGroup('priceAlgorithmsData').map((item: priceAlgorithms) => {
+                            return <Option key={`option${item.id}`} value={item.id}>{item.name}</Option>
+                        })}
+                    </Select>
+                </Form.Item>
+                <Form.Item
+                    label="quantity_offset"
+                    name="quantity_offset"
+                    rules={[{ required: true, message: 'Please input your quantity_offset!' }]}
+                >
+                    <InputNumber />
+                </Form.Item>
+            </Form>
+        </Modal>
     )
-  }
+}
 export default () => {
     const actionRef = useRef<ActionType>();
     const [visible, setVisible] = useState(false)
     const [listId, setListId] = useState({})
-    const  getMarkey = usePopInfo()
     // 生成 intl 对象
     // const enUSIntl = createIntl('en_US', enUS);
     const refresh = (): void => {
@@ -173,17 +179,18 @@ export default () => {
     const editFn = (comlounVisible: boolean, listId: any) => {
         setVisible(comlounVisible)
         setListId(listId)
+        console.log(listId)
     }
     return (
         <>
             <ProTable<GithubIssueItem>
                 size="small"
-                columns={columns(refresh,getMarkey, editFn)}
+                columns={columns(editFn)}
                 actionRef={actionRef}
                 request={async (
                     params = {},
                     sort,
-                    ) =>
+                ) =>
                     new Promise((resolve) => {
                         getTagList().then(res => {
                             resolve({
@@ -211,8 +218,8 @@ export default () => {
                 dateFormatter="string"
                 headerTitle={'Tag'}
                 toolBarRender={() => [
-                //    <Button key="ImportOutlined" icon={<ImportOutlined/>}>Batch unlist</Button>,
-                //    <Button key="uploadAndDown" icon={<TableOutlined/>}>CSV Upload / Download with tags</Button>
+                    //    <Button key="ImportOutlined" icon={<ImportOutlined/>}>Batch unlist</Button>,
+                    //    <Button key="uploadAndDown" icon={<TableOutlined/>}>CSV Upload / Download with tags</Button>
                 ]}
             />
             <BatchPriceModal batchPriceModalVisible={visible} setBatchPriceModalVisible={setVisible} listingId={listId} refresh={refresh} />

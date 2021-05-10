@@ -13,3 +13,14 @@ export async function changeTagPriceAlgorithm(params: {
         params: params
     });
 }
+
+export async function edit(params: {
+    price_algorithm_id: number;
+    tag_id: number;
+    quantity_offset: number;
+}) {
+    return request('/api/tag/edit',{
+        method: "GET",
+        params: params
+    });
+}
