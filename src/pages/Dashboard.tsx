@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Row, Col, Card, Typography, Statistic, Input, List, Spin, Tabs } from 'antd';
+import { Row, Col, Card, Typography, Statistic, Input, List, Spin, Tabs, DatePicker } from 'antd';
 import { Rose, Line, Column } from '@ant-design/charts';
 import ProTable from '@ant-design/pro-table';
 import { matchAndListing, total, storeRanking, saleRanking, tagRanking, marketplaceRanking } from '../services/dashboard'
@@ -26,10 +26,8 @@ const ParagraphText = (props: { content: string, width: number }) => {
 const DemoColumn: React.FC = () => {
     const [loading, setLoading] = useState<boolean | undefined>(false)
     const [data, setData] = useState([])
-
-    const init = () => {
+    const init = (time: string) => {
         setLoading(true)
-        const time = moment('1980-12-12').format('X')
         matchAndListing({ after_at: time }).then(res => {
             const tempData: any = []
             res.data.adminusers.forEach((item: {
@@ -77,10 +75,14 @@ const DemoColumn: React.FC = () => {
         },
     };
     useEffect(() => {
-        init()
+        init(moment('1980-12-12').format('X'))
     }, [])
     return (<>
         <Spin spinning={loading}>
+            <DatePicker style={{position: 'absolute', top: '-11px', right: '0',zIndex: 100}} onChange={(e: any) => {
+                let dateStr: string = e.startOf('day').format('x').slice(0,10)
+                init(dateStr)
+            }} />
             <Column {...config} />
         </Spin>
     </>);

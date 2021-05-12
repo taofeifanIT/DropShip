@@ -101,3 +101,36 @@ export function throwMenu(Arr: Array<any>, ID: string): any {
   }
   return _result
   }
+
+
+  export function enterF11(){
+    var docElm: any = document.documentElement; 
+
+    //W3C 
+
+    try {
+      // if (docElm.requestFullscreen) { 
+
+      //   docElm.requestFullscreen(); 
+    
+      //   } 
+    
+      //   //FireFox 
+    
+      //   else if (docElm.mozRequestFullScreen) { 
+    
+      //   docElm.mozRequestFullScreen(); 
+    
+      //   } 
+    
+        //Chrome等 
+    
+        if (docElm.webkitRequestFullScreen) { 
+    
+        docElm.webkitRequestFullScreen(); 
+    
+        } 
+    } catch (error) {
+      console.log(error)
+    }
+  }

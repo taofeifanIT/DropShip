@@ -1,5 +1,6 @@
 import { Row, Col } from 'antd';
 import styles from './style.less'
+import { enterF11 } from '../../utils/utils'
 import WorldMap from './components/Map'
 import DemoPie from './components/Commodities'
 import RankingList from './components/RankingList'
@@ -8,6 +9,7 @@ import DemoColumn from './components/OperationRank'
 import DemoLine from './components/HistoryData'
 import TagData from './components/TagTable'
 const DataComparison = () => {
+    enterF11()
     return (
         <div className={styles.bg}>
             <h3 className={styles.title}>Drop Ship Multi</h3>

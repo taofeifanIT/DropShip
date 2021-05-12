@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { AmazonOutlined, ExclamationCircleOutlined, BarChartOutlined, DeleteOutlined  } from '@ant-design/icons';
-import { Button, Typography, Space, Form, Row, Col, Modal, Checkbox, message, Select, Spin, Tag } from 'antd';
+import { Button, Typography, Space, Form, Row, Col, Modal, Checkbox, message, Select, Spin, Tag  } from 'antd';
 import { log_vendor_quantity_and_price_change } from '../../services/distributors/ingramMicro'
 import type { ProColumns } from '@ant-design/pro-table';
 import { history } from 'umi';  
@@ -94,6 +94,7 @@ export const ButtonGroup = (props: {
     const [historyVisible, setHistoryVisible] = useState(false)
     const [historyConfirmLoading, setHistoryConfirmLoading] = useState(false)
     const [historyDataLoading, setHistoryDataLoading]= useState(false)
+    const [isDefaultStores, setIsDefaultStores] = useState(false)
     const [historyData, setHistoryData] = useState({log_vendor_price_change: [], log_vendor_quantity_change:[]})
     const [form] = Form.useForm();
     const [matchForm] = Form.useForm();
@@ -182,8 +183,9 @@ export const ButtonGroup = (props: {
                     i--;//i需要自减，否则每次删除都会讲原数组索引发生变化
                 }
             }
+            tempValue.store_ids = Array.from(new Set(tempValue.store_ids))
             setConfirmLoading(true)
-            listingApi({ id: record.id, ...value }).then(res => {
+            listingApi({ id: record.id, ...tempValue }).then(res => {
                 if (res.code) {
                     message.info("Listed succssful!")
                     const { success, errors } = getResponseInfo(res.data)
@@ -322,21 +324,33 @@ export const ButtonGroup = (props: {
                     tempObj[storeItem.id.toString()] = true
                 }
             })
-            const params = JSON.parse(getPublicParams() || '{}')
-            let isCountry: number[] = []
-            if(params['country_id']){
-                isCountry = getKesGroup('storeData').filter((item: {
-                    country: {id: number}
-                }) => item.country.id === params['country_id']).map((flItem: {id: number}) => {
-                    return flItem.id
-                })
+            // 设置同一国家下的店铺
+            // const params = JSON.parse(getPublicParams() || '{}')
+            // let isCountry: number[] = []
+            // if(params['country_id']){
+            //     isCountry = getKesGroup('storeData').filter((item: {
+            //         country: {id: number}
+            //     }) => item.country.id === params['country_id']).map((flItem: {id: number}) => {
+            //         return flItem.id
+            //     })
+            // }
+            // 设置默认配置选线
+            let defaultStoresArr: number[] = []
+            if(!!localStorage.getItem('defaultStore')){
+                setIsDefaultStores(true)
+                let defaultStores = JSON.parse(localStorage.getItem('defaultStore') as string)
+                defaultStores.forEach((element: number) => {
+                    defaultStoresArr.push(element)
+                });
+            } else {
+                setIsDefaultStores(false)
             }
             // 2.设置已存在属性
             setAlreadyStoreId(tempObj)
             form.setFieldsValue({
                 store_ids: [...record.listing_stores?.map(item => {
                     return item.store_id
-                }), ...isCountry]
+                }), ...defaultStoresArr]
             })
         } else {
             return
@@ -498,6 +512,31 @@ export const ButtonGroup = (props: {
                         </Checkbox.Group>
                     </Form.Item>
                 </Form>
+                
+                <Checkbox checked={isDefaultStores} onChange={(e) => {
+                    if(e.target.checked){
+                        Modal.confirm({
+                            title: 'Confirm',
+                            icon: <ExclamationCircleOutlined />,
+                            content: 'If you tick, you will directly select these contents next time',
+                            okText: 'OK',
+                            cancelText: 'Cancel',
+                            onOk: () => {
+                                if(!form.getFieldValue('store_ids')?.length){
+                                    message.warning('No setting item')
+                                    setIsDefaultStores(false)
+                                } else {
+                                    localStorage.setItem('defaultStore', JSON.stringify(form.getFieldValue('store_ids')))
+                                    setIsDefaultStores(true)
+                                }
+                                
+                            }
+                          });
+                    } else {
+                        localStorage.removeItem('defaultStore')
+                        setIsDefaultStores(false)
+                    }
+                }}>Remember my choice</Checkbox>
             </Modal>
         </>
     )
@@ -561,6 +600,7 @@ export const columns = (api: apiItem,refresh?: () => void, isAuth?: boolean | un
                             {record.newegg_id && (<Text type="secondary"><span>Newegg</span>:<a target="_Blank" href={`${getNewEggHref(record.newegg_id)}`}>{record.newegg_id}</a></Text>)}
                             <Text type="secondary">Country: <Text>{getCountryImg(countryName)}{countryName}</Text></Text>
                             {isAuth && (<Text type="secondary">Is auth: <Text>{getAuth(record.is_auth)}</Text></Text>)}
+                            {record.dimweight && (<Text type="secondary">dimweight: <Text>{record.dimweight}</Text></Text>)}
                             <Text type="secondary">Tag Name: <ParagraphText content={getKesValue('tagsData', record.tag_id).tag_name} width={340} /></Text>
                             <Text type="secondary">Description: <ParagraphText content={record.title} width={340} /></Text>
                         </Space>
