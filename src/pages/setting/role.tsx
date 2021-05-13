@@ -34,7 +34,7 @@ function DeleteComponent(props: {id: number, setTableRecord: (obj: object) => vo
     setVisible(false);
   };
   return (<Popconfirm
-    title="你确定要删除吗？"
+    title="Are you sure you want to delete it?"
     visible={visible}
     onConfirm={handleOk}
     okButtonProps={{ loading: confirmLoading }}

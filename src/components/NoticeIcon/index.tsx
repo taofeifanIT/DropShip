@@ -187,7 +187,7 @@ const NoticeIconView = () => {
         tabKey="message"
         count={errorInfo.length}
         list={errorInfo}
-        title="Abnormal notification"
+        title="Abnormal"
         emptyText="You've seen all the notifications"
         showViewMore
       />

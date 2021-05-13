@@ -26,5 +26,5 @@ export async function updateRole(params: any) {
 }
 
 export async function deleteRole(id: any) {
-  return request(`/api/delete_auth_group/${id}`)
+  return request(`/api/adminuser/delete_auth_group?id=${id}`)
 }

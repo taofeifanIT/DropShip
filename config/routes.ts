@@ -188,6 +188,10 @@
   },
   {
     path: '/setting',
+    redirect: '/setting/menuManagement',
+  },
+  {
+    path: '/setting',
     name: 'Setting',
     icon: 'SettingOutlined',
     routes: [

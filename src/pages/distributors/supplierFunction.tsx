@@ -1,21 +1,37 @@
-import React, { useEffect, useState } from 'react';
-import { AmazonOutlined, ExclamationCircleOutlined, BarChartOutlined, DeleteOutlined  } from '@ant-design/icons';
-import { Button, Typography, Space, Form, Row, Col, Modal, Checkbox, message, Select, Spin, Tag  } from 'antd';
+import React, { useEffect, useState,useRef } from 'react';
+import { AmazonOutlined, ExclamationCircleOutlined, BarChartOutlined, DeleteOutlined,InfoCircleOutlined,SmileFilled,UpOutlined  } from '@ant-design/icons';
+import { Button, Typography, Space, Form, Row, Col, Modal, Checkbox, message, Select, Spin, Tag,Statistic,Tooltip,Table , Divider,BackTop } from 'antd';
+import type { FormInstance } from 'antd';
 import { log_vendor_quantity_and_price_change } from '../../services/distributors/ingramMicro'
-import type { ProColumns } from '@ant-design/pro-table';
+import { matchAndListing } from '../../services/dashboard'
+import type { ProColumns,ActionType } from '@ant-design/pro-table';
 import { history } from 'umi';  
 import { tags } from '../../services/publicKeys'
 import { getKesGroup, getKesValue } from '../../utils/utils'
 import { getTargetHref, getAsonHref,getNewEggHref } from '../../utils/jumpUrl'
+import { useModel } from 'umi'; 
+import ProTable from '@ant-design/pro-table';
+import Notes from '../../components/Notes'
 import{Info} from '../../components/Notes'
-import { getPublicParams } from '../../utils/cookes'
+import { createDownload } from '../../utils/utils'
 import { Column } from '@ant-design/charts';
 import moment from 'moment'
 
 const { Text } = Typography;
 
+
+
+type apiItem = {
+    updateApi: any,
+    listingApi: any,
+    deleteApi: any,
+    listApi?: any,
+    downloadApi?:any,
+    showApi?: any,
+}
+
 const DemoColumn = (props: {data: {log_vendor_price_change: [], log_vendor_quantity_change:[]}}) => {
-    var config = {
+    var config: any = {
       data: props.data.log_vendor_price_change,
       isGroup: true,
       xField: 'time',
@@ -32,7 +48,7 @@ const DemoColumn = (props: {data: {log_vendor_price_change: [], log_vendor_quant
         ],
       },
     };
-    var quantityConfig = {
+    var quantityConfig: any = {
         data: props.data.log_vendor_quantity_change,
         isGroup: true,
         style: {height: "250px"},
@@ -59,13 +75,26 @@ const DemoColumn = (props: {data: {log_vendor_price_change: [], log_vendor_quant
     );
   };
 
-type apiItem = {
-    updateApi: any,
-    listingApi: any,
-    deleteApi: any,
-}
-
-export const ButtonGroup = (props: {
+const HistoryColumn = (props: {data: any}) => {
+    var config: any = {
+      data: props.data || [],
+      isGroup: true,
+      xField: 'time',
+      yField: 'value',
+      seriesField: 'name',
+      style: {marginRight: '16px'},
+      label: {
+        position: 'middle',
+        layout: [
+          { type: 'interval-adjust-position' },
+          { type: 'interval-hide-overlap' },
+          { type: 'adjust-color' },
+        ],
+      },
+    };
+    return <Column {...config} />;
+  };
+const ButtonGroup = (props: {
     refresh: () => void,
     record: {
         id: number,
@@ -158,7 +187,7 @@ export const ButtonGroup = (props: {
                 } else {
                     throw res.msg
                 }
-            }).catch(e => {
+            }).catch((e: string) => {
                 message.error(e)
             }).finally(() => {
                 setConfirmMatchLoading(false)
@@ -185,7 +214,11 @@ export const ButtonGroup = (props: {
             }
             tempValue.store_ids = Array.from(new Set(tempValue.store_ids))
             setConfirmLoading(true)
-            listingApi({ id: record.id, ...tempValue }).then(res => {
+            listingApi({ id: record.id, ...tempValue }).then((res: {
+                code: number;
+                data: any;
+                msg: string;
+            }) => {
                 if (res.code) {
                     message.info("Listed succssful!")
                     const { success, errors } = getResponseInfo(res.data)
@@ -236,7 +269,11 @@ export const ButtonGroup = (props: {
                 onOk: () => {
                     return new Promise((resolve, reject) => {
                         deleteApi(props.id)
-                        .then((res) => {
+                        .then((res: {
+                            code: number;
+                            data: any;
+                            msg: string;
+                        }) => {
                           if (res.code) {
                             message.success('Operation successful!');
                             props.initData();
@@ -556,9 +593,28 @@ const ParagraphText = (props: { content: string, width: number }) => {
 }
 
 
-export const columns = (api: apiItem,refresh?: () => void, isAuth?: boolean | undefined): ProColumns<any>[] => {
+export const columns = (api: apiItem,refresh: () => void, isAuth?: boolean | undefined): ProColumns<any>[] => {
     const {updateApi, listingApi, deleteApi} = api
     return [
+        {
+            title: "Tag Name",
+            dataIndex: 'tag_id',
+            valueType: 'select',
+            hideInTable: true,
+            request: async () => {
+                return [...getKesGroup('tagsData').map((item:tags) => {
+                    return {
+                        label: (item.tag_name),
+                        value: item.id,
+                    }
+                })]
+            }
+        },
+        {
+            title: 'vendor_sku',
+            dataIndex: 'vendor_sku',
+            hideInTable: true
+        },
         {
             dataIndex: 'index',
             valueType: 'indexBorder',
@@ -637,6 +693,11 @@ export const columns = (api: apiItem,refresh?: () => void, isAuth?: boolean | un
         {
             title: 'title',
             dataIndex: 'title',
+            hideInTable: true
+        },
+        {
+            title: 'Asin',
+            dataIndex: 'asin',
             hideInTable: true
         },
         {
@@ -763,22 +824,6 @@ export const columns = (api: apiItem,refresh?: () => void, isAuth?: boolean | un
             }
         },
         {
-            title: "Tag Name",
-            dataIndex: 'tag_id',
-            valueType: 'select',
-            hideInTable: true,
-            request: async () => {
-                return [...getKesGroup('tagsData').map((item:tags) => {
-                    return {
-                        label: (<>
-                            <ParagraphText content={item.tag_name} width={150} />
-                        </>),
-                        value: item.id,
-                    }
-                })]
-            }
-        },
-        {
             title: "Store(S)",
             dataIndex: 'listing_stores',
             search: false,
@@ -812,11 +857,6 @@ export const columns = (api: apiItem,refresh?: () => void, isAuth?: boolean | un
             title: 'walmart',
             dataIndex: 'upc',
             width: 200,
-        },
-        {
-            title: 'vendor_sku',
-            dataIndex: 'vendor_sku',
-            hideInTable: true
         },
         {
             title: 'listing_filter',
@@ -865,3 +905,265 @@ export const columns = (api: apiItem,refresh?: () => void, isAuth?: boolean | un
         },
     ];
 }
+
+const Head = (props: {show: any}) => {
+    const { show } = props
+    const [data, setData] = useState<{
+        total: number;
+        total_deleted: number;
+        total_listed: number;
+    }>()
+    const [personData ,setPersonData] = useState<{
+        history: any[],
+        period_listing_count: number,
+        period_match_count: number,
+        period_not_match_count: number,
+    }>({
+        history: [],
+        period_listing_count: 0,
+        period_match_count: 0,
+        period_not_match_count: 0, 
+    })
+    const [loading, setLoading] = useState(false)
+    const init = () => {
+        show().then(res => {
+            setData(res.data)
+        }).finally(() => {
+            setLoading(false)
+        })
+        matchAndListing({
+            after_at: parseInt(moment('1980-12-12').format('x')) / 1000,
+            before_at: parseInt(moment().format('x')) / 1000,
+            is_self: 1,
+        }).then(res => {
+            let historyData = []
+            for(let countKey in res.data.adminusers[0].history){
+                let subItem = res.data.adminusers[0].history[countKey]
+                for(let val in subItem){
+                    historyData.push({
+                        time: val,
+                        value: subItem[val],
+                        name: countKey
+                    })
+                }
+            }
+            setPersonData({
+                ...res.data.adminusers[0],
+                history: historyData
+            })
+        })
+    }
+    useEffect(() => {
+        init()
+    }, [])
+    return (<>
+         <Spin spinning={loading}>
+         <Row gutter={24} style={{ background: "#fff", margin: "0", marginBottom: "15px", padding: "12px" }}>
+                <Tooltip
+                    title='Personal operation data'
+                >
+                    <InfoCircleOutlined style={{ marginLeft: 8, position: 'absolute', zIndex: 10, cursor: 'pointer' }} onClick={() => {
+                        Modal.confirm({
+                            title: 'Personal operation data',
+                            icon: <SmileFilled  />,
+                            width: '800px',
+                            content: (<>
+                                <Row gutter={24}>
+                                    <Col span={8}>
+                                    <Statistic title="listing count" style={{display: 'inline-block'}} value={personData.period_listing_count} />
+                                    <Divider type="vertical" style={{float: 'right', height: '100%'}} />
+                                    </Col>
+                                    <Col span={8}>
+                                    <Statistic title="match count" style={{display: 'inline-block'}} value={personData.period_match_count}/>
+                                    <Divider type="vertical" style={{float: 'right', height: '100%'}} />
+                                    </Col>
+                                    <Col span={8}>
+                                    <Statistic title="not match count" value={personData.period_not_match_count}/>
+                                    </Col>
+                                </Row>
+                                <Divider/>
+                                <h3><Text type="secondary">Historical data for the last ten days</Text></h3>
+                                <HistoryColumn data={personData.history} />
+                            </>),
+                            okText: 'ok',
+                            cancelText: 'cancel',
+                          });
+                    }} />
+                </Tooltip>
+                <Col span={8} style={{ textAlign: "center" }}>
+                    <Statistic title="Total" value={data?.total} />
+                </Col>
+                <Col span={8} style={{ textAlign: "center" }}>
+                    <Statistic title="Deleted" value={data?.total_deleted}/>
+                </Col>
+                <Col span={8} style={{ textAlign: "center" }}>
+                    <Statistic title="Listed" value={data?.total_listed} />
+                </Col>
+            </Row>
+         </Spin>
+    </>)
+}
+
+const SupplierFunction = (props: {title: string,api: apiItem, isAuth?: boolean | undefined}) => {
+    const {title,api, isAuth} = props
+    const actionRef = useRef<ActionType>();
+    const ref = useRef<FormInstance>();
+    const { initialState } = useModel('@@initialState');
+    const [drawerVisible, setDrawerVisible] = useState(false)
+    const [record, setRecord] = useState()
+    const refresh = (): void => {
+        actionRef.current?.reload()
+    }
+      useEffect(() => {
+        refresh()
+      }, [initialState?.conText])
+    return (
+        <>
+            <Head show={api.showApi} />
+            <Notes visible={drawerVisible} setVisible={setDrawerVisible} {...record} refresh={refresh} updateApi={api.updateApi} />
+            <ProTable
+                rowSelection={{
+                    selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
+                }}
+                size="small"
+                bordered
+                columns={columns(api, refresh, isAuth)}
+                actionRef={actionRef}
+                formRef={ref}
+                request={async (
+                    params = {},
+                    sort,
+                ) =>
+                    new Promise((resolve) => {
+                        let sortParams: {
+                            sort_by?: string;
+                            sort_field?: string;
+                        } = {}
+                        if (sort) {
+                            for (let key in sort) {
+                                sortParams.sort_by = sort[key] === 'descend' ? 'desc' : 'asc'
+                                sortParams.sort_field = key
+                            }
+                        }
+                        let tempParams = {
+                            ...params,
+                            ...sortParams,
+                            page: params.current,
+                            limit: params.pageSize
+                        }
+                        api.listApi(tempParams).then((res: {
+                            data: {
+                                list: any[];
+                                total: number
+                            },
+                             code: number,
+                        }) => {
+                            resolve({
+                                data: res.data.list,
+                                // success 请返回 true，
+                                // 不然 table 会停止解析数据，即使有数据
+                                success: !!res.code,
+                                // 不传会使用 data 的长度，如果是分页一定要传
+                                total: res.data.total,
+                            });
+                        })
+                    })
+                }
+                editable={{
+                    type: 'multiple',
+                }}
+                rowKey="id"
+                search={{
+                    labelWidth: 'auto',
+                    span: {
+                        xs: 14,
+                        sm: 24,
+                        md: 12,
+                        lg: 12,
+                        xl: 8,
+                        xxl: 6,
+                    },
+                }}
+                pagination={{
+                    pageSize: 30,
+                }}
+                options={{
+                    search: false,
+                }}
+                onRow={(record:{
+                    id: number;
+                    notes: string;
+                    vendor_sku: string;
+                    ts_sku: string;
+                }) => {
+                    return {
+                      onDoubleClick: event => {
+                        setDrawerVisible(true)
+                        setRecord({
+                            id: record.id,
+                            content: record.notes || '',
+                            title: record.ts_sku
+                        })
+                      }, 
+                      onClick: event => {
+                        if(drawerVisible){
+                            setRecord({
+                                id: record.id,
+                                content: record.notes || '',
+                                title: record.ts_sku
+                            })
+                        }
+                      },
+                    };
+                  }}
+                dateFormatter="string"
+                headerTitle={title}
+                toolBarRender={() => [
+                    <Button onClick={() => {
+                        const valObj = ref.current?.getFieldsValue()
+                        let tempParams: any = ''
+                        let index = 0
+                        for(let key in valObj){
+                            if(valObj[key]){
+                                let paramsStr = `${key}=${valObj[key]}`
+                                if(index === 1){
+                                    tempParams += `${paramsStr}`
+                                } else {
+                                    tempParams += '&'+paramsStr
+                                }
+                            }
+                            index ++
+                        }
+                        if(tempParams){
+                            tempParams = api.downloadApi() + '?' + tempParams + '&is_download=1'
+                        } else {
+                            tempParams = api.downloadApi()+ '?is_download=1'
+                        }
+                        createDownload(`test.csv`, tempParams)
+                        // console.log(tempParams)
+                        
+                    }}>
+                    Download
+                  </Button>
+                ]}
+            />
+            <BackTop>
+            <div style={{
+                border: '1px solid #dcdcdc',
+                width: '50px',
+                height: '50px',
+                textAlign: 'center',
+                lineHeight: '50px',
+                position: 'fixed',
+                right:'5vw',
+                bottom:'6vw',
+                zIndex:100,
+                background:'rgb(220, 220, 220)',
+                cursor:'pointer',
+            }}><UpOutlined /></div>
+            </BackTop>
+        </>
+    );
+};
+
+export default SupplierFunction;

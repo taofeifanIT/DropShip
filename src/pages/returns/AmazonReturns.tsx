@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import {AmazonOutlined,WarningOutlined  } from '@ant-design/icons';
+import {AmazonOutlined,WarningOutlined,   } from '@ant-design/icons';
 import {Typography, Space } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
@@ -50,7 +50,7 @@ const columns = (): ProColumns<any>[] => [
                         <Text type="secondary"><AmazonOutlined />Asin: <Text>{record.ASIN}</Text></Text>
                         <Text type="secondary">AmazonOrderId : <Text>{record.AmazonOrderId}</Text></Text>
                         <Text type="secondary">OrderDate : <Text>{record.OrderDate}</Text></Text>
-                        <Text type="secondary">ItemName : <ParagraphText content={record.ItemName} width={300} /></Text>
+                        <Text type="secondary">ItemName : <ParagraphText content={record.ItemName} width={250} /></Text>
                     </Space>
                 </>
             )

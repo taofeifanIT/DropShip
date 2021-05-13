@@ -358,6 +358,25 @@ const BatchPriceModal = (props: {
   }
   const columns = (refresh: () => void, editFn: (visible: boolean, id: number, record: any) => void): ProColumns<GithubIssueItem>[] => [
     {
+        title: "Tag name",
+        dataIndex: 'tag_id',
+        valueType: 'select',
+        hideInTable: true,
+        request: async () => {
+            return [...getKesGroup('tagsData').map((item:tags) => {
+                return {
+                    label: item.tag_name,
+                    value: item.id,
+                }
+            })]
+        }
+    },
+    {
+        title: "vendor_sku",
+        dataIndex: 'vendor_sku',
+        hideInTable: true
+    },
+    {
         dataIndex: 'index',
         valueType: 'indexBorder',
         width: 48,
@@ -368,12 +387,14 @@ const BatchPriceModal = (props: {
         search: false,
         width: 300,
         render: (_, record: any) => {
+            var tagTitle = getKesValue('tagsData', record.tag_id).tag_name
             return (
                 <>
                     <Space direction="vertical">
                         <Text type="secondary">ID: <a target="_blank" href={`${getTargetHref(record.vendor_id)}${record.ts_sku}`}>{record.ts_sku}</a>{record.notes && <Info content={record.notes} />}</Text>
                         {record.asin && (<Text type="secondary"><AmazonOutlined />Asin: <EditLinKStr record={record} /></Text>)}
-                        {record.newegg_id && (<Text type="secondary"><AmazonOutlined />newegg: {record.newegg_id}</Text>)}
+                        {record.newegg_id && (<Text type="secondary">newegg: <Text>{record.newegg_id}</Text></Text>)}
+                        <Text type="secondary">Tag Name: <Text style={{width: '210px'}} title={tagTitle} ellipsis>{tagTitle}</Text></Text>
                         <Text type="secondary">Description: <ParagraphText content={record.title} width={780} /></Text>
                     </Space>
                 </>
@@ -669,21 +690,6 @@ const BatchPriceModal = (props: {
             })]
         }
     },
-    
-    {
-        title: "tag",
-        dataIndex: 'tag_id',
-        valueType: 'select',
-        width: 150,
-        request: async () => {
-            return [...getKesGroup('tagsData').map((item:tags) => {
-                return {
-                    label: item.tag_name,
-                    value: item.id,
-                }
-            })]
-        }
-    },
     {
         title: "Custom price",
         dataIndex: 'custom_price',
@@ -713,11 +719,6 @@ const BatchPriceModal = (props: {
         title: "upc",
         dataIndex: 'upc',
         width: 200,
-    },
-    {
-        title: "vendor_sku",
-        dataIndex: 'vendor_sku',
-        hideInTable: true
     },
     {
         title: 'action',

@@ -63,9 +63,8 @@ const GlobalHeaderRight: React.FC = () => {
   }, [visible])
   return (
     <Space className={className}>
-      <span style={{margin: "0 12px"}}>
-        {localStorage.getItem('current') !== 'operator' ? (<NoticeIconView/>) : null}
-      </span>
+      <Tag color="#108ee9">{initialState?.currentUser?.auth_group?.title}</Tag>
+      {localStorage.getItem('current') !== 'operator' ? (<span style={{margin: "0 12px"}}><NoticeIconView/></span>) : null}
       <Popover
         id="popPopover"
         placement="bottomRight" 

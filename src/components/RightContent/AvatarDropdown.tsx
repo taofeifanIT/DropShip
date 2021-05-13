@@ -10,7 +10,7 @@ export type GlobalHeaderRightProps = {
   menu?: boolean;
 };
 
-const loginOut = async (refresh: () => void) => {
+const loginOut = async (refresh: () => void,initialState: any,setInitialState: (params: any) => void) => {
   Modal.confirm({
     title: 'message',
     icon: <InfoCircleOutlined  />,
@@ -19,6 +19,7 @@ const loginOut = async (refresh: () => void) => {
     cancelText: 'cancel',
     onOk: () => {
       return new Promise(async (resolve, reject) => {
+        setInitialState({ ...initialState,menuList: [], currentUser: undefined });
         const msg = await outLogin();
         resolve(msg)
         const { query = {} } = history.location;
@@ -47,8 +48,7 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu }) => {
       history.push('/largeScreen/DataComparison')
     } 
     if(key.key === "logout") {
-      setInitialState({ ...initialState,menuList: [], currentUser: undefined });
-      loginOut(refresh);
+      loginOut(refresh, initialState,setInitialState);
     }
   }
 

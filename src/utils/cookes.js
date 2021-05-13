@@ -44,7 +44,7 @@ export function setPublicParams(value){
     localStorage.setItem("publicParams", JSON.stringify(value))
 }
 export function getPublicParams(){
-   return localStorage.getItem("publicParams")
+   return localStorage.getItem("publicParams") || null
 }
 
 export function setPublicKeys(value){

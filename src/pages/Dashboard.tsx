@@ -5,7 +5,7 @@ import ProTable from '@ant-design/pro-table';
 import { matchAndListing, total, storeRanking, saleRanking, tagRanking, marketplaceRanking } from '../services/dashboard'
 import moment from 'moment';
 import { MoneyCollectOutlined,ShopOutlined, ShoppingCartOutlined,TagOutlined  } from '@ant-design/icons';
-
+const { RangePicker } = DatePicker;
 
 const { Text } = Typography;
 const cardBodyStyle = { padding: 0 }
@@ -26,11 +26,11 @@ const ParagraphText = (props: { content: string, width: number }) => {
 const DemoColumn: React.FC = () => {
     const [loading, setLoading] = useState<boolean | undefined>(false)
     const [data, setData] = useState([])
-    const init = (time: string) => {
+    const init = (afterTime: string, beforeTime: string) => {
         setLoading(true)
-        matchAndListing({ after_at: time }).then(res => {
+        matchAndListing({ after_at: afterTime, before_at: beforeTime }).then(res => {
             const tempData: any = []
-            res.data.adminusers.forEach((item: {
+            res.data.adminusers?.forEach((item: {
                 username: string;
                 period_listing_count: number;
                 period_not_match_count: number;
@@ -75,13 +75,21 @@ const DemoColumn: React.FC = () => {
         },
     };
     useEffect(() => {
-        init(moment('1980-12-12').format('X'))
+        init(moment('1980-12-12').format('X'), moment().format('X'))
     }, [])
     return (<>
         <Spin spinning={loading}>
-            <DatePicker style={{position: 'absolute', top: '-11px', right: '0',zIndex: 100}} onChange={(e: any) => {
-                let dateStr: string = e.startOf('day').format('x').slice(0,10)
-                init(dateStr)
+            <RangePicker showTime  style={{position: 'absolute', top: '-11px', right: '0',zIndex: 100}} onChange={(e: any) => {
+                if(e){
+                    console.log(e[0].format('YYYY/MM/DD HH:mm:ss') )
+                    console.log(e[1].format('YYYY/MM/DD HH:mm:ss') )
+                    const afterTime = e[0].format('x').slice(0,10)
+                    const beforeTime = e[1].format('x').slice(0,10)
+                    init(afterTime, beforeTime)
+                } else {
+                    init(moment('1980-12-12').format('X'), moment().format('X'))
+                }
+                
             }} />
             <Column {...config} />
         </Spin>
