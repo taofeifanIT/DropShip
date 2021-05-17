@@ -21,9 +21,29 @@
     component: './UserInfo',
   },
   {
+    path: '/',
+    redirect: '/dashboard/Anlysis',
+  },
+  {
+    path: '/Dashboard',
+    redirect: '/dashboard/Anlysis',
+  },
+  {
     name: 'Dashboard',
     path: '/Dashboard',
-    component: './Dashboard',
+    routes: [
+      {
+        path: '/dashboard/Anlysis',
+        name: 'Anlysis',
+        icon: 'smile',
+        component: './dashboard/Anlysis',
+      },
+      { 
+        name: 'Sales',
+        path: '/dashboard/Sales',
+        component: './dashboard/Sales'
+      },
+    ],
   },
   {
     layout: false,
@@ -31,10 +51,6 @@
     path: '/largeScreen/DataComparison',
     target: '_blank', // 点击新窗口打开
     component: './largeScreen/DataComparison',
-  },
-  {
-    path: '/',
-    redirect: '/Dashboard',
   },
   {
     path: '/distributors',

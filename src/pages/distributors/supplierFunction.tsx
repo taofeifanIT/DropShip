@@ -1,4 +1,4 @@
-import React, { useEffect, useState,useRef } from 'react';
+import React, { useEffect, useState,useRef,FC } from 'react';
 import { AmazonOutlined, ExclamationCircleOutlined, BarChartOutlined, DeleteOutlined,InfoCircleOutlined,SmileFilled,UpOutlined  } from '@ant-design/icons';
 import { Button, Typography, Space, Form, Row, Col, Modal, Checkbox, message, Select, Spin, Tag,Statistic,Tooltip,Table , Divider,BackTop } from 'antd';
 import type { FormInstance } from 'antd';
@@ -696,8 +696,13 @@ export const columns = (api: apiItem,refresh: () => void, isAuth?: boolean | und
             hideInTable: true
         },
         {
-            title: 'Asin',
-            dataIndex: 'asin',
+            title: 'availability',
+            dataIndex: 'availability',
+            hideInTable: true
+        },
+        {
+            title: 'title',
+            dataIndex: 'title',
             hideInTable: true
         },
         {
@@ -854,9 +859,19 @@ export const columns = (api: apiItem,refresh: () => void, isAuth?: boolean | und
             }
         },
         {
-            title: 'walmart',
-            dataIndex: 'upc',
+            title: 'quantity and venderPrice',
+            dataIndex: 'venderPrice',
+            valueType: 'money',
             width: 200,
+            render: (_, record: {
+                vendor_price: string;
+                availability: string;
+            }) => {
+              return (  <Space direction="vertical">
+              <Text type="secondary">vendor_price:<Text> {record.vendor_price}</Text></Text>
+              <Text type="secondary">availability:<Text>{record.availability}</Text></Text>
+          </Space>)
+            }
         },
         {
             title: 'listing_filter',
@@ -906,7 +921,7 @@ export const columns = (api: apiItem,refresh: () => void, isAuth?: boolean | und
     ];
 }
 
-const Head = (props: {show: any}) => {
+const Head: FC<{show: any}> = props => {
     const { show } = props
     const [data, setData] = useState<{
         total: number;

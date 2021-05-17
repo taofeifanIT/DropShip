@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Row, Col, Card, Typography, Statistic, Input, List, Spin, Tabs, DatePicker } from 'antd';
 import { Rose, Line, Column } from '@ant-design/charts';
 import ProTable from '@ant-design/pro-table';
-import { matchAndListing, total, storeRanking, saleRanking, tagRanking, marketplaceRanking } from '../services/dashboard'
+import { matchAndListing, total, storeRanking, saleRanking, tagRanking, marketplaceRanking } from '../../services/dashboard'
 import moment from 'moment';
 import { MoneyCollectOutlined,ShopOutlined, ShoppingCartOutlined,TagOutlined  } from '@ant-design/icons';
 const { RangePicker } = DatePicker;
@@ -81,8 +81,6 @@ const DemoColumn: React.FC = () => {
         <Spin spinning={loading}>
             <RangePicker showTime  style={{position: 'absolute', top: '-11px', right: '0',zIndex: 100}} onChange={(e: any) => {
                 if(e){
-                    console.log(e[0].format('YYYY/MM/DD HH:mm:ss') )
-                    console.log(e[1].format('YYYY/MM/DD HH:mm:ss') )
                     const afterTime = e[0].format('x').slice(0,10)
                     const beforeTime = e[1].format('x').slice(0,10)
                     init(afterTime, beforeTime)
@@ -267,7 +265,7 @@ const DemoLine: React.FC = () => {
     storeRanking().then(res => { 
         let tempTotalData: any = []
         let tempSalaryData: any = []
-        res.data.stores.forEach((item: {
+        res.data.stores?.forEach((item: {
             name: string;
             total_order: any;
             total_sales: any;
@@ -432,7 +430,7 @@ const RankingList = () => {
                 >
                    <div>
                    {index < 3 ? (<div style={orderStyle}>{index + 1}</div>) : (<div style={witchNoeStyle}>{index + 1}</div>)}
-                    <ParagraphText content={item.Title} width={190} />
+                    <Text style={{width: '12vw'}} ellipsis>{item.Title}</Text>
                    </div>
                 </List.Item>
             )}

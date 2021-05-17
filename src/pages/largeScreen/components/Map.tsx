@@ -124,11 +124,11 @@ setInterval(() => {
         }}
         style={{
           position: 'absolute',
-          top: 0,
+          top: 10,
           left: 20,
           right: 20,
           bottom: 170,
-          height: 354,
+          height: 284,
         }}
       >
         {data && [

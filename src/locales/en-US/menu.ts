@@ -9,6 +9,8 @@ export default {
   'menu.log.OperationLog': 'Operation log',
   'menu.log.AlarmLog': 'Alarm log',
   'menu.log': 'Log',
+  'menu.Dashboard.Anlysis': 'Anlysis',
+  'menu.Dashboard.Sales': 'Sales',
   'menu.Dashboard': 'Dashboard',
   'menu.marketProduct': 'Market Product',
   'menu.order.EbayOrders': 'Ebay',

@@ -1,7 +1,7 @@
 import { Row, Col } from 'antd';
 import styles from './style.less'
 import { enterF11 } from '../../utils/utils'
-import WorldMap from './components/Map'
+// import WorldMap from './components/Map'
 import DemoPie from './components/Commodities'
 import RankingList from './components/RankingList'
 import Total from './components/Total'
@@ -29,7 +29,7 @@ const DataComparison = () => {
                 </Col>
                 <Col span={12} style={{padding: '0 20px'}}>
                     <div className={styles.centerBox}>
-                        <WorldMap/>
+                        {/* <WorldMap/> */}
                         <Total />
                     </div>
                     <div className={styles.tableBox}>

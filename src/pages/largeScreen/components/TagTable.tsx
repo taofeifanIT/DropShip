@@ -45,7 +45,7 @@ const TagData = () => {
     return (<>
         <div className={styles.tagTitle}>Tag Info</div>
         <Spin spinning={loading}>
-        <div style={{overflow: 'auto', height: '327px'}}>
+        <div style={{overflow: 'auto', height: '388px'}}>
         <table width="100%">
                         <thead>
                             <tr className={styles.ocd}>

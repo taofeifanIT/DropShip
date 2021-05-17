@@ -251,6 +251,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
 ];
 
 
+let strs: any = ''
 export default () => {
     const actionRef = useRef<ActionType>();
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -258,7 +259,6 @@ export default () => {
     const [from] = Form.useForm();
     const [currentRow, setCurrentRow] = useState(-1)
     const [limit , setLimit] = useState<configs>(getKesValue('configsData', 'order_quantity_limit'))
-
     const showModal = () => {
         setIsModalVisible(true);
     };
@@ -283,6 +283,30 @@ export default () => {
             })
         })
     };
+    const btnClick = (record: {
+        AmazonOrderId: string;
+        SellerSKU: string;
+        QuantityOrdered: string;
+        ItemPriceAmount: string;
+    }) => {
+        let str: string = `${record.AmazonOrderId}@${record.SellerSKU}@${record.QuantityOrdered}@${record.ItemPriceAmount}`
+        strs = str.split('@')
+        document.execCommand('copy')
+      }
+      React.useEffect(() => {
+        document.addEventListener("copy", (event: any) => {
+            if (event.clipboardData || event.originalEvent) {
+                var clipboardData = (event.clipboardData || event.originalEvent.clipboardData);
+                if(strs.map){
+                    const first = strs.map((strItem: string) => strItem).join('\t')
+                    const selection = `${first}`
+                    clipboardData.setData('text/plain', selection.toString());
+                    message.success('Copy success!')
+                    event.preventDefault();
+                }
+              }
+        });
+      }, []);
     return (
         <>
             <ProTable<GithubIssueItem>
@@ -347,15 +371,6 @@ export default () => {
                         })
                     })
                 }
-                onRow={(record:{
-                    id: number;
-                }) => {
-                    return {
-                      onClick: event => {
-                         setCurrentRow(record.id) 
-                      },
-                    };
-                  }}
                 rowClassName={(record) => {
                     return record.id === currentRow ? 'clickRowStyl' : '';
                 }}
@@ -383,6 +398,25 @@ export default () => {
                 scroll={{ x: columns.reduce((sum, e) => sum + Number(e.width || 0), 0), y: getPageHeight() - 250 }}
                 dateFormatter="string"
                 headerTitle={<><BellOutlined /> orders  <span style={{marginLeft: "20px",fontSize: '16px'}}>Current quantity limit： {limit}</span></>}
+                onRow={(record:{
+                    id: number;
+                    notes: string;
+                    vendor_sku: string;
+                    ts_sku: string;
+                    AmazonOrderId: string;
+                    SellerSKU: string;
+                    QuantityOrdered: string;
+                    ItemPriceAmount: string;
+                }) => {
+                    return {
+                        onClick: event => {
+                            setCurrentRow(record.id) 
+                         },
+                      onDoubleClick: event => {
+                        btnClick(record)
+                      }, 
+                    };
+                  }}
                 toolBarRender={() => [
                    <Button key="ImportOutlined" icon={<LockOutlined/>} onClick={() => {
                        showModal()
