@@ -74,6 +74,9 @@ export default () => {
     }
     useEffect(() => {
         init()
+        setInterval(() => {
+            init()
+          }, 1000 * 60 * 5)
     }, [])
     return <div style={{ background: '#fff', padding: '8px' }}>
         <Spin spinning={loading}>
@@ -109,7 +112,7 @@ export default () => {
                     <OrderTable />
                 </Col>
                 <Col span={13}>
-                    <Card title={null} bodyStyle={{ paddingTop: '10px' }}>
+                    <Card title={null} bodyStyle={{ paddingTop: '10px' }} style={{margin: '8px'}}>
                         <PopSales />
                     </Card>
                 </Col>
