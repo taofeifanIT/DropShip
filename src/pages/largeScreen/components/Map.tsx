@@ -110,9 +110,6 @@ const fetchData = async () => {
 React.useEffect(() => {
   fetchData();
 },[])
-setInterval(() => {
-  getData()
-}, 1000 * 60 * 60 * 2)
   return (<>
     <div>
       <MapboxScene

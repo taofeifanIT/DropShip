@@ -59,9 +59,6 @@ const DemoColumn: React.FC = () => {
     useEffect(() => {
         init()
     }, [])
-    setInterval(() => {
-        init()
-      }, 1000 * 60 * 60 * 1.5)
     return (<>
         <Spin spinning={loading}>
             <Column {...config} />

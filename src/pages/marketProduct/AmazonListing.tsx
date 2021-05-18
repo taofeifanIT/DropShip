@@ -70,7 +70,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
                 <>
                     <Space direction="vertical">
                         <Text type="secondary">ts_sku: <Text>{record.ts_sku}</Text></Text>
-                        <Text type="secondary">Description: <ParagraphText content={record.title} width={220} /></Text>
+                        <Text type="secondary">Description: <ParagraphText content={record.title} width={180} /></Text>
                     </Space>
                 </>
             )

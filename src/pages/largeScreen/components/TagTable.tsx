@@ -39,9 +39,6 @@ const TagData = () => {
       useEffect(() => {
         getData()
       }, [])
-      setInterval(() => {
-        getData()
-      }, 1000 * 60 * 60 * 2)
     return (<>
         <div className={styles.tagTitle}>Tag Info</div>
         <Spin spinning={loading}>

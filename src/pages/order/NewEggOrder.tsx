@@ -297,6 +297,7 @@ export default () => {
                     },
                 }}
                 pagination={{
+                    pageSizeOptions: ['10','20', '30', '40', '50', '100', '200', '500'],
                     pageSize: 50,
                 }}
                 options={{

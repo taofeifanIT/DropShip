@@ -657,8 +657,8 @@ export const columns = (api: apiItem,refresh: () => void, isAuth?: boolean | und
                             <Text type="secondary">Country: <Text>{getCountryImg(countryName)}{countryName}</Text></Text>
                             {isAuth && (<Text type="secondary">Is auth: <Text>{getAuth(record.is_auth)}</Text></Text>)}
                             {record.dimweight && (<Text type="secondary">dimweight: <Text>{record.dimweight}</Text></Text>)}
-                            <Text type="secondary">Tag Name: <ParagraphText content={getKesValue('tagsData', record.tag_id).tag_name} width={340} /></Text>
-                            <Text type="secondary">Description: <ParagraphText content={record.title} width={340} /></Text>
+                            <Text type="secondary">Tag Name: <ParagraphText content={getKesValue('tagsData', record.tag_id).tag_name} width={280} /></Text>
+                            <Text type="secondary">Description: <ParagraphText content={record.title} width={270} /></Text>
                         </Space>
                     </>
                 )

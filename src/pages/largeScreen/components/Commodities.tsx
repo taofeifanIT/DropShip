@@ -36,9 +36,6 @@ const DemoPie: React.FC = () => {
   useEffect(() =>{
     init()
   }, [])
-  setInterval(() => {
-    init()
-  }, 1000 * 60 * 60 * 2)
   return (<>
     <Spin spinning={loading}>
     <Pie {...config} />;

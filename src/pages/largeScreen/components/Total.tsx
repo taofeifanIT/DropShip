@@ -10,7 +10,8 @@ const Tatal = () => {
         total_listing: number;
         total_vendor: number;
         total_listing_today: number;
-    }>({ order_total: 0, order_total_sales: 0, total_store: 0, total_listing: 0, total_vendor: 0, total_listing_today: 0 })
+        order_total_sales_today: number;
+    }>({ order_total: 0, order_total_sales: 0, total_store: 0, total_listing: 0, total_vendor: 0, total_listing_today: 0,order_total_sales_today: 0 })
     const [loading, setLoading] = useState(false)
     const GetCard = (props: {
         one_level_title: string;
@@ -26,7 +27,7 @@ const Tatal = () => {
             <div style={{ ...style }}>
                 <div style={{ textAlign: 'center' }}>
                     <Statistic title={<span style={{ color: fontColor }}>{one_level_title}</span>} value={(one_level_number as number).toFixed(0)} valueStyle={{ ...valueStyle, color: fontColor }} />
-                {info && <span style={{ color: fontColor, position: 'absolute', bottom: 7,left: '5%',width:'200px' }}>Total sales: {info}</span>}
+                {info && <span style={{ color: fontColor, position: 'absolute', bottom: 7,left: '5%',width:'200px' }}>Day sales: {info}</span>}
                 </div>
             </div>
         </>)
@@ -54,7 +55,7 @@ const Tatal = () => {
                                     <Col span={6}>
                                       <Row>
                                       <Col span={24}>
-                                      <GetCard one_level_number={totalObj.order_total_sales} one_level_title={'Total sales'} color={'red'}  fontColor={'white'}/>
+                                      <GetCard one_level_number={totalObj.order_total_sales} one_level_title={'Total sales'} color={'red'}  fontColor={'white'} info={totalObj.order_total_sales_today} />
                                       </Col>
                                       </Row>
                                       <Row>

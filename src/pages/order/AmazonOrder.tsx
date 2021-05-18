@@ -390,6 +390,7 @@ export default () => {
                     },
                 }}
                 pagination={{
+                    pageSizeOptions: ['10','20', '30', '40', '50', '100', '200', '500'],
                     pageSize: 50,
                 }}
                 options={{
@@ -413,8 +414,11 @@ export default () => {
                             setCurrentRow(record.id) 
                          },
                       onDoubleClick: event => {
-                        btnClick(record)
+                        // btnClick(record)
                       }, 
+                      onContextMenu: event => (
+                          console.log(event)
+                      )
                     };
                   }}
                 toolBarRender={() => [

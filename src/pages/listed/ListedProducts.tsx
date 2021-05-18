@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ReconciliationOutlined , AmazonOutlined,DeleteOutlined, ExclamationCircleOutlined, BarChartOutlined,EditOutlined, RetweetOutlined, EnterOutlined  } from '@ant-design/icons';
-import { Button, Typography, Space, Tag, Table, Modal, message, Form, InputNumber, Alert, Spin, Input } from 'antd';
+import { Button, Typography, Space, Table, Modal, message, Form, InputNumber, Alert, Spin, Input } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import { listIndex, listDelete, unlisting, quantityOffset, priceOffset, batchChangeQuantity, relisting, update } from '../../services/listedProduct'

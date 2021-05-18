@@ -18,23 +18,29 @@ const DemoLine: React.FC = () => {
         let tempSalaryData: any = []
         res.data.stores.forEach((item: {
             name: string;
-            total_order: any;
-            total_sales: any;
+            total_order_duration: any;
+            total_sales_duration: any;
         }) => {
-            for(let totalObj in item.total_order){
-                tempTotalData.push({
-                        category: item.name,
-                        value: item.total_order[totalObj],
-                        year: totalObj
-                })
+          tempTotalData = [...tempTotalData,...item.total_order_duration.map((items: {
+            add_date: string;
+            total: string;
+        }) => {
+            return {
+                name: item.name,
+                gdp: items.total,
+                year: items.add_date
             }
-            for(let salaryObj in item.total_sales){
-                tempSalaryData.push({
-                    category: item.name,
-                    value: item.total_sales[salaryObj],
-                    year: salaryObj
-                })
+        })]
+        tempSalaryData =[...tempSalaryData,  ...item.total_sales_duration.map((items: {
+            add_date: string;
+            sales: string;
+        }) => {
+            return {
+                name: item.name,
+                gdp: parseFloat(items.sales),
+                year: items.add_date
             }
+        })]
         })
         setobj({totalData: tempTotalData, salaryData: tempSalaryData})
     }).finally(() => {
@@ -44,8 +50,8 @@ const DemoLine: React.FC = () => {
   var config = {
     data: obj.totalData,
     xField: 'year',
-    yField: 'value',
-    seriesField: 'category',
+    yField: 'gdp',
+    seriesField: 'name',
     style: {height: '30vh'},
     xAxis: { type: 'time' },
     yAxis: {
@@ -61,8 +67,8 @@ const DemoLine: React.FC = () => {
   var salaryConfig = {
     data: obj.salaryData,
     xField: 'year',
-    yField: 'value',
-    seriesField: 'category',
+    yField: 'gdp',
+    seriesField: 'name',
     xAxis: { type: 'time'},
     style: {height: '30vh'},
     yAxis: {

@@ -10,19 +10,6 @@ const { RangePicker } = DatePicker;
 const { Text } = Typography;
 const cardBodyStyle = { padding: 0 }
 
-
-const ParagraphText = (props: { content: string, width: number }) => {
-    const [ellipsis] = React.useState(true);
-    const { content, width } = props
-    return (
-        <Text
-            style={ellipsis ? { width: width, display: "inline" } : undefined}
-            ellipsis={ellipsis ? { tooltip: content } : false}
-        >
-            {content}
-        </Text>
-    )
-}
 const DemoColumn: React.FC = () => {
     const [loading, setLoading] = useState<boolean | undefined>(false)
     const [data, setData] = useState([])
@@ -134,9 +121,7 @@ const TagMatchData = () => {
             dataIndex: 'tag_name',
             valueType: 'select',
             width: 400,
-            render: (text: string) => {
-                return <ParagraphText content={text} width={380} />
-            }
+            ellipsis: true
         },
         {
             title: "Total sales",
@@ -267,23 +252,29 @@ const DemoLine: React.FC = () => {
         let tempSalaryData: any = []
         res.data.stores?.forEach((item: {
             name: string;
-            total_order: any;
-            total_sales: any;
+            total_order_duration: any[];
+            total_sales_duration: any[];
         }) => {
-            for(let totalObj in item.total_order){
-                tempTotalData.push({
-                        category: item.name,
-                        value: item.total_order[totalObj],
-                        year: totalObj
-                })
-            }
-            for(let salaryObj in item.total_sales){
-                tempSalaryData.push({
-                    category: item.name,
-                    value: item.total_sales[salaryObj],
-                    year: salaryObj
-                })
-            }
+            tempTotalData = [...tempTotalData,...item.total_order_duration.map((items: {
+                add_date: string;
+                total: string;
+            }) => {
+                return {
+                    name: item.name,
+                    gdp: items.total,
+                    year: items.add_date
+                }
+            })]
+            tempSalaryData =[...tempSalaryData,  ...item.total_sales_duration.map((items: {
+                add_date: string;
+                sales: string;
+            }) => {
+                return {
+                    name: item.name,
+                    gdp: parseFloat(items.sales),
+                    year: items.add_date
+                }
+            })]
         })
         setobj({totalData: tempTotalData, salaryData: tempSalaryData})
     }).finally(() => {
@@ -293,8 +284,8 @@ const DemoLine: React.FC = () => {
   var config = {
     data: obj.totalData,
     xField: 'year',
-    yField: 'value',
-    seriesField: 'category',
+    yField: 'gdp',
+    seriesField: 'name',
     xAxis: { type: 'time' },
     yAxis: {
       label: {
@@ -309,8 +300,8 @@ const DemoLine: React.FC = () => {
   var salaryConfig = {
     data: obj.salaryData,
     xField: 'year',
-    yField: 'value',
-    seriesField: 'category',
+    yField: 'gdp',
+    seriesField: 'name',
     xAxis: { type: 'time'},
     style: {height: '200px'},
     yAxis: {
@@ -389,7 +380,7 @@ const RankingList = () => {
     const init = () => {
         setLoading(true)
         saleRanking().then(res => {
-            setData(res.data.ts_sku_ranking)
+            setData(res.data?.ts_sku_ranking)
         }).finally(() => {
             setLoading(false)
         })
