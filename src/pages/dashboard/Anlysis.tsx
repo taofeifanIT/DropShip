@@ -50,7 +50,7 @@ const DemoColumn: React.FC = () => {
         isGroup: true,
         xField: 'time',
         yField: 'number',
-        style: { height: '35vh' },
+        style: { height: '35vh', marginRigth: '5px' },
         seriesField: 'name',
         label: {
             position: 'middle',
@@ -60,6 +60,10 @@ const DemoColumn: React.FC = () => {
                 { type: 'adjust-color' },
             ],
         },
+        slider: {
+            start: 0,
+            end: 1,
+          },
     };
     useEffect(() => {
         init(moment('1980-12-12').format('X'), moment().format('X'))

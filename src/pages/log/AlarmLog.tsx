@@ -1,10 +1,9 @@
-import React, { useRef } from 'react';
-import { Typography, Space } from 'antd';
+import React, { useRef, useState } from 'react';
+import { Button, message, Typography } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
+import { ClearOutlined } from '@ant-design/icons';
 import ProTable from '@ant-design/pro-table';
-import { list, getLogLevel } from '../../services/log/alarmLog'
-import usePopInfo from '../../hooks/usePopInfo'
-const { Text } = Typography;
+import { list, getLogLevel, clear } from '../../services/log/alarmLog'
 type GithubIssueItem = {
     url: string;
     id: number;
@@ -20,20 +19,6 @@ type GithubIssueItem = {
     updated_at: string;
     closed_at?: string;
 };
-
-
-const ParagraphText = (props: { content: string, width: number }) => {
-    const [ellipsis] = React.useState(true);
-    const { content, width } = props
-    return (
-        <Text
-            style={ellipsis ? { width: width, display: "inline" } : undefined}
-            ellipsis={ellipsis ? { tooltip: content } : false}
-        >
-            {content}
-        </Text>
-    )
-}
 
 const getTagName = () => {
     return new Promise((resolve: any) => {
@@ -52,7 +37,7 @@ const getTagName = () => {
 } 
 
 
-const columns = (refresh: () => void, getMarkey: (id: number, key: string) => any): ProColumns<GithubIssueItem>[] => [
+const columns: ProColumns<GithubIssueItem>[] = [
     {
         dataIndex: 'index',
         valueType: 'indexBorder',
@@ -107,21 +92,32 @@ const columns = (refresh: () => void, getMarkey: (id: number, key: string) => an
 
 
 export default () => {
+    const [clearLoading, setClearLoading] = useState(false)
     const actionRef = useRef<ActionType>();
-    
-
-    const getMarkey = usePopInfo()
-    // 生成 intl 对象
-    // const enUSIntl = createIntl('en_US', enUS);
     const refresh = (): void => {
         actionRef.current?.reload()
+    }
+    const clearLog = () => {
+        setClearLoading(true)
+        clear().then(res => {
+            if(res.code){
+                message.success('Clean up successful！')
+                refresh()
+            } else {
+                throw res.msg
+            }
+        }).catch(e => {
+            message.error(e || 'Clean up failed!')
+        }).finally(() => {
+            setClearLoading(false)
+        })
     }
     return (
         <>
             <ProTable<GithubIssueItem>
 
                 size="small"
-                columns={columns(refresh, getMarkey)}
+                columns={columns}
                 actionRef={actionRef}
                 bordered
                 request={async (
@@ -184,6 +180,9 @@ export default () => {
                 }}
                 dateFormatter="string"
                 headerTitle="Alarm Log"
+                toolBarRender={() => [
+                    <Button type='primary' loading={clearLoading} icon={<ClearOutlined/>} key='clearLogBtn' onClick={clearLog}>Clear Log</Button>
+                ]}
             />
         </>
     );

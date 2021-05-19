@@ -1,18 +1,18 @@
-import React, { useEffect, useState,useRef,FC } from 'react';
-import { AmazonOutlined, ExclamationCircleOutlined, BarChartOutlined, DeleteOutlined,InfoCircleOutlined,SmileFilled,UpOutlined  } from '@ant-design/icons';
-import { Button, Typography, Space, Form, Row, Col, Modal, Checkbox, message, Select, Spin, Tag,Statistic,Tooltip,Table , Divider,BackTop } from 'antd';
+import React, { useEffect, useState, useRef, FC } from 'react';
+import { AmazonOutlined, ExclamationCircleOutlined, BarChartOutlined, DeleteOutlined, InfoCircleOutlined, SmileFilled, UpOutlined } from '@ant-design/icons';
+import { Button, Typography, Space, Form, Row, Col, Modal, Checkbox, message, Select, Spin, Tag, Statistic, Tooltip, Table, Divider, BackTop } from 'antd';
 import type { FormInstance } from 'antd';
 import { log_vendor_quantity_and_price_change } from '../../services/distributors/ingramMicro'
 import { matchAndListing } from '../../services/dashboard'
-import type { ProColumns,ActionType } from '@ant-design/pro-table';
-import { history } from 'umi';  
+import type { ProColumns, ActionType } from '@ant-design/pro-table';
+import { history } from 'umi';
 import { tags } from '../../services/publicKeys'
 import { getKesGroup, getKesValue } from '../../utils/utils'
-import { getTargetHref, getAsonHref,getNewEggHref } from '../../utils/jumpUrl'
-import { useModel } from 'umi'; 
+import { getTargetHref, getAsonHref, getNewEggHref } from '../../utils/jumpUrl'
+import { useModel } from 'umi';
 import ProTable from '@ant-design/pro-table';
 import Notes from '../../components/Notes'
-import{Info} from '../../components/Notes'
+import { Info } from '../../components/Notes'
 import { createDownload } from '../../utils/utils'
 import { Column } from '@ant-design/charts';
 import moment from 'moment'
@@ -26,45 +26,45 @@ type apiItem = {
     listingApi: any,
     deleteApi: any,
     listApi?: any,
-    downloadApi?:any,
+    downloadApi?: any,
     showApi?: any,
 }
 
-const DemoColumn = (props: {data: {log_vendor_price_change: [], log_vendor_quantity_change:[]}}) => {
+const DemoColumn = (props: { data: { log_vendor_price_change: [], log_vendor_quantity_change: [] } }) => {
     var config: any = {
-      data: props.data.log_vendor_price_change,
-      isGroup: true,
-      xField: 'time',
-      yField: 'price',
-      seriesField: 'name',
-      style: {height: "250px"},
-      titile: 'price history',
-      label: {
-        position: 'middle',
-        layout: [
-          { type: 'interval-adjust-position' },
-          { type: 'interval-hide-overlap' },
-          { type: 'adjust-color' },
-        ],
-      },
+        data: props.data.log_vendor_price_change,
+        isGroup: true,
+        xField: 'time',
+        yField: 'price',
+        seriesField: 'name',
+        style: { height: "250px" },
+        titile: 'price history',
+        label: {
+            position: 'middle',
+            layout: [
+                { type: 'interval-adjust-position' },
+                { type: 'interval-hide-overlap' },
+                { type: 'adjust-color' },
+            ],
+        },
     };
     var quantityConfig: any = {
         data: props.data.log_vendor_quantity_change,
         isGroup: true,
-        style: {height: "250px"},
+        style: { height: "250px" },
         xField: 'time',
         yField: 'price',
         seriesField: 'name',
         titile: 'quantiy history',
         label: {
-          position: 'middle',
-          layout: [
-            { type: 'interval-adjust-position' },
-            { type: 'interval-hide-overlap' },
-            { type: 'adjust-color' },
-          ],
+            position: 'middle',
+            layout: [
+                { type: 'interval-adjust-position' },
+                { type: 'interval-hide-overlap' },
+                { type: 'adjust-color' },
+            ],
         },
-      };
+    };
     return (
         <>
             <h3>Price history data</h3>
@@ -73,27 +73,27 @@ const DemoColumn = (props: {data: {log_vendor_price_change: [], log_vendor_quant
             <Column {...quantityConfig} />
         </>
     );
-  };
+};
 
-const HistoryColumn = (props: {data: any}) => {
+const HistoryColumn = (props: { data: any }) => {
     var config: any = {
-      data: props.data || [],
-      isGroup: true,
-      xField: 'time',
-      yField: 'value',
-      seriesField: 'name',
-      style: {marginRight: '16px'},
-      label: {
-        position: 'middle',
-        layout: [
-          { type: 'interval-adjust-position' },
-          { type: 'interval-hide-overlap' },
-          { type: 'adjust-color' },
-        ],
-      },
+        data: props.data || [],
+        isGroup: true,
+        xField: 'time',
+        yField: 'value',
+        seriesField: 'name',
+        style: { marginRight: '16px' },
+        label: {
+            position: 'middle',
+            layout: [
+                { type: 'interval-adjust-position' },
+                { type: 'interval-hide-overlap' },
+                { type: 'adjust-color' },
+            ],
+        },
     };
     return <Column {...config} />;
-  };
+};
 const ButtonGroup = (props: {
     refresh: () => void,
     record: {
@@ -112,8 +112,8 @@ const ButtonGroup = (props: {
     api: apiItem,
     isAuth?: boolean
 }) => {
-    const { record, refresh, api, isAuth} = props
-    const {updateApi, listingApi, deleteApi} = api
+    const { record, refresh, api, isAuth } = props
+    const { updateApi, listingApi, deleteApi } = api
     const size = "small"
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [confirmLoading, setConfirmLoading] = useState(false);
@@ -122,9 +122,9 @@ const ButtonGroup = (props: {
     const [matchlVisible, setMatchlVisible] = useState(false);
     const [historyVisible, setHistoryVisible] = useState(false)
     const [historyConfirmLoading, setHistoryConfirmLoading] = useState(false)
-    const [historyDataLoading, setHistoryDataLoading]= useState(false)
+    const [historyDataLoading, setHistoryDataLoading] = useState(false)
     const [isDefaultStores, setIsDefaultStores] = useState(false)
-    const [historyData, setHistoryData] = useState({log_vendor_price_change: [], log_vendor_quantity_change:[]})
+    const [historyData, setHistoryData] = useState({ log_vendor_price_change: [], log_vendor_quantity_change: [] })
     const [form] = Form.useForm();
     const [matchForm] = Form.useForm();
     const formItemLayout = {
@@ -269,38 +269,38 @@ const ButtonGroup = (props: {
                 onOk: () => {
                     return new Promise((resolve, reject) => {
                         deleteApi(props.id)
-                        .then((res: {
-                            code: number;
-                            data: any;
-                            msg: string;
-                        }) => {
-                          if (res.code) {
-                            message.success('Operation successful!');
-                            props.initData();
-                          } else {
-                            throw res.msg;
-                          }
-                        })
-                        .catch((e: string) => {
-                          message.error(e);
-                        })
-                        .finally(() => {
-                          resolve(null)
-                        });
-                      }).catch(() => console.log('Oops errors!'));
+                            .then((res: {
+                                code: number;
+                                data: any;
+                                msg: string;
+                            }) => {
+                                if (res.code) {
+                                    message.success('Operation successful!');
+                                    props.initData();
+                                } else {
+                                    throw res.msg;
+                                }
+                            })
+                            .catch((e: string) => {
+                                message.error(e);
+                            })
+                            .finally(() => {
+                                resolve(null)
+                            });
+                    }).catch(() => console.log('Oops errors!'));
                 }
-              });
+            });
         };
         return (
-            <Button type="primary" size={size} danger style={{marginTop: "10px", width: '110px'  }} onClick={handleOk} ><DeleteOutlined />delete</Button>
+            <Button type="primary" size={size} danger style={{ marginTop: "10px", width: '110px' }} onClick={handleOk} ><DeleteOutlined />delete</Button>
         );
-      }
+    }
     const getListBotton = () => {
         return (<Button
             type="default"
             key="listBtn"
             size={size}
-            style={{color: record.match_amazon !== 0 ? "white" : "", background: record.match_amazon !== 0 ? "#87d068" : "", width: '110px' }}
+            style={{ color: record.match_amazon !== 0 ? "white" : "", background: record.match_amazon !== 0 ? "#87d068" : "", width: '110px' }}
             onClick={() => {
                 showModal()
             }}
@@ -309,22 +309,22 @@ const ButtonGroup = (props: {
         </Button>)
     }
     const getMatchButton = () => {
-        return (<Button size={size} style={{marginTop: "10px", color: "white", background: "rgb(45, 183, 245)",width: '110px' }} onClick={() => {
+        return (<Button size={size} style={{ marginTop: "10px", color: "white", background: "rgb(45, 183, 245)", width: '110px' }} onClick={() => {
             setMatchlVisible(true)
         }}>match</Button>)
     }
     const getAuthButton = () => {
         switch (record.is_auth) {
             case -1:
-                return (<Button size={size} type="primary" style={{ marginTop: "10px",width: '110px'  }} onClick={() => {
+                return (<Button size={size} type="primary" style={{ marginTop: "10px", width: '110px' }} onClick={() => {
                     updatePop('is_auth', 1)
                 }}>Authorized</Button>)
             case 0:
-                return (<Button size={size} type="primary" style={{marginTop: "10px",width: '110px'  }} onClick={() => {
+                return (<Button size={size} type="primary" style={{ marginTop: "10px", width: '110px' }} onClick={() => {
                     updatePop('is_auth', 1)
                 }}>Authorized</Button>)
             case 1:
-                return (<Button type="dashed" size={size} style={{marginTop: "10px",width: '110px'  }} onClick={() => {
+                return (<Button type="dashed" size={size} style={{ marginTop: "10px", width: '110px' }} onClick={() => {
                     updatePop('is_auth', 0)
                 }}>UnAuthorized</Button>)
         }
@@ -373,7 +373,7 @@ const ButtonGroup = (props: {
             // }
             // 设置默认配置选线
             let defaultStoresArr: number[] = []
-            if(!!localStorage.getItem('defaultStore')){
+            if (!!localStorage.getItem('defaultStore')) {
                 setIsDefaultStores(true)
                 let defaultStores = JSON.parse(localStorage.getItem('defaultStore') as string)
                 defaultStores.forEach((element: number) => {
@@ -394,13 +394,13 @@ const ButtonGroup = (props: {
         }
     }, [isModalVisible])
     const getHistoryData = () => {
-        const params:any = {
+        const params: any = {
             id: record.vendor_id,
             vendor_sku: record.vendor_sku
         }
         setHistoryDataLoading(true)
         log_vendor_quantity_and_price_change(params).then(res => {
-            if(res.code){
+            if (res.code) {
                 let priceHistoryData: any = []
                 let quantityHistoryData: any = []
                 res.data.log_vendor_price_change.forEach((item: {
@@ -435,11 +435,11 @@ const ButtonGroup = (props: {
                         price: parseFloat(item.before)
                     })
                 })
-                setHistoryData({log_vendor_price_change: priceHistoryData, log_vendor_quantity_change:quantityHistoryData})
+                setHistoryData({ log_vendor_price_change: priceHistoryData, log_vendor_quantity_change: quantityHistoryData })
             } else {
                 throw res.msg
             }
-        }).catch((e:string) => {
+        }).catch((e: string) => {
             message.error(e)
         }).finally(() => {
             setHistoryConfirmLoading(false)
@@ -460,24 +460,24 @@ const ButtonGroup = (props: {
     }, [matchlVisible])
     return (
         <>
-             {getListBotton()}
+            {getListBotton()}
             {getMatchButton()}
             <DeleteComponent id={record.id} initData={refresh} />
             {isAuth && getAuthButton()}
-            <Button style={{width: '110px',marginTop: '10px' }} size='small' onClick={() => {
-                    handleOpenView()
-                }}><BarChartOutlined />history data</Button>
+            <Button style={{ width: '110px', marginTop: '10px' }} size='small' onClick={() => {
+                handleOpenView()
+            }}><BarChartOutlined />history data</Button>
             <Modal
                 title="price and quantity history data"
                 width={800}
-                bodyStyle={{height: '600px'}}
+                bodyStyle={{ height: '600px' }}
                 confirmLoading={historyConfirmLoading}
                 visible={historyVisible}
                 onOk={handleOpenViewCancel}
                 onCancel={handleOpenViewCancel}>
-                    <Spin spinning={historyDataLoading}>
-                        <DemoColumn data={historyData} />
-                    </Spin>
+                <Spin spinning={historyDataLoading}>
+                    <DemoColumn data={historyData} />
+                </Spin>
             </Modal>
             <Modal
                 title="Match Modal"
@@ -549,9 +549,9 @@ const ButtonGroup = (props: {
                         </Checkbox.Group>
                     </Form.Item>
                 </Form>
-                
+
                 <Checkbox checked={isDefaultStores} onChange={(e) => {
-                    if(e.target.checked){
+                    if (e.target.checked) {
                         Modal.confirm({
                             title: 'Confirm',
                             icon: <ExclamationCircleOutlined />,
@@ -559,16 +559,16 @@ const ButtonGroup = (props: {
                             okText: 'OK',
                             cancelText: 'Cancel',
                             onOk: () => {
-                                if(!form.getFieldValue('store_ids')?.length){
+                                if (!form.getFieldValue('store_ids')?.length) {
                                     message.warning('No setting item')
                                     setIsDefaultStores(false)
                                 } else {
                                     localStorage.setItem('defaultStore', JSON.stringify(form.getFieldValue('store_ids')))
                                     setIsDefaultStores(true)
                                 }
-                                
+
                             }
-                          });
+                        });
                     } else {
                         localStorage.removeItem('defaultStore')
                         setIsDefaultStores(false)
@@ -593,8 +593,8 @@ const ParagraphText = (props: { content: string, width: number }) => {
 }
 
 
-export const columns = (api: apiItem,refresh: () => void, isAuth?: boolean | undefined): ProColumns<any>[] => {
-    const {updateApi, listingApi, deleteApi} = api
+export const columns = (api: apiItem, refresh: () => void, isAuth?: boolean | undefined): ProColumns<any>[] => {
+    const { updateApi, listingApi, deleteApi } = api
     return [
         {
             title: "Tag Name",
@@ -602,7 +602,7 @@ export const columns = (api: apiItem,refresh: () => void, isAuth?: boolean | und
             valueType: 'select',
             hideInTable: true,
             request: async () => {
-                return [...getKesGroup('tagsData').map((item:tags) => {
+                return [...getKesGroup('tagsData').map((item: tags) => {
                     return {
                         label: (item.tag_name),
                         value: item.id,
@@ -629,7 +629,7 @@ export const columns = (api: apiItem,refresh: () => void, isAuth?: boolean | und
             sorter: true,
             render: (_, record: any) => {
                 const getAuth = (status: number) => {
-                    switch(status){
+                    switch (status) {
                         case -1:
                             return 'none'
                         case 1:
@@ -639,11 +639,11 @@ export const columns = (api: apiItem,refresh: () => void, isAuth?: boolean | und
                     }
                 }
                 const getCountryImg = (countryName: string) => {
-                    switch(countryName){
+                    switch (countryName) {
                         case 'UK':
-                            return <img width='20' src={'https://dss2.baidu.com/6ONYsjip0QIZ8tyhnq/it/u=1640819749,3704395080&fm=58&app=83&f=JPG?w=200&h=132&s=7097A97266B303A3091E6AEC0300A006'} style={{verticalAlign: 'inherit'}} />
+                            return <img width='20' src={'https://dss2.baidu.com/6ONYsjip0QIZ8tyhnq/it/u=1640819749,3704395080&fm=58&app=83&f=JPG?w=200&h=132&s=7097A97266B303A3091E6AEC0300A006'} style={{ verticalAlign: 'inherit' }} />
                         case 'US':
-                            return <img width='20' src={'https://dss2.baidu.com/6ONYsjip0QIZ8tyhnq/it/u=806796136,1072976903&fm=58&app=83&f=JPEG?w=200&h=132&s=7063B1546F9C31EBB6AD4FDD03001006'} style={{verticalAlign: 'inherit'}} />
+                            return <img width='20' src={'https://dss2.baidu.com/6ONYsjip0QIZ8tyhnq/it/u=806796136,1072976903&fm=58&app=83&f=JPEG?w=200&h=132&s=7063B1546F9C31EBB6AD4FDD03001006'} style={{ verticalAlign: 'inherit' }} />
                     }
                 }
                 const countryName = getKesValue('countryData', record.country_id).country
@@ -671,22 +671,22 @@ export const columns = (api: apiItem,refresh: () => void, isAuth?: boolean | und
             width: 200,
             render: (_, record: any) => {
                 const getStatusTag = (status: number) => {
-                    switch(status){
+                    switch (status) {
                         case -1:
-                            return  'none'
+                            return 'none'
                         case 0:
                             return 'not match'
                         case 1:
-                            return (<span style={{color: '#87d068'}}>match</span>)
+                            return (<span style={{ color: '#87d068' }}>match</span>)
                     }
                 }
                 return (<>
-                 <Space direction="vertical">
-                            <Text type="secondary">Amazon match:<Text> {getStatusTag(record.match_amazon)}</Text></Text>
-                            <Text type="secondary">Ebay match:{getStatusTag(record.match_ebay)}</Text>
-                            <Text type="secondary"> Newegg match:{getStatusTag(record.match_newegg)}</Text>
-                            <Text type="secondary">Walmart match:{getStatusTag(record.match_walmart)}</Text>
-                        </Space>
+                    <Space direction="vertical">
+                        <Text type="secondary">Amazon match:<Text> {getStatusTag(record.match_amazon)}</Text></Text>
+                        <Text type="secondary">Ebay match:{getStatusTag(record.match_ebay)}</Text>
+                        <Text type="secondary"> Newegg match:{getStatusTag(record.match_newegg)}</Text>
+                        <Text type="secondary">Walmart match:{getStatusTag(record.match_walmart)}</Text>
+                    </Space>
                 </>)
             }
         },
@@ -817,9 +817,9 @@ export const columns = (api: apiItem,refresh: () => void, isAuth?: boolean | und
                     <>
                         <Space direction="vertical">
                             <Text type="secondary">update_at:
-                            {record.update_at? (<a onClick={() => {
-                                history.push(`/log/OperationLog?batch_id=${record.batch_id}`)
-                            }}>{(record.update_at && moment(parseInt(record.update_at + '000')).format("YYYY-MM-DD HH:mm:ss")) || 'not yet'}</a>) : 'not yet'}    
+                            {record.update_at ? (<a onClick={() => {
+                                    history.push(`/log/OperationLog?batch_id=${record.batch_id}`)
+                                }}>{(record.update_at && moment(parseInt(record.update_at + '000')).format("YYYY-MM-DD HH:mm:ss")) || 'not yet'}</a>) : 'not yet'}
                             </Text>
                             <Text type="secondary">add_time:<Text>{(record.add_time && moment(parseInt(record.add_time + '000')).format("YYYY-MM-DD HH:mm:ss")) || 'not yet'} </Text></Text>
                             <Text type="secondary">price_and_quantity_change_time:<Text>{(record.price_and_quantity_change_time && moment(parseInt(record.price_and_quantity_change_time + '000')).format("YYYY-MM-DD HH:mm:ss")) || 'not yet'} </Text></Text>
@@ -843,7 +843,7 @@ export const columns = (api: apiItem,refresh: () => void, isAuth?: boolean | und
                             return 'Listed'
                         case 3:
                             return 'Unlisted'
-    
+
                     }
                     return ""
                 }
@@ -851,7 +851,7 @@ export const columns = (api: apiItem,refresh: () => void, isAuth?: boolean | und
                     <>
                         <Space direction="vertical">
                             {[stores?.map((item: any) => {
-                                return `${getKesValue('storeData',item.store_id).name}(${getStoreStatus(item.listing_status)})`
+                                return `${getKesValue('storeData', item.store_id).name}(${getStoreStatus(item.listing_status)})`
                             })].toString() || "-"}
                         </Space>
                     </>
@@ -867,10 +867,10 @@ export const columns = (api: apiItem,refresh: () => void, isAuth?: boolean | und
                 vendor_price: string;
                 availability: string;
             }) => {
-              return (  <Space direction="vertical">
-              <Text type="secondary">vendor_price:<Text> {record.vendor_price}</Text></Text>
-              <Text type="secondary">availability:<Text>{record.availability}</Text></Text>
-          </Space>)
+                return (<Space direction="vertical">
+                    <Text type="secondary">vendor_price:<Text> {record.vendor_price}</Text></Text>
+                    <Text type="secondary">availability:<Text>{record.availability}</Text></Text>
+                </Space>)
             }
         },
         {
@@ -902,7 +902,7 @@ export const columns = (api: apiItem,refresh: () => void, isAuth?: boolean | und
             valueEnum: {
                 0: { text: 'Not deleted', status: 'Success' },
                 1: { text: 'deleted', status: 'Error' },
-              },
+            },
         },
         {
             title: 'action',
@@ -913,7 +913,7 @@ export const columns = (api: apiItem,refresh: () => void, isAuth?: boolean | und
             render: (text, record: any, _, action) => {
                 return (
                     <>
-                        <ButtonGroup key="allBtn" record={record} refresh={refresh} api={{listingApi, updateApi,deleteApi}} isAuth={isAuth} />
+                        <ButtonGroup key="allBtn" record={record} refresh={refresh} api={{ listingApi, updateApi, deleteApi }} isAuth={isAuth} />
                     </>
                 )
             }
@@ -921,14 +921,14 @@ export const columns = (api: apiItem,refresh: () => void, isAuth?: boolean | und
     ];
 }
 
-const Head: FC<{show: any}> = props => {
+const Head: FC<{ show: any }> = props => {
     const { show } = props
     const [data, setData] = useState<{
         total: number;
         total_deleted: number;
         total_listed: number;
     }>()
-    const [personData ,setPersonData] = useState<{
+    const [personData, setPersonData] = useState<{
         history: any[],
         period_listing_count: number,
         period_match_count: number,
@@ -937,24 +937,22 @@ const Head: FC<{show: any}> = props => {
         history: [],
         period_listing_count: 0,
         period_match_count: 0,
-        period_not_match_count: 0, 
+        period_not_match_count: 0,
     })
     const [loading, setLoading] = useState(false)
-    const init = () => {
-        show().then(res => {
-            setData(res.data)
-        }).finally(() => {
-            setLoading(false)
-        })
+    const [personLoading, setpersonLoading] = useState(false)
+    const [isModalVisible, setIsModalVisible] = useState(false)
+    const initPerson = () => {
+        setpersonLoading(true)
         matchAndListing({
             after_at: parseInt(moment('1980-12-12').format('x')) / 1000,
             before_at: parseInt(moment().format('x')) / 1000,
             is_self: 1,
         }).then(res => {
             let historyData = []
-            for(let countKey in res.data.adminusers[0].history){
+            for (let countKey in res.data.adminusers[0].history) {
                 let subItem = res.data.adminusers[0].history[countKey]
-                for(let val in subItem){
+                for (let val in subItem) {
                     historyData.push({
                         time: val,
                         value: subItem[val],
@@ -966,61 +964,75 @@ const Head: FC<{show: any}> = props => {
                 ...res.data.adminusers[0],
                 history: historyData
             })
+        }).finally(() => {
+            setpersonLoading(false)
+        })
+    }
+    const init = () => {
+        show().then(res => {
+            setData(res.data)
+        }).finally(() => {
+            setLoading(false)
         })
     }
     useEffect(() => {
         init()
     }, [])
+    useEffect(() => {
+        if (isModalVisible) {
+            initPerson()
+        }
+    }, [isModalVisible])
     return (<>
-         <Spin spinning={loading}>
-         <Row gutter={24} style={{ background: "#fff", margin: "0", marginBottom: "15px", padding: "12px" }}>
+        <Spin spinning={loading}>
+            <Row gutter={24} style={{ background: "#fff", margin: "0", marginBottom: "15px", padding: "12px" }}>
                 <Tooltip
                     title='Personal operation data'
                 >
                     <InfoCircleOutlined style={{ marginLeft: 8, position: 'absolute', zIndex: 10, cursor: 'pointer' }} onClick={() => {
-                        Modal.confirm({
-                            title: 'Personal operation data',
-                            icon: <SmileFilled  />,
-                            width: '800px',
-                            content: (<>
-                                <Row gutter={24}>
-                                    <Col span={8}>
-                                    <Statistic title="listing count" style={{display: 'inline-block'}} value={personData.period_listing_count} />
-                                    <Divider type="vertical" style={{float: 'right', height: '100%'}} />
-                                    </Col>
-                                    <Col span={8}>
-                                    <Statistic title="match count" style={{display: 'inline-block'}} value={personData.period_match_count}/>
-                                    <Divider type="vertical" style={{float: 'right', height: '100%'}} />
-                                    </Col>
-                                    <Col span={8}>
-                                    <Statistic title="not match count" value={personData.period_not_match_count}/>
-                                    </Col>
-                                </Row>
-                                <Divider/>
-                                <h3><Text type="secondary">Historical data for the last ten days</Text></h3>
-                                <HistoryColumn data={personData.history} />
-                            </>),
-                            okText: 'ok',
-                            cancelText: 'cancel',
-                          });
+                        setIsModalVisible(true)
                     }} />
                 </Tooltip>
                 <Col span={8} style={{ textAlign: "center" }}>
                     <Statistic title="Total" value={data?.total} />
                 </Col>
                 <Col span={8} style={{ textAlign: "center" }}>
-                    <Statistic title="Deleted" value={data?.total_deleted}/>
+                    <Statistic title="Deleted" value={data?.total_deleted} />
                 </Col>
                 <Col span={8} style={{ textAlign: "center" }}>
                     <Statistic title="Listed" value={data?.total_listed} />
                 </Col>
             </Row>
-         </Spin>
+        </Spin>
+        <Modal width={800} title={<><SmileFilled style={{ color: '#faad14' }} /> Personal operation data</>} footer={null} visible={isModalVisible} onOk={() => {
+            setIsModalVisible(false)
+        }} onCancel={() => {
+            setIsModalVisible(false)
+        }}>
+            <Spin spinning={personLoading}>
+                <Row gutter={24}>
+                    <Col span={8}>
+                        <Statistic title="listing count" style={{ display: 'inline-block' }} value={personData.period_listing_count} />
+                        <Divider type="vertical" style={{ float: 'right', height: '100%' }} />
+                    </Col>
+                    <Col span={8}>
+                        <Statistic title="match count" style={{ display: 'inline-block' }} value={personData.period_match_count} />
+                        <Divider type="vertical" style={{ float: 'right', height: '100%' }} />
+                    </Col>
+                    <Col span={8}>
+                        <Statistic title="not match count" value={personData.period_not_match_count} />
+                    </Col>
+                </Row>
+                <Divider />
+                <h3><Text type="secondary">Historical data for the last ten days</Text></h3>
+                <HistoryColumn data={personData.history} />
+            </Spin>
+        </Modal>
     </>)
 }
 
-const SupplierFunction = (props: {title: string,api: apiItem, isAuth?: boolean | undefined}) => {
-    const {title,api, isAuth} = props
+const SupplierFunction = (props: { title: string, api: apiItem, isAuth?: boolean | undefined }) => {
+    const { title, api, isAuth } = props
     const actionRef = useRef<ActionType>();
     const ref = useRef<FormInstance>();
     const { initialState } = useModel('@@initialState');
@@ -1029,9 +1041,9 @@ const SupplierFunction = (props: {title: string,api: apiItem, isAuth?: boolean |
     const refresh = (): void => {
         actionRef.current?.reload()
     }
-      useEffect(() => {
+    useEffect(() => {
         refresh()
-      }, [initialState?.conText])
+    }, [initialState?.conText])
     return (
         <>
             <Head show={api.showApi} />
@@ -1071,7 +1083,7 @@ const SupplierFunction = (props: {title: string,api: apiItem, isAuth?: boolean |
                                 list: any[];
                                 total: number
                             },
-                             code: number,
+                            code: number,
                         }) => {
                             resolve({
                                 data: res.data.list,
@@ -1105,32 +1117,32 @@ const SupplierFunction = (props: {title: string,api: apiItem, isAuth?: boolean |
                 options={{
                     search: false,
                 }}
-                onRow={(record:{
+                onRow={(record: {
                     id: number;
                     notes: string;
                     vendor_sku: string;
                     ts_sku: string;
                 }) => {
                     return {
-                      onDoubleClick: event => {
-                        setDrawerVisible(true)
-                        setRecord({
-                            id: record.id,
-                            content: record.notes || '',
-                            title: record.ts_sku
-                        })
-                      }, 
-                      onClick: event => {
-                        if(drawerVisible){
+                        onDoubleClick: event => {
+                            setDrawerVisible(true)
                             setRecord({
                                 id: record.id,
                                 content: record.notes || '',
                                 title: record.ts_sku
                             })
-                        }
-                      },
+                        },
+                        onClick: event => {
+                            if (drawerVisible) {
+                                setRecord({
+                                    id: record.id,
+                                    content: record.notes || '',
+                                    title: record.ts_sku
+                                })
+                            }
+                        },
                     };
-                  }}
+                }}
                 dateFormatter="string"
                 headerTitle={title}
                 toolBarRender={() => [
@@ -1138,44 +1150,44 @@ const SupplierFunction = (props: {title: string,api: apiItem, isAuth?: boolean |
                         const valObj = ref.current?.getFieldsValue()
                         let tempParams: any = ''
                         let index = 0
-                        for(let key in valObj){
-                            if(valObj[key]){
+                        for (let key in valObj) {
+                            if (valObj[key]) {
                                 let paramsStr = `${key}=${valObj[key]}`
-                                if(index === 1){
+                                if (index === 1) {
                                     tempParams += `${paramsStr}`
                                 } else {
-                                    tempParams += '&'+paramsStr
+                                    tempParams += '&' + paramsStr
                                 }
                             }
-                            index ++
+                            index++
                         }
-                        if(tempParams){
+                        if (tempParams) {
                             tempParams = api.downloadApi() + '?' + tempParams + '&is_download=1'
                         } else {
-                            tempParams = api.downloadApi()+ '?is_download=1'
+                            tempParams = api.downloadApi() + '?is_download=1'
                         }
                         createDownload(`test.csv`, tempParams)
                         // console.log(tempParams)
-                        
+
                     }}>
-                    Download
+                        Download
                   </Button>
                 ]}
             />
             <BackTop>
-            <div style={{
-                border: '1px solid #dcdcdc',
-                width: '50px',
-                height: '50px',
-                textAlign: 'center',
-                lineHeight: '50px',
-                position: 'fixed',
-                right:'5vw',
-                bottom:'6vw',
-                zIndex:100,
-                background:'rgb(220, 220, 220)',
-                cursor:'pointer',
-            }}><UpOutlined /></div>
+                <div style={{
+                    border: '1px solid #dcdcdc',
+                    width: '50px',
+                    height: '50px',
+                    textAlign: 'center',
+                    lineHeight: '50px',
+                    position: 'fixed',
+                    right: '5vw',
+                    bottom: '6vw',
+                    zIndex: 100,
+                    background: 'rgb(220, 220, 220)',
+                    cursor: 'pointer',
+                }}><UpOutlined /></div>
             </BackTop>
         </>
     );

@@ -259,10 +259,10 @@ export default () => {
     const [from] = Form.useForm();
     const [currentRow, setCurrentRow] = useState(-1)
     const [limit , setLimit] = useState<configs>(getKesValue('configsData', 'order_quantity_limit'))
+    const [scrollX, setScrollX] = useState(columns.reduce((sum, e) => sum + Number(e.width || 0), 0))
     const showModal = () => {
         setIsModalVisible(true);
     };
-
     const handleOk = () => {
         from
         .validateFields()
@@ -396,7 +396,15 @@ export default () => {
                 options={{
                     search: false,
                 }}
-                scroll={{ x: columns.reduce((sum, e) => sum + Number(e.width || 0), 0), y: getPageHeight() - 250 }}
+                scroll={{ x: scrollX, y: getPageHeight() - 250 }}
+                onColumnsStateChange={(col) => {
+                    let allWidth = columns.reduce((sum, e) => sum + Number(e.width || 0), 0)
+                    let reduceNum: number = 0
+                    for (let c in col){
+                        reduceNum += columns[c]['width'] || 0
+                    }
+                    setScrollX(allWidth - reduceNum)
+                }}
                 dateFormatter="string"
                 headerTitle={<><BellOutlined /> orders  <span style={{marginLeft: "20px",fontSize: '16px'}}>Current quantity limit： {limit}</span></>}
                 onRow={(record:{

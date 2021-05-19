@@ -19,3 +19,7 @@ export async function list(params: listItem) {
 export async function getLogLevel() {
     return request('/api/log/log_level');
   }
+
+  export async function clear() {
+    return request('/api/log/clear');
+  }

@@ -7,6 +7,7 @@ import type { ActionType } from '@ant-design/pro-table';
 import { getKesGroup } from '../../utils/utils'
 import { ShopOutlined, TagOutlined, SkinOutlined } from '@ant-design/icons';
 import { vendors } from '../../services/publicKeys'
+import type { ProColumns } from '@ant-design/pro-table';
 const {Text} = Typography
 import moment from 'moment'
 const { TabPane } = Tabs;
@@ -269,7 +270,7 @@ const PopSales = () => {
 
 const OrderTable = () => {
     const actionRef = useRef<ActionType>();
-    const columns: any = [{
+    const columns: ProColumns<any>[]  = [{
         title: 'orderId',
         dataIndex: 'marketplace_order_id',
     }, {
@@ -307,12 +308,14 @@ const OrderTable = () => {
         title: 'time',
         dataIndex: 'order_time',
         key: 'order_time',
+        search: false,
         render: (_, record: any) => {
             return (record.add_time && moment(parseInt(record.order_time + '000')).format('YYYY-MM-DD HH:mm:ss')) || 'not yet'
         }
     }, {
         title: 'status',
         dataIndex: 'status',
+        search: false,
         key: 'status',
     },]
     return (<>
@@ -377,7 +380,7 @@ const OrderTable = () => {
 
 const DemoRose = (props: { data: any[] }) => {
     const { data } = props;
-    var config = {
+    var config = { 
         appendPadding: 10,
         data: data,
         angleField: 'total',
@@ -415,7 +418,7 @@ const DemoLine = (props: { data: any[] }) => {
         animation: {
             appear: {
                 animation: 'path-in',
-                duration: 5000,
+                duration: 8000,
             },
         },
     };
