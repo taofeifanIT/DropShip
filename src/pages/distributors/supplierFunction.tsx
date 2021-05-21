@@ -698,7 +698,8 @@ export const columns = (api: apiItem, refresh: () => void, isAuth?: boolean | un
         {
             title: 'availability',
             dataIndex: 'availability',
-            hideInTable: true
+            hideInTable: true,
+            valueType: 'digit'
         },
         {
             title: 'title',

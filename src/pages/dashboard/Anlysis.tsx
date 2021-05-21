@@ -4,7 +4,7 @@ import { Rose, Line, Column } from '@ant-design/charts';
 import ProTable from '@ant-design/pro-table';
 import { matchAndListing, total, storeRanking, saleRanking, tagRanking, marketplaceRanking } from '../../services/dashboard'
 import moment from 'moment';
-import { MoneyCollectOutlined,ShopOutlined, ShoppingCartOutlined,TagOutlined  } from '@ant-design/icons';
+import { MoneyCollectOutlined,ShopOutlined, ShoppingCartOutlined,TagOutlined,DollarOutlined  } from '@ant-design/icons';
 const { RangePicker } = DatePicker;
 
 const { Text } = Typography;
@@ -323,11 +323,11 @@ const DemoLine: React.FC = () => {
     return (<>
     <Spin spinning={loading}>
     <Tabs defaultActiveKey="1" >
-      <Tabs.TabPane tab="Store order quantity" key="1" style={{ height: 200 }}>
-      <Line {...config} />
-      </Tabs.TabPane>
-      <Tabs.TabPane tab="Store sales" key="2">
+      <Tabs.TabPane tab="Store sales" key="1">
       <Line {...salaryConfig} />
+      </Tabs.TabPane>
+      <Tabs.TabPane tab="Store order quantity" key="2"  style={{ height: 200 }}>
+      <Line {...config} />
       </Tabs.TabPane>
     </Tabs>
     </Spin>
@@ -439,27 +439,29 @@ export default () => {
         total_store: number;
         total_tag: number;
         total_vendor: number;
-    }>({ order_total: 0, order_total_sales: 0, total_store: 0, total_tag: 0, total_vendor: 0 })
+        order_total_today: number;
+        order_total_sales_today: number;
+    }>({ order_total: 0, order_total_sales: 0, total_store: 0, total_tag: 0, total_vendor: 0,order_total_today: 0,order_total_sales_today: 0 })
     const [totalLoading, setTotalLoading] = useState(false)
     const GetCard = (props: {
         one_level_title: string;
         one_level_number: number | string;
         color: string;
-        info?: boolean | number;
+        info?: boolean | number | string;
         fontColor?: string;
         BigIcon?: any;
     }) => {
         const { one_level_title, one_level_number, color, info, fontColor, BigIcon } = props
-        const style = { height: '142px', padding: '20px 24px 8px', boxShadow: '#c3bcbc 1px 0px 10px' };
+        const style = { height: '142px', padding: '20px 20px 8px', boxShadow: '#c3bcbc 1px 0px 10px' };
         const valueStyle = { fontSize: "2.8rem",fontWeight: '500' }
         return (<>
             <Card style={{ ...style }} bodyStyle={cardBodyStyle} hoverable>
-                <div style={{ width: '50%',height: '100px', display: 'inline-block', verticalAlign: 'top', paddingTop: '0px'}}>
-                    <BigIcon style={{fontSize: '5vw', color: color}} />
+                <div style={{ width: '50%',height: '100px', display: 'inline-block', verticalAlign: 'inherit', paddingTop: '0px'}}>
+                    <BigIcon style={{fontSize: '4vw', color: color}} />
                 </div>
-                <div style={{ width: '50%',height: '100px', display: 'inline-block', paddingLeft: '4vw' }}>
+                <div style={{ width: '50%',height: '100px', display: 'inline-block', paddingLeft: '1vw' }}>
                     <Statistic title={<span style={{ color: fontColor}}>{one_level_title}</span>} value={one_level_number} valueStyle={{ ...valueStyle, color: fontColor }} />
-                    {info && <span style={{ color: fontColor, float: 'right',width: '130px'}}>Total sales: {info}</span>}
+                    {info && <span style={{ color: fontColor,width: '105px',position: 'absolute'}}>{info}</span>}
                 </div>
             </Card>
         </>)
@@ -477,23 +479,28 @@ export default () => {
     }, [])
     return (
         <div style={{minWidth: '1472px'}}>
-            <Row gutter={16}>
-                <Col className="gutter-row" span={6}>
+            <Row gutter={24}>
+                <Col className="gutter-row" span={5}>
                     <Spin spinning={totalLoading}>
-                        <GetCard one_level_title={'Total orders'} one_level_number={totalObj.order_total} color='#f4516c' info={totalObj.order_total_sales} BigIcon={MoneyCollectOutlined} />
+                        <GetCard one_level_title={'Total orders'} one_level_number={totalObj.order_total} color='#f4516c' info={'Day order: ' + totalObj.order_total_today} BigIcon={MoneyCollectOutlined} />
                     </Spin>
                 </Col>
-                <Col className="gutter-row" span={6}>
+                <Col className="gutter-row" span={5}>
+                    <Spin spinning={totalLoading}>
+                        <GetCard one_level_title={'Total sales'} one_level_number={totalObj.order_total_sales.toFixed(0)} color='#eef082' info={'Day sales: ' + totalObj.order_total_sales_today} BigIcon={DollarOutlined} />
+                    </Spin>
+                </Col>
+                <Col className="gutter-row" span={5}>
                     <Spin spinning={totalLoading}>
                         <GetCard one_level_title={'Total stores'} one_level_number={totalObj.total_store} color='#36a3f7' BigIcon={ShopOutlined} />
                     </Spin>
                 </Col>
-                <Col className="gutter-row" span={6}>
+                <Col className="gutter-row" span={5}>
                     <Spin spinning={totalLoading}>
                         <GetCard one_level_title={'Total suppliers'} one_level_number={totalObj.total_vendor} color='#34bfa3'  BigIcon={ShoppingCartOutlined} />
                     </Spin>
                 </Col>
-                <Col className="gutter-row" span={6}>
+                <Col className="gutter-row" span={4}>
                     <Spin spinning={totalLoading}>
                         <GetCard one_level_title={'Total tag'} one_level_number={totalObj.total_tag} color='#657798' BigIcon={TagOutlined} />
                     </Spin>

@@ -79,7 +79,7 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu }) => {
         <UserOutlined />
         Personal Center
       </Menu.Item>
-        {localStorage.getItem('current') !== 'operator' ? (
+        {initialState?.currentUser?.auth_group?.title !== 'Outsourcer' ? (
       <Menu.Item key="toScreen">
         <FundOutlined />
         to Screen

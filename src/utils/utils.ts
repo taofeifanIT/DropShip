@@ -134,3 +134,31 @@ export function throwMenu(Arr: Array<any>, ID: string): any {
       console.log(error)
     }
   }
+
+
+  // export function getIndexPage(arr: Array<any>): any{
+  //   if(arr[0].path === '/IndexPage'){
+  //     return arr[0]
+  //   }
+  //   for (let obj of arr) {
+  //     if (obj.hasPage) {
+  //       return obj
+  //     } else {
+  //       if (obj.children){
+  //         return getIndexPage(obj.children)
+  //       }
+  //     }
+  //   }
+  // }
+
+  export function findIndexPage(arr: any[]) {
+    let path = ''
+    arr.forEach(item => {
+      if(!item.routes){
+        path = item['path']
+      } else {
+        path = item.routes[0]['path']
+      }
+    })
+    return path;
+}

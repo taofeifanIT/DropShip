@@ -2,10 +2,9 @@ import React, { useRef, useState } from 'react';
 import { Button, Select, Form, Modal, message, InputNumber } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import usePopInfo from '../../hooks/usePopInfo'
 import { getTagList } from '../../services/publicKeys'
 import { edit } from '../../services/priceManage/tagPrice'
-import { getKesGroup } from '../../utils/utils'
+import { getKesGroup,getKesValue } from '../../utils/utils'
 import { priceAlgorithms } from '../../services/publicKeys'
 const { Option } = Select
 type GithubIssueItem = {
@@ -55,14 +54,39 @@ const columns = (editFn: (visible: boolean, id: number) => void): ProColumns<Git
         }
     },
     {
-        title: 'Price algorithm',
-        dataIndex: 'price_algorithm',
+        title: 'Amazon price algorithm',
+        dataIndex: 'amazon_price_algorithm_id',
         render: (_, record: {
-            price_algorithm: {
-                name: string
-            }
+            amazon_price_algorithm_id: number;
         }) => {
-            return record.price_algorithm.name
+            return getKesValue('priceAlgorithmsData', record.amazon_price_algorithm_id).name
+        }
+    },
+    {
+        title: 'Newegg price algorithm',
+        dataIndex: 'newegg_price_algorithm_id',
+        render: (_, record: {
+            newegg_price_algorithm_id: number;
+        }) => {
+            return getKesValue('priceAlgorithmsData', record.newegg_price_algorithm_id).name
+        }
+    },
+    {
+        title: 'Walmart price algorithm',
+        dataIndex: 'walmart_price_algorithm_id',
+        render: (_, record: {
+            walmart_price_algorithm_id: number;
+        }) => {
+            return getKesValue('priceAlgorithmsData', record.walmart_price_algorithm_id).name
+        }
+    },
+    {
+        title: 'Ebay price algorithm',
+        dataIndex: 'ebay_price_algorithm_id',
+        render: (_, record: {
+            ebay_price_algorithm_id: number;
+        }) => {
+            return getKesValue('priceAlgorithmsData', record.ebay_price_algorithm_id).name
         }
     },
     {
@@ -100,7 +124,7 @@ const BatchPriceModal = (props: {
     const onEmit = () => {
         setConfirmLoading(true)
         // do something
-        from
+        from  
             .validateFields()
             .then((updatedValues: any) => {
                 edit({
@@ -128,8 +152,7 @@ const BatchPriceModal = (props: {
     React.useEffect(() => {
         if (batchPriceModalVisible && listingId) {
             from.setFieldsValue({
-                price_algorithm_id: listingId['price_algorithm_id'],
-                quantity_offset: listingId['quantity_offset']
+                ...listingId
             })
         } else {
             return
@@ -143,8 +166,50 @@ const BatchPriceModal = (props: {
                 wrapperCol={{ span: 14 }}
             >
                 <Form.Item
-                    label="Price algorithm"
-                    name="price_algorithm_id"
+                    label="amazon algorithm"
+                    name="amazon_price_algorithm_id"
+                    rules={[{ required: true, message: 'Please input your price algorithm!' }]}
+                >
+                    <Select
+                        placeholder="Select a option and change input text above"
+                        allowClear
+                    >
+                        {getKesGroup('priceAlgorithmsData').map((item: priceAlgorithms) => {
+                            return <Option key={`option${item.id}`} value={item.id}>{item.name}</Option>
+                        })}
+                    </Select>
+                </Form.Item>
+                <Form.Item
+                    label="walmart algorithm"
+                    name="walmart_price_algorithm_id"
+                    rules={[{ required: true, message: 'Please input your walmart_price_algorithm_id!' }]}
+                >
+                     <Select
+                        placeholder="Select a option and change input text above"
+                        allowClear
+                    >
+                        {getKesGroup('priceAlgorithmsData').map((item: priceAlgorithms) => {
+                            return <Option key={`option${item.id}`} value={item.id}>{item.name}</Option>
+                        })}
+                    </Select>
+                </Form.Item>
+                <Form.Item
+                    label="newegg algorithm"
+                    name="newegg_price_algorithm_id"
+                    rules={[{ required: true, message: 'Please input your price algorithm!' }]}
+                >
+                    <Select
+                        placeholder="Select a option and change input text above"
+                        allowClear
+                    >
+                        {getKesGroup('priceAlgorithmsData').map((item: priceAlgorithms) => {
+                            return <Option key={`option${item.id}`} value={item.id}>{item.name}</Option>
+                        })}
+                    </Select>
+                </Form.Item>
+                <Form.Item
+                    label="ebay algorithm"
+                    name="ebay_price_algorithm_id"
                     rules={[{ required: true, message: 'Please input your price algorithm!' }]}
                 >
                     <Select

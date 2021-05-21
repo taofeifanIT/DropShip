@@ -8,7 +8,7 @@ import Footer from '@/components/Footer';
 import type { ResponseError,RequestOptionsInit } from 'umi-request';
 import { currentUser as queryCurrentUser } from './services/user';
 import { getToken, getPublicParams, removeToken, setPublicKeys } from './utils/cookes'
-import { getMenu, throwMenu } from './utils/utils'
+import { getMenu, throwMenu, findIndexPage } from './utils/utils'
 import { indexRouterMap } from '../config/router.config'
 import { getAllPop } from './services/publicKeys'
 // const isDev = process.env.NODE_ENV === 'development';
@@ -27,8 +27,8 @@ export const initialStateConfig = {
  * */
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
-  currentUser?: API.CurrentUser;
-  fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
+  currentUser?: any;
+  fetchUserInfo?: () => Promise<any | undefined>;
   pageHeight?: number;
   menuList?: any;
   publicParams?: any | undefined;
@@ -57,14 +57,11 @@ export async function getInitialState(): Promise<{
       localStorage.setItem('current', currentUser.data.adminuser.username)
       const menuList: any = getMenu(currentUser.data.menus).sort((a:any,b:any) => a.sort_num - b.sort_num)
       const historyPath = history.location.pathname
-      if(historyPath === '/'){
-        history.location.pathname = menuList[0]['path']
-      }
-      let checkUrl = historyPath === '/' ? '/Dashboard' : historyPath
+      let checkUrl = historyPath === '/' ? '/dashboard/Anlysis' : historyPath
       if (!throwMenu(menuList,checkUrl)){
-        history.location.pathname = menuList[0]['path']
+        history.location.pathname = findIndexPage(menuList)
    }
-      return {...currentUser.data.adminuser, name: currentUser.data.adminuser.username, menuList, indexPage: menuList[0]['path']};
+      return {...currentUser.data.adminuser, name: currentUser.data.adminuser.username, menuList, indexPage: findIndexPage(menuList)};
     } catch (error) {
       console.log(error)
       removeToken()
@@ -118,7 +115,7 @@ export const layout = ({ initialState }: any) => {
         // 如果不去登录页获取不去大屏页则处理无权限页面
         if(location.pathname !== '/user/login' && location.pathname !== '/largeScreen/DataComparison'){
           if (!throwMenu(routers,location.pathname)){
-            history.location.pathname = routers[0]['path']
+            history.location.pathname = findIndexPage(routers)
           }
         }
       }

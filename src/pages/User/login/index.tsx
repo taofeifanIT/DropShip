@@ -11,7 +11,7 @@ import { setToken } from '../../../utils/cookes';
 import Footer from '@/components/Footer';
 import { login, currentUser } from '@/services/user';
 import styles from './index.less';
-import { getMenu } from '../../../utils/utils'
+import { getMenu,findIndexPage } from '../../../utils/utils'
 import { getAllPop } from '../../../services/publicKeys'
 // const isDev = process.env.NODE_ENV === 'development';
 import { setPublicKeys } from '../../../utils/cookes'
@@ -32,7 +32,7 @@ const Login: React.FC = () => {
   const fetchUserInfo = async () => {
     const userInfo: any = await currentUser()
     const menuList: any = getMenu(userInfo.data.menus).sort((a:any,b:any) => a.sort_num - b.sort_num)
-    INDEX_PAGE = menuList[0]['path']
+    INDEX_PAGE = findIndexPage(menuList)
     let allPop = await getAllPop()
     setPublicKeys(allPop)
     if (userInfo) {
