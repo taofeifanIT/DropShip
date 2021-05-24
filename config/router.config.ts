@@ -24,8 +24,8 @@ export const routerConfigs = {
     twHouseUs: {path: '/distributors/TwHouseUs',name: 'twHouseUs',component: './distributors/TwHouseUs'},
     AmazonReturns:   {name: 'AmazonReturns',path: '/returns/AmazonReturns',component: './returns/AmazonReturns'},
     NeweggReturns:   {name: 'NeweggReturns',path: '/returns/NeweggReturns',component: './returns/NeweggReturns'},
-    Feedsubmission: {path: '/log/Feedsubmission',name: 'Feedsubmission',component: './log/Feedsubmission',
-    },
+    Feedsubmission: {path: '/log/Feedsubmission',name: 'Feedsubmission',component: './log/Feedsubmission'},
+    Petra: {name: 'Petra',path: '/distributors/Petra',component: './distributors/Petra'}
 }
 export const indexRouterMap = (routers: any) => {
     return [

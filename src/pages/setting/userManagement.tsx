@@ -6,7 +6,7 @@ import ProTable, { ProColumns } from '@ant-design/pro-table';
 import { roleList } from '../../services/setting/roleManagement';
 import { addUser, updateUser, deleteUser } from '../../services/setting/userManagement';
 import { tags } from '../../services/publicKeys'
-import { getKesGroup } from '../../utils/utils'
+import { getKesGroup, getKesValue } from '../../utils/utils'
 const { Option } = Select;
 import request from 'umi-request';
 import { useModel } from 'umi';
@@ -142,7 +142,7 @@ const OperationModal = (props: { isModalVisible: boolean, setIsModalVisible: (fn
               style={{ width: '100%' }}
             >
             {getKesGroup('tagsData').map((item: tags) => {
-                    return <Select.Option key={item.id} value={item.id}>{item.tag_name}</Select.Option>
+                    return <Option key={item.id} value={item.id}>{item.tag_name}</Option>
             })}
         </Select>
         </Form.Item>)}
@@ -227,6 +227,24 @@ export default () => {
       }
     },
     {
+      title: 'Tag owned',
+      dataIndex: 'hasTags',
+      render: (hasTags: {
+        id: number;
+        tag_name: string;
+      }[], record: {
+        open_tag_permission: number;
+      }) => {
+        if(record.open_tag_permission){
+          return hasTags.map((item, index) => {
+            return <p key={item.id}>{`${index + 1}.${item.tag_name}`}</p>
+          })
+        } else {
+          return 'All tags'
+        }
+      }
+    },
+    {
       title: 'status',
       dataIndex: 'status',
       render: (status: any) => {
@@ -282,9 +300,16 @@ export default () => {
             }>('/api/adminuser/list_adminusers', {
               params,
             }).then((res: any) => {
-              // console.log(res.data.adminusers)
+              let resultData = res.data.adminusers.map((item: any) => {
+                return {
+                  ...item,
+                  hasTags: item.tag_ids ? JSON.parse(item.tag_ids).map((tagId: number) => {
+                    return getKesValue('tagsData', tagId)
+                  }) : []
+                }
+              })
               resolve ({
-                data: res.data.adminusers,
+                data: resultData,
                 // success 请返回 true，
                 // 不然 table 会停止解析数据，即使有数据
                 success: !!res.code,

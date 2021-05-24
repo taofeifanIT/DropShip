@@ -673,9 +673,9 @@ export const columns = (api: apiItem, refresh: () => void, isAuth?: boolean | un
                 const getStatusTag = (status: number) => {
                     switch (status) {
                         case -1:
-                            return 'none'
+                            return (<span style={{ color: '#000000' }}>none</span>)
                         case 0:
-                            return 'not match'
+                            return (<span style={{ color: '#000000' }}>not match</span>)
                         case 1:
                             return (<span style={{ color: '#87d068' }}>match</span>)
                     }

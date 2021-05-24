@@ -2,6 +2,7 @@ export default {
   'menu.UserInfo': 'UserInfo',
   'menu.order': 'Order',
   'menu.log.Feedsubmission': 'Amazon Feedsubmission',
+  'menu.Distributors.Petra': 'Petra',
   'menu.Returns': 'Returns',
   'menu.Returns.AmazonReturns': 'AmazonReturns',
   'menu.Returns.NeweggReturns': 'NeweggReturns',

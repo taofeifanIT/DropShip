@@ -85,6 +85,12 @@
         icon: 'smile',
         component: './distributors/TwHouseUs',
       },
+      {
+        path: '/distributors/Petra',
+        name: 'Petra',
+        icon: 'smile',
+        component: './distributors/Petra',
+      },
     ],
   },
   {
