@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import { Row, Col, Card, Typography, Statistic, Input, List, Spin, Tabs, DatePicker } from 'antd';
+import { Row, Col, Card, Typography, Statistic, Input, List, Spin, Tabs, DatePicker,Select } from 'antd';
 import { Rose, Line, Column } from '@ant-design/charts';
 import ProTable from '@ant-design/pro-table';
 import { matchAndListing, total, storeRanking, saleRanking, tagRanking, marketplaceRanking } from '../../services/dashboard'
 import moment from 'moment';
 import { MoneyCollectOutlined,ShopOutlined, ShoppingCartOutlined,TagOutlined,DollarOutlined  } from '@ant-design/icons';
+import { getKesGroup } from '../../utils/utils'
 const { RangePicker } = DatePicker;
 
 const { Text } = Typography;
@@ -13,9 +14,14 @@ const cardBodyStyle = { padding: 0 }
 const DemoColumn: React.FC = () => {
     const [loading, setLoading] = useState<boolean | undefined>(false)
     const [data, setData] = useState([])
-    const init = (afterTime: string, beforeTime: string) => {
+    const [params, setParams] = useState<{
+        afterTime: number;
+        beforeTime: number;
+        tagId?: number;
+    }>({afterTime: moment('1980-12-12').unix(),beforeTime: moment().unix() })
+    const init = (afterTime: number, beforeTime: number,tagId?:number) => {
         setLoading(true)
-        matchAndListing({ after_at: afterTime, before_at: beforeTime }).then(res => {
+        matchAndListing({ after_at: afterTime, before_at: beforeTime,tag_id: tagId || undefined }).then(res => {
             const tempData: any = []
             res.data.adminusers?.forEach((item: {
                 username: string;
@@ -66,17 +72,47 @@ const DemoColumn: React.FC = () => {
           },
     };
     useEffect(() => {
-        init(moment('1980-12-12').format('X'), moment().format('X'))
+        init(params.afterTime,params.beforeTime, params.tagId)
+    }, [params])
+    useEffect(() => {
+        init(params.afterTime,params.beforeTime)
     }, [])
     return (<>
         <Spin spinning={loading}>
+                <Select
+            showSearch
+            style={{ width: 200,position: 'absolute', top: '-11px',right: 400,zIndex: 100 }}
+            onChange={(e: number) => {
+                setParams({
+                    ...params,
+                    tagId: e
+                })
+            }}
+            placeholder="Selec a tag"
+            optionFilterProp="children"
+            filterOption={(input, option: any) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+  >
+           {[{id: undefined, tag_name: 'all'},...getKesGroup('tagsData')].map((item: any) => {
+               return <Select.Option key={item.id+'tag'} value={item.id}>{item.tag_name}</Select.Option>
+           })}
+  </Select>
             <RangePicker showTime  style={{position: 'absolute', top: '-11px', right: '0',zIndex: 100}} onChange={(e: any) => {
                 if(e){
-                    const afterTime = e[0].format('x').slice(0,10)
-                    const beforeTime = e[1].format('x').slice(0,10)
-                    init(afterTime, beforeTime)
+                    const afterTime = e[0].unix()
+                    const beforeTime = e[1].unix()
+                    setParams({
+                        ...params,
+                        afterTime: afterTime,
+                        beforeTime: beforeTime,
+                    })
                 } else {
-                    init(moment('1980-12-12').format('X'), moment().format('X'))
+                    setParams({
+                        ...params,
+                        afterTime: moment('1980-12-12').unix(),
+                        beforeTime:  moment().unix(),
+                    })
                 }
                 
             }} />

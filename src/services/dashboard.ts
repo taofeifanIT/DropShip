@@ -2,7 +2,7 @@ import { request } from 'umi';
 
 
 
-export async function matchAndListing(params: {after_at?: number | string,before_at?: number | string, is_self?: number}) {
+export async function matchAndListing(params: {after_at?: number | string,before_at?: number | string, is_self?: number,tag_id?:number}) {
   return request('/api/dashboard/match_and_listing',{
     method: 'get',
     params: params,

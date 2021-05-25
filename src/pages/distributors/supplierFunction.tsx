@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, FC } from 'react';
-import { AmazonOutlined, ExclamationCircleOutlined, BarChartOutlined, DeleteOutlined, InfoCircleOutlined, SmileFilled, UpOutlined } from '@ant-design/icons';
-import { Button, Typography, Space, Form, Row, Col, Modal, Checkbox, message, Select, Spin, Tag, Statistic, Tooltip, Table, Divider, BackTop } from 'antd';
+import { AmazonOutlined, ExclamationCircleOutlined, BarChartOutlined, DeleteOutlined, InfoCircleOutlined, SmileFilled, UpOutlined,DownOutlined  } from '@ant-design/icons';
+import { Button, Typography, Space, Form, Row, Col, Modal, Checkbox, message, Select, Spin, Tag, Statistic, Tooltip, Table, Divider, BackTop,Menu, Dropdown } from 'antd';
 import type { FormInstance } from 'antd';
 import { log_vendor_quantity_and_price_change } from '../../services/distributors/ingramMicro'
 import { matchAndListing } from '../../services/dashboard'
@@ -16,7 +16,6 @@ import { Info } from '../../components/Notes'
 import { createDownload } from '../../utils/utils'
 import { Column } from '@ant-design/charts';
 import moment from 'moment'
-
 const { Text } = Typography;
 
 
@@ -924,6 +923,7 @@ export const columns = (api: apiItem, refresh: () => void, isAuth?: boolean | un
 
 const Head: FC<{ show: any }> = props => {
     const { show } = props
+    const [tagName, setTagName] = useState('')
     const [data, setData] = useState<{
         total: number;
         total_deleted: number;
@@ -943,12 +943,13 @@ const Head: FC<{ show: any }> = props => {
     const [loading, setLoading] = useState(false)
     const [personLoading, setpersonLoading] = useState(false)
     const [isModalVisible, setIsModalVisible] = useState(false)
-    const initPerson = () => {
+    const initPerson = (tagId?: number) => {
         setpersonLoading(true)
         matchAndListing({
-            after_at: parseInt(moment('1980-12-12').format('x')) / 1000,
-            before_at: parseInt(moment().format('x')) / 1000,
+            after_at: moment('1980-12-12').unix(),
+            before_at: moment().unix(),
             is_self: 1,
+            tag_id: tagId || undefined
         }).then(res => {
             let historyData = []
             for (let countKey in res.data.adminusers[0].history) {
@@ -969,6 +970,25 @@ const Head: FC<{ show: any }> = props => {
             setpersonLoading(false)
         })
     }
+    const menu = (
+        <Select
+    showSearch
+    style={{ width: 200 }}
+    onChange={(e: number) => {
+        initPerson(e)
+    }}
+    size={'small'}
+    placeholder="Select a person"
+    optionFilterProp="children"
+    filterOption={(input, option: any) =>
+      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+    }
+  >
+           {[{id: undefined, tag_name: 'all'},...getKesGroup('tagsData')].map((item: tags) => {
+               return <Select.Option key={item.id+'tag'} value={item.id}>{item.tag_name}</Select.Option>
+           })}
+  </Select>
+      );
     const init = () => {
         show().then(res => {
             setData(res.data)
@@ -1005,7 +1025,10 @@ const Head: FC<{ show: any }> = props => {
                 </Col>
             </Row>
         </Spin>
-        <Modal width={800} title={<><SmileFilled style={{ color: '#faad14' }} /> Personal operation data</>} footer={null} visible={isModalVisible} onOk={() => {
+        <Modal width={800} title={<>
+                    <SmileFilled style={{ color: '#faad14' }} /> Personal operation data
+                        &nbsp;{menu}
+        </>} footer={null} visible={isModalVisible} onOk={() => {
             setIsModalVisible(false)
         }} onCancel={() => {
             setIsModalVisible(false)
