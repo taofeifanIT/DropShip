@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, FC } from 'react';
-import { AmazonOutlined, ExclamationCircleOutlined, BarChartOutlined, DeleteOutlined, InfoCircleOutlined, SmileFilled, UpOutlined,DownOutlined  } from '@ant-design/icons';
-import { Button, Typography, Space, Form, Row, Col, Modal, Checkbox, message, Select, Spin, Tag, Statistic, Tooltip, Table, Divider, BackTop,Menu, Dropdown } from 'antd';
+import { AmazonOutlined, ExclamationCircleOutlined, BarChartOutlined, DeleteOutlined, InfoCircleOutlined, SmileFilled, UpOutlined, DownOutlined } from '@ant-design/icons';
+import { Button, Typography, Space, Form, Row, Col, Modal, Checkbox, message, Select, Spin, Tag, Statistic, Tooltip, Table, Divider, BackTop, Menu, Dropdown } from 'antd';
 import type { FormInstance } from 'antd';
 import { log_vendor_quantity_and_price_change } from '../../services/distributors/ingramMicro'
 import { matchAndListing } from '../../services/dashboard'
@@ -972,23 +972,23 @@ const Head: FC<{ show: any }> = props => {
     }
     const menu = (
         <Select
-    showSearch
-    style={{ width: 200 }}
-    onChange={(e: number) => {
-        initPerson(e)
-    }}
-    size={'small'}
-    placeholder="Select a person"
-    optionFilterProp="children"
-    filterOption={(input, option: any) =>
-      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-    }
-  >
-           {[{id: undefined, tag_name: 'all'},...getKesGroup('tagsData')].map((item: tags) => {
-               return <Select.Option key={item.id+'tag'} value={item.id}>{item.tag_name}</Select.Option>
-           })}
-  </Select>
-      );
+            showSearch
+            style={{ width: 200 }}
+            onChange={(e: number) => {
+                initPerson(e)
+            }}
+            size={'small'}
+            placeholder="Select a person"
+            optionFilterProp="children"
+            filterOption={(input, option: any) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+        >
+            {[{ id: undefined, tag_name: 'all' }, ...getKesGroup('tagsData')].map((item: tags) => {
+                return <Select.Option key={item.id + 'tag'} value={item.id}>{item.tag_name}</Select.Option>
+            })}
+        </Select>
+    );
     const init = () => {
         show().then(res => {
             setData(res.data)
@@ -1026,7 +1026,7 @@ const Head: FC<{ show: any }> = props => {
             </Row>
         </Spin>
         <Modal width={800} title={<>
-                    <SmileFilled style={{ color: '#faad14' }} /> Personal operation data
+            <SmileFilled style={{ color: '#faad14' }} /> Personal operation data
                         &nbsp;{menu}
         </>} footer={null} visible={isModalVisible} onOk={() => {
             setIsModalVisible(false)
