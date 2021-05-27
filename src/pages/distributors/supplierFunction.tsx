@@ -923,7 +923,6 @@ export const columns = (api: apiItem, refresh: () => void, isAuth?: boolean | un
 
 const Head: FC<{ show: any }> = props => {
     const { show } = props
-    const [tagName, setTagName] = useState('')
     const [data, setData] = useState<{
         total: number;
         total_deleted: number;
@@ -1026,8 +1025,7 @@ const Head: FC<{ show: any }> = props => {
             </Row>
         </Spin>
         <Modal width={800} title={<>
-            <SmileFilled style={{ color: '#faad14' }} /> Personal operation data
-                        &nbsp;{menu}
+            <SmileFilled style={{ color: '#faad14' }} /> Personal operation data &nbsp;{menu}
         </>} footer={null} visible={isModalVisible} onOk={() => {
             setIsModalVisible(false)
         }} onCancel={() => {
@@ -1069,7 +1067,7 @@ const SupplierFunction = (props: { title: string, api: apiItem, isAuth?: boolean
         refresh()
     }, [initialState?.conText])
     return (
-        <>
+        <div style={{marginTop: '-21px'}}>
             <Head show={api.showApi} />
             <Notes visible={drawerVisible} setVisible={setDrawerVisible} {...record} refresh={refresh} updateApi={api.updateApi} />
             <ProTable
@@ -1213,7 +1211,7 @@ const SupplierFunction = (props: { title: string, api: apiItem, isAuth?: boolean
                     cursor: 'pointer',
                 }}><UpOutlined /></div>
             </BackTop>
-        </>
+        </div>
     );
 };
 
