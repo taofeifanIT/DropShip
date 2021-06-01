@@ -12,7 +12,7 @@ import { Column } from '@ant-design/charts';
 import moment from 'moment'
 import { marketplaces, priceAlgorithms, stores, tags, vendors } from '../../services/publicKeys'
 import { getKesGroup, getKesValue } from '../../utils/utils'
-import { getTargetHref, getAsonHref } from '../../utils/jumpUrl'
+import { getTargetHref, getAsonHref, getNewEggHref} from '../../utils/jumpUrl'
 const { Text,Link } = Typography;
 type GithubIssueItem = {
         id: number,
@@ -393,7 +393,7 @@ const BatchPriceModal = (props: {
                     <Space direction="vertical">
                         <Text type="secondary">ID: <a target="_blank" href={`${getTargetHref(record.vendor_id)}${record.ts_sku}`}>{record.ts_sku}</a>{record.notes && <Info content={record.notes} />}</Text>
                         {record.asin && (<Text type="secondary"><AmazonOutlined />Asin: <EditLinKStr record={record} /></Text>)}
-                        {record.newegg_id && (<Text type="secondary">newegg: <Text>{record.newegg_id}</Text></Text>)}
+                        {record.newegg_id && (<Text type="secondary">newegg: <Text><a target="_Blank"  href={getNewEggHref(record.newegg_id)}>{record.newegg_id}</a></Text></Text>)}
                         <Text type="secondary">Tag Name: <Text style={{width: '210px'}} title={tagTitle} ellipsis>{tagTitle}</Text></Text>
                         <Text type="secondary">Description: <ParagraphText content={record.title} width={780} /></Text>
                     </Space>

@@ -1,10 +1,9 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import {  AmazonOutlined  } from '@ant-design/icons';
-import { Typography, Space,Modal, Button } from 'antd';
+import { Typography, Space } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { amazonListing, amazonListingDiff } from '../../services/amazonListing/amazonListing'
-import usePopInfo from '../../hooks/usePopInfo'
+import { amazonListing } from '../../services/amazonListing/amazonListing'
 import { getAsonHref } from '../../utils/jumpUrl'
 import { getStoreList } from '../../services/publicKeys'
 import moment from 'moment';
