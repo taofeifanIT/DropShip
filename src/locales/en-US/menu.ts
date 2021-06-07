@@ -1,4 +1,5 @@
 export default {
+  'menu.Calculation': 'Data Calculation',
   'menu.UserInfo': 'UserInfo',
   'menu.order': 'Order',
   'menu.log.Feedsubmission': 'Amazon Feedsubmission',

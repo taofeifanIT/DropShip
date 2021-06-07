@@ -102,6 +102,11 @@ export const routerConfigs = {
     component: './log/Feedsubmission',
   },
   Petra: { name: 'Petra', path: '/distributors/Petra', component: './distributors/Petra' },
+  Calculation: {
+    name: 'Calculation',
+    path: '/datacalculation/Calculation',
+    component: './datacalculation/Calculation',
+  },
 };
 export const indexRouterMap = (routers: any) => {
   return [

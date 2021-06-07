@@ -50,7 +50,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
     title: 'Marketplace',
     dataIndex: 'Marketplace',
     search: false,
-    width: 235,
+    width: 385,
     render: (
       _,
       record: {
@@ -96,7 +96,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
               </Text>
             </Text>
             <Text type="secondary">
-              order :{' '}
+              order :
               <Tooltip
                 placement="top"
                 title={record.OrderItemTotal > 1 ? 'Repeat order!' : undefined}
@@ -110,7 +110,14 @@ const columns: ProColumns<GithubIssueItem>[] = [
               </Tooltip>
             </Text>
             <Text type="secondary">
-              title : <ParagraphText content={record.Title} width={400} />
+                Tag Name:
+                <ParagraphText
+                  content={getKesValue('tagsData', record.listing.tag_id).tag_name}
+                  width={280}
+                />
+              </Text>
+            <Text type="secondary">
+              title : <ParagraphText content={record.Title} width={300} />
             </Text>
           </Space>
         </>

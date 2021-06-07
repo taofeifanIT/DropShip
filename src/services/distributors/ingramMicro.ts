@@ -45,3 +45,13 @@ export async function log_vendor_quantity_and_price_change(params: {
 export async function show() {
   return request(`/api/vendor/im/dashboard`);
 }
+
+export async function batchList(data: {
+  store_id: number;
+  ids: number[]
+}){
+  return request('/api/vendor/im/batch_listing',{
+    method: "POST",
+    data
+  })
+}

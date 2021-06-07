@@ -240,6 +240,11 @@
     ],
   },
   {
+    name: 'Calculation',
+    path: '/datacalculation/Calculation',
+    component: './datacalculation/Calculation',
+  },
+  {
     component: './404',
   },
 ];

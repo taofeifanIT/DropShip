@@ -31,3 +31,13 @@ export function downloadCsv() {
 export async function show() {
   return request(`/api/vendor/Petra/dashboard`);
 }
+
+export async function batchList(data: {
+  store_id: number;
+  ids: number[]
+}){
+  return request('/api/vendor/Petra/batch_listing',{
+    method: "POST",
+    data
+  })
+}

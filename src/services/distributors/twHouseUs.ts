@@ -31,3 +31,13 @@ export function downloadCsv() {
 export async function show() {
   return request(`/api/vendor/Twhouse_us/dashboard`);
 }
+
+export async function batchList(data: {
+  store_id: number;
+  ids: number[]
+}){
+  return request('/api/vendor/Twhouse_us/batch_listing',{
+    method: "POST",
+    data
+  })
+}

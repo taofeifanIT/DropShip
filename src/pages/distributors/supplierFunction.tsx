@@ -7,7 +7,7 @@ import {
   InfoCircleOutlined,
   SmileFilled,
   UpOutlined,
-  DownOutlined,
+  ProfileOutlined,
 } from '@ant-design/icons';
 import {
   Button,
@@ -27,8 +27,6 @@ import {
   Table,
   Divider,
   BackTop,
-  Menu,
-  Dropdown,
 } from 'antd';
 import type { FormInstance } from 'antd';
 import { log_vendor_quantity_and_price_change } from '../../services/distributors/ingramMicro';
@@ -54,6 +52,7 @@ type apiItem = {
   listApi?: any;
   downloadApi?: any;
   showApi?: any;
+  batchListApi?: any;
 };
 
 const DemoColumn = (props: {
@@ -838,7 +837,7 @@ export const columns = (
                 </Text>
               )}
               <Text type="secondary">
-                Tag Name:{' '}
+                Tag Name:
                 <ParagraphText
                   content={getKesValue('tagsData', record.tag_id).tag_name}
                   width={280}
@@ -1345,8 +1344,33 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
   const actionRef = useRef<ActionType>();
   const ref = useRef<FormInstance>();
   const { initialState } = useModel('@@initialState');
+  const [shopFrom] = Form.useForm();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [record, setRecord] = useState();
+  const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
+  const shopEl = (<>
+    <Form
+      name="control-ref"
+      form={shopFrom}
+    >
+      <Form.Item name="store_id" label="store" rules={[{ required: true, message: 'Please select store!' }]}>
+        <Select
+          size="small"
+          style={{ width: '150px' }}
+          placeholder="Select store"
+          allowClear
+        >
+          {getKesGroup('storeData')?.map((item: { id: number; name: string }) => {
+            return (
+              <Select.Option key={'company' + item.id} value={item.id}>
+                {item.name}
+              </Select.Option>
+            );
+          })}
+        </Select>
+      </Form.Item>
+    </Form>
+  </>)
   const refresh = (): void => {
     actionRef.current?.reload();
   };
@@ -1366,6 +1390,10 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
       <ProTable
         rowSelection={{
           selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
+          selectedRowKeys,
+          onChange: (rowKeys: any[]) => {
+            setSelectedRowKeys(rowKeys);
+          },
         }}
         size="small"
         bordered
@@ -1433,7 +1461,7 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
         }}
         onRow={(record: { id: number; notes: string; vendor_sku: string; ts_sku: string }) => {
           return {
-            onDoubleClick: (event) => {
+            onDoubleClick: (event): void => {
               setDrawerVisible(true);
               setRecord({
                 id: record.id,
@@ -1455,6 +1483,67 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
         dateFormatter="string"
         headerTitle={<span style={{ fontFamily: 'fantasy' }}>{title}</span>}
         toolBarRender={() => [
+          <Button
+            key="uploadAndDown"
+            disabled={!selectedRowKeys.length}
+            style={{display:  initialState?.currentUser?.auth_group?.title !== 'Outsourcer' ? 'inline-block' : 'none'}}
+            onClick={() => {
+              Modal.confirm({
+                title: 'Shop selection',
+                icon: <ExclamationCircleOutlined />,
+                content: shopEl,
+                okText: 'submit',
+                cancelText: 'cancel',
+                onOk: ()=>{
+                  return new Promise((resolve, reject) => {
+                    shopFrom.validateFields().then(values => {
+                      api.batchListApi({...values, ids: selectedRowKeys}).then((res: {
+                        code: number;
+                        msg: string
+                        data: {
+                          errors: String[];
+                          errors_products: Array<{ts_sku: string;}>[];
+                          success_products: Array<{ts_sku: string;}>[]
+                        }
+                      }) => {
+                         if(res.code){
+                           let info = res.data.errors.toString() + '\n'
+                           if(res.data.errors_products.length > 0){
+                            info += '\nFailure data:' + [res.data.errors_products.map((item: any) => 
+                              { 
+                                return item.ts_sku
+                             })].toString() + '\n'
+                           }
+                           if(res.data.success_products.length > 0){
+                            info += '\nSuccess data:' + [res.data.success_products.map((item: any) => 
+                              { 
+                                return item.ts_sku
+                             })].toString() + '\n'
+                           }
+                           message.info(info, 3)
+                           setSelectedRowKeys([])
+                           actionRef.current?.reload()
+                           resolve(null)
+                         } else {
+                           res.msg
+                         }
+                      }).catch((e: string) => {
+                        reject()
+                        message.error(e)
+                      }).finally(() => {
+                        shopFrom.resetFields()
+                      })
+                    }).catch(() => {
+                      reject()
+                    })
+                  })
+                }
+              });
+            }}
+            icon={<ProfileOutlined />}
+          >
+            Batch list
+        </Button>,
           <Button
             onClick={() => {
               const valObj = ref.current?.getFieldsValue();

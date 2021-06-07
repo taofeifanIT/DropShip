@@ -67,7 +67,7 @@ const DemoColumn: React.FC = () => {
         setLoading(false);
       });
   };
-  var config = {
+  var config: any = {
     data: data,
     isGroup: true,
     xField: 'time',

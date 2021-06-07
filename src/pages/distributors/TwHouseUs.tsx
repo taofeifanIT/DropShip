@@ -5,6 +5,7 @@ import {
   deleteItem,
   downloadCsv,
   show,
+  batchList
 } from '../../services/distributors/twHouseUs';
 import SupplierFunction from './supplierFunction';
 export default () => {
@@ -17,6 +18,7 @@ export default () => {
       listApi: products,
       downloadApi: downloadCsv,
       showApi: show,
+      batchListApi: batchList
     },
     isAuth: false,
   };

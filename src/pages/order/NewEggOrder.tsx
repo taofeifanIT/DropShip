@@ -1,10 +1,9 @@
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { LockOutlined, BellOutlined } from '@ant-design/icons';
-import { Button, Typography, Space, Form, Modal, InputNumber, message, Tag } from 'antd';
+import { Button, Typography, Space, Form, Modal, InputNumber, message } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import { newEggListing } from '../../services/order/newEggOrder';
-import usePopInfo from '../../hooks/usePopInfo';
 import { getNewEggHref } from '../../utils/jumpUrl';
 import { getKesGroup, getKesValue } from '../../utils/utils';
 import { configs } from '../../services/publicKeys';
