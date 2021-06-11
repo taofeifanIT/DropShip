@@ -10,6 +10,7 @@ import { getKesGroup, getKesValue } from '../../utils/utils';
 import { vendors, configs } from '../../services/publicKeys';
 import moment from 'moment';
 import styles from './style.less';
+import ParagraphText from '@/components/ParagraphText'
 const { Text, Paragraph } = Typography;
 type GithubIssueItem = {
   url: string;
@@ -25,19 +26,6 @@ type GithubIssueItem = {
   created_at: string;
   updated_at: string;
   closed_at?: string;
-};
-
-const ParagraphText = (props: { content: string; width: number }) => {
-  const [ellipsis] = React.useState(true);
-  const { content, width } = props;
-  return (
-    <Text
-      style={ellipsis ? { width: width, display: 'inline' } : undefined}
-      ellipsis={ellipsis ? { tooltip: content } : false}
-    >
-      {content}
-    </Text>
-  );
 };
 
 const columns: ProColumns<GithubIssueItem>[] = [
@@ -69,7 +57,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
           <Space direction="vertical">
             <Text type="secondary">
               <AmazonOutlined />
-              Asin:{' '}
+              Asin:
               <a target="_blank" href={`${getAsonHref(record.country_id)}${record.ASIN}`}>
                 {record.ASIN}
               </a>
@@ -111,10 +99,10 @@ const columns: ProColumns<GithubIssueItem>[] = [
             </Text>
             <Text type="secondary">
                 Tag Name:
-                <ParagraphText
-                  content={getKesValue('tagsData', record.listing.tag_id).tag_name}
+                {record.listing && (<ParagraphText
+                  content={getKesValue('tagsData', record.listing.tag_id)?.tag_name}
                   width={280}
-                />
+                />)}
               </Text>
             <Text type="secondary">
               title : <ParagraphText content={record.Title} width={300} />

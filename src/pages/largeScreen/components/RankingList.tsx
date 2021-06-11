@@ -2,19 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Typography, List } from 'antd';
 const { Text } = Typography;
 import { saleRanking } from '../../../services/dashboard';
+import ParagraphText from '@/components/ParagraphText'
 
-const ParagraphText = (props: { content: string; width: number }) => {
-  const [ellipsis] = React.useState(true);
-  const { content, width } = props;
-  return (
-    <Text
-      style={ellipsis ? { width: width, display: 'inline', color: '#d6d6da' } : undefined}
-      ellipsis={ellipsis ? { tooltip: content } : false}
-    >
-      {content}
-    </Text>
-  );
-};
 const RankingList = () => {
   const [data, setData] = useState<
     {

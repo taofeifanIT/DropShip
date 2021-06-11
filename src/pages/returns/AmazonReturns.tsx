@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { AmazonOutlined, WarningOutlined } from '@ant-design/icons';
 import { Typography, Space } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
@@ -6,21 +6,10 @@ import ProTable from '@ant-design/pro-table';
 import { listIndex } from '../../services/returns';
 import { getKesGroup } from '../../utils/utils';
 import { stores } from '../../services/publicKeys';
+import ParagraphText from '@/components/ParagraphText'
 import moment from 'moment';
 const { Text } = Typography;
 
-const ParagraphText = (props: { content: string; width: number }) => {
-  const [ellipsis] = React.useState(true);
-  const { content, width } = props;
-  return (
-    <Text
-      style={ellipsis ? { width: width, display: 'inline' } : undefined}
-      ellipsis={ellipsis ? { tooltip: content } : false}
-    >
-      {content}
-    </Text>
-  );
-};
 
 const columns = (): ProColumns<any>[] => [
   {

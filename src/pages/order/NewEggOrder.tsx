@@ -6,26 +6,39 @@ import ProTable from '@ant-design/pro-table';
 import { newEggListing } from '../../services/order/newEggOrder';
 import { getNewEggHref } from '../../utils/jumpUrl';
 import { getKesGroup, getKesValue } from '../../utils/utils';
-import { configs } from '../../services/publicKeys';
+import { configs,vendors } from '../../services/publicKeys';
 import { getPageHeight } from '../../utils/utils';
+import { getTargetHref } from '../../utils/jumpUrl';
+import ParagraphText from '@/components/ParagraphText'
 import moment from 'moment';
 import styles from './style.less';
-const { Text } = Typography;
+const { Text,Paragraph } = Typography;
 type GithubIssueItem = {
-  url: string;
-  id: number;
-  number: number;
-  title: string;
-  labels: {
-    name: string;
-    color: string;
-  }[];
-  state: string;
-  comments: number;
-  created_at: string;
-  updated_at: string;
-  closed_at?: string;
-};
+  NeweggItemNumber: string;
+  SellerPartNumber: string;
+  OrderNumber: string,
+  CustomerName: string;
+  CustomerPhoneNumber: string;
+  CustomerEmailAddress: string;
+  ShipToAddress1: string;
+  ShipToAddress2: string;
+  ShipToCityName: string;
+  ShipToStateCode: string;
+  ShipToZipCode: string;
+  ShipToCountryCode: string;
+  ShipService: string;
+  ShipToFirstName: string;
+  ShipToLastName: string;
+  OrderQty: number;
+  after_algorithm_price: string;
+  store_id: number;
+  tag_id: number;
+  vendor_id: number;
+  vendor_price: number;
+  vendor_sku: string;
+  Status: string;
+  Description: string;
+}
 
 const columns: ProColumns<GithubIssueItem>[] = [
   {
@@ -37,32 +50,54 @@ const columns: ProColumns<GithubIssueItem>[] = [
     title: 'Marketplace',
     dataIndex: 'Marketplace',
     search: false,
-    width: 285,
-    render: (
-      _,
-      record: {
-        NeweggItemNumber: string;
-        SellerPartNumber: string;
-        Description: string;
-        order_newegg: any;
-      },
-    ) => {
+    width: 405,
+    render: (_, record) => {
       return (
         <>
           <Space direction="vertical">
             <Text type="secondary">
-              Newegg:{' '}
+              Newegg:
               <a target="_blank" href={`${getNewEggHref(record.NeweggItemNumber)}`}>
                 {record.NeweggItemNumber}
               </a>
             </Text>
             <Text type="secondary">
+              Sku :
+              <Text>
+                {record?.vendor_sku && (
+                  <>
+                    <a
+                      target="_blank"
+                      rel="noreferrer"
+                      href={`${getTargetHref(record?.vendor_sku)}${record.vendor_sku}`}
+                    >
+                      {record.vendor_sku}
+                    </a>
+                    <Paragraph
+                      style={{ display: 'inline' }}
+                      copyable={{ text: record.vendor_sku }}
+                    ></Paragraph>
+                  </>
+                )}
+              </Text>
+            </Text>
+            <Text type="secondary">
               SellerPartNumber : <Text>{record.SellerPartNumber}</Text>
             </Text>
             <Text type="secondary">
-              OrderNumber : <Text>{record.order_newegg.OrderNumber}</Text>
+              OrderNumber : <Text>{record.OrderNumber}</Text>
             </Text>
-            <Text type="secondary">Description : {record.Description}</Text>
+            <Text type="secondary">
+              Tag Name:
+                {record.tag_id && (<ParagraphText
+                content={getKesValue('tagsData', record.tag_id)?.tag_name}
+                width={280}
+              />)}
+            </Text>
+            <Text type="secondary">Description : <ParagraphText
+                content={record.Description}
+                width={280}
+              /></Text>
           </Space>
         </>
       );
@@ -75,20 +110,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
     width: 345,
     render: (
       _,
-      record: {
-        CustomerName: string;
-        CustomerPhoneNumber: string;
-        CustomerEmailAddress: string;
-        ShipToAddress1: string;
-        ShipToAddress2: string;
-        ShipToCityName: string;
-        ShipToStateCode: string;
-        ShipToZipCode: string;
-        ShipToCountryCode: string;
-        ShipService: string;
-        ShipToFirstName: string;
-        ShipToLastName: string;
-      },
+      record
     ) => {
       return (
         <>
@@ -176,6 +198,29 @@ const columns: ProColumns<GithubIssueItem>[] = [
     },
   },
   {
+    title: 'Vendor',
+    dataIndex: 'vendor_id',
+    width: 150,
+    valueType: 'select',
+    request: async () => {
+      return [
+        ...getKesGroup('vendorData').map((item: vendors) => {
+          return {
+            label: item.vendor_name,
+            value: item.id,
+          };
+        }),
+      ];
+    },
+  },
+  {
+    title: 'Vendor price',
+    dataIndex: 'vendor_price',
+    width: 100,
+    align: 'center',
+    search: false,
+  },
+  {
     title: 'Quantity ordered',
     dataIndex: 'QuantityOrdered',
     align: 'center',
@@ -185,7 +230,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
     title: 'Store',
     dataIndex: 'store_id',
     valueType: 'select',
-    width: 100,
+    width: 200,
     request: async (): Promise<any> => {
       const tempData = getKesGroup('storeData').map((item: { id: number; name: string }) => {
         return {
@@ -208,6 +253,12 @@ const columns: ProColumns<GithubIssueItem>[] = [
     title: 'Unit Price',
     dataIndex: 'UnitPrice',
     width: 150,
+  },
+  {
+    title: 'After algorithm price',
+    valueType: 'money',
+    width: 200,
+    dataIndex: 'after_algorithm_price',
   },
 ];
 
@@ -270,24 +321,8 @@ export default () => {
               limit: params.pageSize,
             };
             newEggListing(tempParams).then((res) => {
-              const tempData = res.data.list.map(
-                (item: {
-                  order_newegg: {
-                    CustomerName: string;
-                    CustomerPhoneNumber: string;
-                    CustomerEmailAddress: string;
-                    ShipToAddress1: string;
-                    ShipToAddress2: string;
-                    ShipToCityName: string;
-                    ShipToStateCode: string;
-                    ShipToZipCode: string;
-                    ShipToCountryCode: string;
-                    ShipService: string;
-                    ShipToFirstName: string;
-                    ShipToLastName: string;
-                    OrderQty: number;
-                  };
-                }) => {
+              const tempData: GithubIssueItem = res.data.list.map(
+                (item: any) => {
                   return {
                     ...item,
                     CustomerName: item.order_newegg.CustomerName,
@@ -303,6 +338,13 @@ export default () => {
                     ShipToFirstName: item.order_newegg.ShipToFirstName,
                     ShipToLastName: item.order_newegg.ShipToLastName,
                     QuantityOrdered: item.order_newegg.OrderQty,
+                    OrderNumber: item.order_newegg.OrderNumber,
+                    after_algorithm_price: item.listing.after_algorithm_price,
+                    store_id: item.listing.store_id,
+                    tag_id: item.listing.tag_id,
+                    vendor_id: item.listing.vendor_id,
+                    vendor_price: item.listing.vendor_price,
+                    vendor_sku: item.listing.vendor_sku,
                   };
                 },
               );

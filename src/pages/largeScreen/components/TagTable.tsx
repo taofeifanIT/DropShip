@@ -1,22 +1,11 @@
 import styles from '../style.less';
 import { tagRanking } from '../../../services/dashboard';
-import { Typography, Spin } from 'antd';
+import { Spin } from 'antd';
 import { useState, useEffect } from 'react';
-const { Text } = Typography;
+import ParagraphText from '@/components/ParagraphText'
 import moment from 'moment';
 
-const ParagraphText = (props: { content: string; width: number }) => {
-  const ellipsis = true;
-  const { content, width } = props;
-  return (
-    <Text
-      style={ellipsis ? { width: width, display: 'inline', color: '#fff' } : undefined}
-      ellipsis={ellipsis ? { tooltip: content } : false}
-    >
-      {content}
-    </Text>
-  );
-};
+
 
 const TagData = () => {
   const [data, setData] = useState([]);

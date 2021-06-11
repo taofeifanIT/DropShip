@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ReconciliationOutlined,
   AmazonOutlined,
@@ -43,6 +43,7 @@ import moment from 'moment';
 import { marketplaces, priceAlgorithms, stores, tags, vendors } from '../../services/publicKeys';
 import { getKesGroup, getKesValue } from '../../utils/utils';
 import { getTargetHref, getAsonHref, getNewEggHref } from '../../utils/jumpUrl';
+import ParagraphText from '@/components/ParagraphText'
 const { Text, Link } = Typography;
 type GithubIssueItem = {
   id: number;
@@ -72,18 +73,6 @@ type GithubIssueItem = {
   vendor_quantity: number;
   vendor_price: string;
   update_at: number;
-};
-const ParagraphText = (props: { content: string; width: number }) => {
-  const [ellipsis] = React.useState(true);
-  const { content, width } = props;
-  return (
-    <Text
-      style={ellipsis ? { width: width, display: 'inline' } : undefined}
-      ellipsis={ellipsis ? { tooltip: content } : false}
-    >
-      {content}
-    </Text>
-  );
 };
 const BatchPriceModal = (props: {
   batchPriceModalVisible: boolean;
@@ -441,7 +430,7 @@ const columns = (
     search: false,
     width: 300,
     render: (_, record: any) => {
-      var tagTitle = getKesValue('tagsData', record.tag_id).tag_name;
+      var tagTitle = getKesValue('tagsData', record.tag_id)?.tag_name;
       return (
         <>
           <Space direction="vertical">
@@ -589,14 +578,14 @@ const columns = (
         <>
           <Space direction="vertical">
             <Text type="secondary">
-              Marketplace:{' '}
+              Marketplace:
               <Text>{getKesValue('marketPlaceData', record.marketplace_id)?.marketplace}</Text>
             </Text>
             <Text type="secondary">
               Store: <Text>{getKesValue('storeData', record.store_id)?.name}</Text>
             </Text>
             <Text type="secondary">
-              Country:{' '}
+              Country:
               <Text>{getCountryImg(getKesValue('countryData', record.country_id)?.country)}</Text>
             </Text>
           </Space>
@@ -614,7 +603,7 @@ const columns = (
         <>
           <Space direction="vertical">
             <Text type="secondary">
-              task_update_at:{' '}
+              task_update_at:
               <Text>
                 {(record.task_update_at &&
                   moment(parseInt(record.task_update_at + '000')).format('YYYY-MM-DD HH:mm:ss')) ||
@@ -636,7 +625,7 @@ const columns = (
               </Text>
             </Text>
             <Text type="secondary">
-              price_and_quantity_change_time:{' '}
+              price_and_quantity_change_time:
               <Text>
                 {(record.price_and_quantity_change_time &&
                   moment(parseInt(record.price_and_quantity_change_time + '000')).format(
@@ -646,7 +635,7 @@ const columns = (
               </Text>
             </Text>
             <Text type="secondary">
-              add_time:{' '}
+              add_time:
               <Text>
                 {(record.add_time &&
                   moment(parseInt(record.add_time + '000')).format('YYYY-MM-DD HH:mm:ss')) ||
@@ -777,7 +766,6 @@ const columns = (
     dataIndex: 'marketplace_and_db_diff',
     valueType: 'select',
     hideInTable: true,
-    width: 250,
     valueEnum: {
       '2': { text: 'InDbnotInMarketPlace', status: 'Error' },
       '3': { text: 'InDbAndInMarketplace', status: 'Error' },

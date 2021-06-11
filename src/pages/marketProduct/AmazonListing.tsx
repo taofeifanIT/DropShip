@@ -6,6 +6,7 @@ import ProTable from '@ant-design/pro-table';
 import { amazonListing } from '../../services/amazonListing/amazonListing';
 import { getAsonHref } from '../../utils/jumpUrl';
 import { getStoreList } from '../../services/publicKeys';
+import ParagraphText from '@/components/ParagraphText'
 import moment from 'moment';
 const { Text } = Typography;
 type GithubIssueItem = {
@@ -22,19 +23,6 @@ type GithubIssueItem = {
   created_at: string;
   updated_at: string;
   closed_at?: string;
-};
-
-const ParagraphText = (props: { content: string; width: number }) => {
-  const [ellipsis] = React.useState(true);
-  const { content, width } = props;
-  return (
-    <Text
-      style={ellipsis ? { width: width, display: 'inline' } : undefined}
-      ellipsis={ellipsis ? { tooltip: content } : false}
-    >
-      {content}
-    </Text>
-  );
 };
 
 const getTagName = () => {

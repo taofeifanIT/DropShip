@@ -42,6 +42,7 @@ import Notes from '../../components/Notes';
 import { Info } from '../../components/Notes';
 import { createDownload } from '../../utils/utils';
 import { Column } from '@ant-design/charts';
+import ParagraphText from '@/components/ParagraphText'
 import moment from 'moment';
 const { Text } = Typography;
 
@@ -250,12 +251,11 @@ const ButtonGroup = (props: {
         listingApi({ id: record.id, ...tempValue })
           .then((res: { code: number; data: any; msg: string }) => {
             if (res.code) {
-              message.info('Listed succssful!');
               const { success, errors } = getResponseInfo(res.data);
-              message.success(
+              message.info(
                 <div>
-                  {success && <p>{`${success}'  Listed succssful!`}</p>}
-                  {errors && <p>{`${errors}  Listed faild!`}</p>}
+                  {success && <p>{`${success.join(' ')}'  Listed succssful!`}</p>}
+                  {errors && <p>{`${errors.join(' ')}  Listed faild!`}</p>}
                   {!success && <p>{`0 Listed succssful!`}</p>}
                   {!errors && <p>{`0 Listed faild!`}</p>}
                 </div>,
@@ -691,18 +691,6 @@ const ButtonGroup = (props: {
   );
 };
 
-const ParagraphText = (props: { content: string; width: number }) => {
-  const [ellipsis] = React.useState(true);
-  const { content, width } = props;
-  return (
-    <Text
-      style={ellipsis ? { width: width, display: 'inline' } : undefined}
-      ellipsis={ellipsis ? { tooltip: content } : false}
-    >
-      {content}
-    </Text>
-  );
-};
 
 export const columns = (
   api: apiItem,
@@ -862,7 +850,7 @@ export const columns = (
             case -1:
               return <span style={{ color: '#000000' }}>none</span>;
             case 0:
-              return <span style={{ color: '#000000' }}>not match</span>;
+              return <span style={{ color: '#eabf00' }}>not match</span>;
             case 1:
               return <span style={{ color: '#87d068' }}>match</span>;
           }
