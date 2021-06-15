@@ -52,7 +52,7 @@ const TagData = () => {
                   <tr className={index % 2 === 0 ? styles.odd : styles.ocd}>
                     <th style={{ width: '60px', textAlign: 'center' }}>{index + 1}</th>
                     <th>
-                      <ParagraphText content={item.tag_name} width={200} />
+                      <ParagraphText content={item.tag_name} width={200} style={{color: '#fff'}} />
                     </th>
                     <th>{item.total_sales}</th>
                     <th>{item.total_order}</th>

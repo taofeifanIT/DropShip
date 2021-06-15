@@ -71,7 +71,7 @@ const RankingList = () => {
               ) : (
                 <div style={witchNoeStyle}>{index + 1}</div>
               )}
-              <ParagraphText content={item.Title} width={300} />
+              <ParagraphText content={item.Title} width={300} style={{color: '#fff'}}/>
             </div>
           </List.Item>
         )}

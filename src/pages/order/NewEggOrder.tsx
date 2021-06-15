@@ -1,9 +1,9 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { LockOutlined, BellOutlined } from '@ant-design/icons';
-import { Button, Typography, Space, Form, Modal, InputNumber, message } from 'antd';
+import { Button, Typography, Space, Form, Modal, InputNumber, message,Input } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { newEggListing } from '../../services/order/newEggOrder';
+import { newEggListing,shipOrder } from '../../services/order/newEggOrder';
 import { getNewEggHref } from '../../utils/jumpUrl';
 import { getKesGroup, getKesValue } from '../../utils/utils';
 import { configs,vendors } from '../../services/publicKeys';
@@ -40,7 +40,67 @@ type GithubIssueItem = {
   Description: string;
 }
 
-const columns: ProColumns<GithubIssueItem>[] = [
+const ActionModal = (props: {
+  record: GithubIssueItem | any;
+  visible: boolean;
+  onCancel: (params: any)=> void;
+  init: () => void;
+}) => {
+  const { record, visible, onCancel,init } = props
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false)
+  const layout = {
+    labelCol: { span: 8 },
+    wrapperCol: { span: 16 },
+  };
+  const onOk = () => {
+    form.validateFields().then(values => {
+      setLoading(true)
+      shipOrder(values).then(res => {
+        if(!res.code){
+          message.success('operation succcesful!')
+          setTimeout(() => {
+            onCancel(false)
+            init()
+          }, 1000)
+        } else {
+          throw res.msg
+        }
+      }).catch(e => {
+        message.error(e)
+      }).finally(() => {
+        setLoading(false)
+      })
+    })
+  }
+  useEffect(() => {
+    if(visible){
+      form.setFieldsValue(record)
+    }
+  }, [visible])
+  return (<>
+    <Modal confirmLoading={loading} title="fulfill" visible={visible} onOk={onOk} onCancel={() => {
+      onCancel(false)
+    }}>
+    <Form form={form} {...layout} name="nest-messages">
+    <Form.Item style={{display: 'none'}} name={'id'} label="id" rules={[{ required: true,message: 'Please input your id!' }]}>
+        <Input />
+      </Form.Item>
+      <Form.Item name={'ShipCarrier'} label="ShipCarrier" rules={[{ required: true,message: 'Please input your ShipCarrier!' }]}>
+        <Input />
+      </Form.Item>
+      <Form.Item name={'TrackingNumber'} label="TrackingNumber" rules={[{ required: true,message: 'Please input your TrackingNumber!'}]}>
+        <Input />
+      </Form.Item>
+      <Form.Item name={'ShippedQty'} label="ShippedQty" rules={[{required: true, type: 'number', min: 0, max: 19999,message: 'Please input your ShippedQty!' }]}>
+        <InputNumber />
+      </Form.Item>
+    </Form>
+      </Modal>
+  </>)
+}
+
+const columns = (init?: () =>void): ProColumns<GithubIssueItem>[] => [
   {
     dataIndex: 'index',
     valueType: 'indexBorder',
@@ -151,10 +211,6 @@ const columns: ProColumns<GithubIssueItem>[] = [
             <Text type="secondary">
               ShipToLastName : <Text copyable>{record.ShipToLastName}</Text>
             </Text>
-            {/* <Text type="secondary">
-                            <Tag color="#2db7f5">{record.CountryCode}</Tag>
-                            {record.AddressType === "Commercial" ? (<Tag color="warning">{record.AddressType}</Tag>) : (<Tag color="#87d068">{record.AddressType}</Tag>)}
-                        </Text> */}
           </Space>
         </>
       );
@@ -260,46 +316,32 @@ const columns: ProColumns<GithubIssueItem>[] = [
     width: 200,
     dataIndex: 'after_algorithm_price',
   },
+  {
+    title: 'action',
+    width: 200,
+    fixed: 'right',
+    render: (_, record) => {
+      const [visible, setVisible] = useState(false)
+      return (<>
+      <ActionModal record={record} visible={visible} onCancel={setVisible} init={init} />
+      <Button onClick={()=>{
+        setVisible(true)
+      }}>Fulfill</Button>
+      </>)
+    }
+  },
 ];
 
 export default () => {
   const actionRef = useRef<ActionType>();
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [confirmLoading, setConfirmLoading] = useState(false);
-  const [from] = Form.useForm();
   const [currentRow, setCurrentRow] = useState(-1);
-  const [limit, setLimit] = useState<configs>(getKesValue('configsData', 'order_quantity_limit'));
-
-  const showModal = () => {
-    setIsModalVisible(true);
-  };
-
-  const handleOk = () => {
-    from.validateFields().then(async (updatedValues: any) => {
-      setConfirmLoading(true);
-      saleLimit(updatedValues)
-        .then((res) => {
-          if (res.code) {
-            message.success('operation successful!');
-            setLimit(updatedValues['order_quantity_limit']);
-          } else {
-            throw res.msg;
-          }
-        })
-        .catch((e) => {
-          message.error(e);
-        })
-        .finally(() => {
-          setConfirmLoading(false);
-          setIsModalVisible(false);
-        });
-    });
-  };
   return (
     <>
       <ProTable<GithubIssueItem>
         size="small"
-        columns={columns}
+        columns={columns(() => {
+          actionRef.current?.reload()
+        })}
         actionRef={actionRef}
         className={styles.tableStyle}
         request={async (params = {}, sort) =>
@@ -321,7 +363,7 @@ export default () => {
               limit: params.pageSize,
             };
             newEggListing(tempParams).then((res) => {
-              const tempData: GithubIssueItem = res.data.list.map(
+              const tempData: GithubIssueItem[] = res.data.list.map(
                 (item: any) => {
                   return {
                     ...item,
@@ -392,59 +434,11 @@ export default () => {
           search: false,
         }}
         scroll={{
-          x: columns.reduce((sum, e) => sum + Number(e.width || 0), 0),
+          x: columns().reduce((sum, e) => sum + Number(e.width || 0), 0),
           y: getPageHeight() - 250,
         }}
         dateFormatter="string"
-        headerTitle={
-          <>
-            <BellOutlined /> orders{' '}
-            <span style={{ marginLeft: '20px', fontSize: '16px' }}>
-              Current quantity limit： {limit}
-            </span>
-          </>
-        }
-        toolBarRender={() => [
-          <Button
-            key="ImportOutlined"
-            icon={<LockOutlined />}
-            onClick={() => {
-              showModal();
-            }}
-          >
-            Change Limit
-          </Button>,
-        ]}
       />
-      <Modal
-        title="Quantity Limit"
-        visible={isModalVisible}
-        onOk={handleOk}
-        confirmLoading={confirmLoading}
-        onCancel={() => {
-          setIsModalVisible(false);
-        }}
-      >
-        <Form
-          form={from}
-          labelCol={{ span: 8 }}
-          wrapperCol={{ span: 14 }}
-          initialValues={{
-            order_quantity_limit: limit,
-          }}
-          layout="horizontal"
-        >
-          <Form.Item label="quantity limit">
-            <Form.Item
-              name="order_quantity_limit"
-              noStyle
-              rules={[{ required: true, message: 'Please input your order quantity limit!' }]}
-            >
-              <InputNumber style={{ width: '200px' }}></InputNumber>
-            </Form.Item>
-          </Form.Item>
-        </Form>
-      </Modal>
     </>
   );
 };
