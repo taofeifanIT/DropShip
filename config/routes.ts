@@ -91,6 +91,12 @@
         icon: 'smile',
         component: './distributors/Petra',
       },
+      {
+        path: '/distributors/Maleb',
+        name: 'Maleb',
+        icon: 'smile',
+        component: './distributors/Maleb',
+      },
     ],
   },
   {

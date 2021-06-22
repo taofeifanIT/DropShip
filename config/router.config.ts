@@ -107,6 +107,11 @@ export const routerConfigs = {
     path: '/datacalculation/Calculation',
     component: './datacalculation/Calculation',
   },
+  Maleb:{
+    path: '/distributors/Maleb',
+    name: 'Maleb',
+    component: './distributors/Maleb',
+  },
 };
 export const indexRouterMap = (routers: any) => {
   return [

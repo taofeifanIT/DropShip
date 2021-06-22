@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { LockOutlined, BellOutlined } from '@ant-design/icons';
 import { Button, Typography, Space, Form, Modal, InputNumber, message,Input } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import { newEggListing,shipOrder } from '../../services/order/newEggOrder';
 import { getNewEggHref } from '../../utils/jumpUrl';
 import { getKesGroup, getKesValue } from '../../utils/utils';
-import { configs,vendors } from '../../services/publicKeys';
+import { vendors } from '../../services/publicKeys';
 import { getPageHeight } from '../../utils/utils';
 import { getTargetHref } from '../../utils/jumpUrl';
 import ParagraphText from '@/components/ParagraphText'
@@ -67,7 +66,7 @@ const ActionModal = (props: {
           throw res.msg
         }
       }).catch(e => {
-        message.error(e)
+        message.error(e) 
       }).finally(() => {
         setLoading(false)
       })
