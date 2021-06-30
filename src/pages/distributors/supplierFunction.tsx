@@ -1334,7 +1334,7 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
   const { initialState } = useModel('@@initialState');
   const [shopFrom] = Form.useForm();
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [record, setRecord] = useState();
+  const [record, setRecord] = useState<any>();
   const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
   const shopEl = (<>
     <Form

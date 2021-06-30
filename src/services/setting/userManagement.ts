@@ -26,3 +26,11 @@ export async function deleteUser(id: any) {
     method: 'GET',
   });
 }
+
+// /api/adminuser/list_adminusers
+export async function userList(params: any){
+  return request('/api/adminuser/list_adminusers',{
+    method: 'GET',
+    params
+  })
+}

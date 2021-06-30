@@ -29,6 +29,7 @@ export const getTargetHref = (venderId: number | string) => {
     4: 'https://uk-new.ingrammicro.com/Site/Search#keywords:',
     5: 'https://www.twhouse.com/?s=',
     7: 'https://order.petra.com/product/?search=',
+    8: 'https://www.malabs.com/product/'
   };
   return srcObj[venderId];
 };
