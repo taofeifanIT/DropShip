@@ -27,12 +27,12 @@ import {
   Table,
   Divider,
   BackTop,
+  Input
 } from 'antd';
 import type { FormInstance } from 'antd';
 import { log_vendor_quantity_and_price_change } from '../../services/distributors/ingramMicro';
 import { matchAndListing } from '../../services/dashboard';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
-import { history } from 'umi';
 import { tags } from '../../services/publicKeys';
 import { getKesGroup, getKesValue } from '../../utils/utils';
 import { getTargetHref, getAsonHref, getNewEggHref } from '../../utils/jumpUrl';
@@ -54,6 +54,7 @@ type apiItem = {
   downloadApi?: any;
   showApi?: any;
   batchListApi?: any;
+  batchDelete?:any;
 };
 
 const DemoColumn = (props: {
@@ -714,6 +715,32 @@ export const columns = (
           }),
         ];
       },
+      renderFormItem: (_, { type, defaultRender, formItemProps, fieldProps}, form) => {
+        if (type === 'form') {
+          return null;
+        }
+        const status = form.getFieldValue('state');
+        if (status !== 'open') {
+          return (
+            // value 和 onchange 会通过 form 自动注入。
+            <Select
+            {...fieldProps}
+              showSearch
+              style={{ width: '100%' }}
+              placeholder="Select a tag"
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {getKesGroup('tagsData').map((item: tags) => {
+            return <Select.Option key={'op'+item.id} value={item.id}>{item.tag_name}</Select.Option>;
+          })}
+            </Select>
+          );
+        }
+        return defaultRender(_);
+      }
     },
     {
       title: 'vendor_sku',
@@ -1362,6 +1389,37 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
   const refresh = (): void => {
     actionRef.current?.reload();
   };
+  function deleteListItem() {
+    Modal.confirm({
+      title: 'Do you want to delete these products?',
+      icon: <ExclamationCircleOutlined />,
+      content: `You have selected ${selectedRowKeys.length} pieces of data`,
+      onOk() {
+        return new Promise((resolve, reject) => {
+          api.batchDelete(selectedRowKeys)
+            .then((res) => {
+              if (res.code) {
+                setSelectedRowKeys([]);
+                message.success('Operation successful!');
+                refresh()
+              } else {
+                throw res.msg;
+              }
+            })
+            .catch((e) => {
+              console.error(e);
+              message.error(e);
+            })
+            .finally(() => {
+              resolve(null);
+            });
+        });
+      },
+      onCancel() {
+        console.log('Cancel');
+      },
+    });
+  }
   useEffect(() => {
     refresh();
   }, [initialState?.conText]);
@@ -1443,6 +1501,7 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
         }}
         pagination={{
           pageSize: 30,
+          pageSizeOptions:['10', '20','30','50','100','200']
         }}
         options={{
           search: false,
@@ -1559,6 +1618,9 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
           >
             Download
           </Button>,
+          <Button disabled={!selectedRowKeys.length} key='toolDelete' danger type='primary' onClick={() => {
+            deleteListItem()
+          }}>Delete</Button>
         ]}
       />
       <BackTop>

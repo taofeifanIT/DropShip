@@ -41,3 +41,10 @@ export async function batchList(data: {
     data
   })
 }
+
+export async function batchDelete(ids: number[]) {
+  return request('/api/vendor/Twhouse_us/batch_delete', {
+    method: 'POST',
+    data: ids,
+  });
+}

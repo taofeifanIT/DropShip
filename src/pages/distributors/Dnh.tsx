@@ -7,11 +7,11 @@ import {
     show,
     batchList,
     batchDelete
-  } from '../../services/distributors/maleb';
+  } from '../../services/distributors/dnh';
   import SupplierFunction from './supplierFunction';
   export default () => {
     const config = {
-      title: 'Maleb',
+      title: 'DNH',
       api: {
         updateApi: update,
         listingApi: listing,

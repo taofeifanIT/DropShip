@@ -54,7 +54,8 @@ type itemPop = {
   }>,
   test: Array<{result: boolean; msg: string; storeName: string}>;
   successfulInfo?: string; 
-  errorInfo?: string
+  errorInfo?: string;
+  exchange_rate?: string;
 }
 type resultPop = {msg?: string, result?: boolean, storeName?: string, successfulInfo?: string; errorInfo?: string}
 type user = { id: number; username: string };
@@ -641,7 +642,9 @@ const CardList = (props: { items: itemPop, index: number, order: number; setRow:
           <Divider type='vertical' style={{ height: '70px' }} />
           <div style={{ display: 'inline-block' }}>
             <Text type='secondary'>
-              参考价格: $<Text copyable>{items.reference_price}</Text>(buy box)
+              <p>参考价格:</p>
+               $<Text copyable>{items.reference_price}</Text>(buy box)
+              <p> CAD <Text copyable>{items.exchange_rate}</Text></p>
             </Text><br />
           </div>
           <Divider type='vertical' style={{ height: '70px' }} />

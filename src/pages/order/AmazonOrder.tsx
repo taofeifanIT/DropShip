@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { AmazonOutlined, LockOutlined, BellOutlined } from '@ant-design/icons';
-import { Button, Typography, Space, Form, Modal, InputNumber, message, Tag, Tooltip } from 'antd';
+import { Button, Typography, Space, Form, Modal, InputNumber, message, Tag, Tooltip,Table } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import { list, saleLimit } from '../../services/order/order';
@@ -344,6 +344,8 @@ export default () => {
   const [currentRow, setCurrentRow] = useState(-1);
   const [limit, setLimit] = useState<configs>(getKesValue('configsData', 'order_quantity_limit'));
   const [scrollX, setScrollX] = useState(columns.reduce((sum, e) => sum + Number(e.width || 0), 0));
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [tableRows,setTableRows] = useState([])
   const showModal = () => {
     setIsModalVisible(true);
   };
@@ -368,16 +370,47 @@ export default () => {
         });
     });
   };
-  const btnClick = (record: {
-    AmazonOrderId: string;
-    SellerSKU: string;
-    QuantityOrdered: string;
-    ItemPriceAmount: string;
-  }) => {
-    let str: string = `${record.AmazonOrderId}@${record.SellerSKU}@${record.QuantityOrdered}@${record.ItemPriceAmount}`;
-    strs = str.split('@');
-    document.execCommand('copy');
-  };
+  function downLoadExcel(data: any[], fileName: string) {
+    //定义表头
+    let str = `Date,Marketplace,Order ID,SKU,Price Per Unit,QTY,Total Revenue,Amazon Fee,Purchase Price,Profit,Purchased from,Notes\n`;
+    //增加\t为了不让表格显示科学计数法或者其他格式
+    for(let i = 0 ; i < data.length ; i++ ){
+        for(let item in data[i]){
+            str+=`${data[i][item] + '\t'},`;     
+        }
+        str+='\n';
+    }
+    //encodeURIComponent解决中文乱码
+    let uri = 'data:text/xls;charset=utf-8,\ufeff' + encodeURIComponent(str);
+    //通过创建a标签实现
+    let link = document.createElement("a");
+    link.href = uri;
+    //对下载的文件命名
+    link.download = `${fileName || '表格数据'}.xls`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+function clickDown () {
+    let tableData = tableRows.map((item: any) => {
+      return {
+        Date: moment().format('YYYY/MM/DD'),
+        Marketplace: item.storeName,
+        OrderID: item.AmazonOrderId,
+        SKU: item.SellerSKU,
+        PricePerUnit: parseFloat(item.ItemPriceAmount) / parseInt(item.QuantityOrdered),
+        QTY: item.QuantityOrdered,
+        TotalRevenue: '',
+        AmazonFee: '',
+        PurchasePrice: '',
+        Profit: '',
+        PurchasedFrom: item.vendorName,
+        Notes: ''
+      }
+    })
+    downLoadExcel(tableData, `Orders ${moment().format('MMDD')}`)
+}
+
   React.useEffect(() => {
     document.addEventListener('copy', (event: any) => {
       if (event.clipboardData || event.originalEvent) {
@@ -399,6 +432,17 @@ export default () => {
         columns={columns}
         actionRef={actionRef}
         className={styles.tableStyle}
+        rowSelection={{
+          // 自定义选择项参考: https://ant.design/components/table-cn/#components-table-demo-row-selection-custom
+          // 注释该行则默认不显示下拉选项
+          selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
+          selectedRowKeys,
+          onChange: (RowKeys: any[] | number[], selectRows: any[]) => {
+            setSelectedRowKeys(RowKeys);
+            setTableRows(selectRows);
+            console.log(selectRows)
+          },
+        }}
         request={async (params = {}, sort) =>
           new Promise((resolve) => {
             let sortParams: {
@@ -427,10 +471,14 @@ export default () => {
                   order_amazon: {
                     ShippingAddress: string;
                     OrderItemTotal: string;
+                    store_id: number;
                   };
+                  vendor: number;
                 }) => {
                   return {
                     ...item,
+                    storeName: getKesValue('storeData',item.order_amazon.store_id)?.name,
+                    vendorName: getKesValue('vendorData',item?.listing.vendor_id)?.vendor_name,
                     vendor_price: item.listing ? item?.listing.vendor_price : '-',
                     vendor: item.listing ? item?.listing.vendor_id : -10000,
                     City: JSON.parse(item.order_amazon.ShippingAddress)['City'] || '-',
@@ -532,6 +580,9 @@ export default () => {
           >
             Change Limit
           </Button>,
+          <Button disabled={!selectedRowKeys.length} onClick={clickDown}>
+            export
+          </Button>
         ]}
       />
       <Modal

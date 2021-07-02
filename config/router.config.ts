@@ -112,6 +112,11 @@ export const routerConfigs = {
     name: 'Maleb',
     component: './distributors/Maleb',
   },
+  Dnh:  {
+    path: '/distributors/Dnh',
+    name: 'Dnh',
+    component: './distributors/Dnh',
+  }
 };
 export const indexRouterMap = (routers: any) => {
   return [

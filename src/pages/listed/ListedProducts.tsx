@@ -429,6 +429,7 @@ const columns = (
     dataIndex: 'id',
     search: false,
     width: 300,
+    sorter: true,
     render: (_, record: any) => {
       var tagTitle = getKesValue('tagsData', record.tag_id)?.tag_name;
       return (
@@ -678,6 +679,24 @@ const columns = (
     dataIndex: 'asin',
     copyable: true,
     hideInTable: true,
+  },
+  {
+    title: 'is_sale',
+    dataIndex: 'is_sale',
+    valueType: 'select',
+    hideInTable: true,
+    request: async () => {
+      return [
+        {
+          label: "Have sold",
+          value: 1,
+        },
+        {
+          label: 'Unsold',
+          value: 0,
+        },
+      ];
+    },
   },
   {
     title: 'Marketplace',
@@ -1114,8 +1133,13 @@ export default () => {
         size="small"
         columns={columns(refresh, editFn)}
         actionRef={actionRef}
-        request={async (params = {}) =>
+        request={async (params = {}, sort) =>
           new Promise((resolve) => {
+            let sortParms: any = {}
+            if(sort && JSON.stringify(sort) !== "{}"){
+              sortParms.sort = sort.id === 'ascend' ? 'asc' : 'desc'
+              sortParms.sort_field = 'add_time'
+            }
             if (params.is_delete === '10000') {
               params.is_delete = undefined;
             }
@@ -1123,6 +1147,7 @@ export default () => {
               ...params,
               page: params.current,
               limit: params.pageSize,
+              ...sortParms
             };
             listIndex(tempParams).then((res) => {
               resolve({

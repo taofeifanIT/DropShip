@@ -5,7 +5,8 @@ import {
   deleteItem,
   downloadCsv,
   show,
-  batchList
+  batchList,
+  batchDelete
 } from '../../services/distributors/graingerUS';
 import SupplierFunction from './supplierFunction';
 export default () => {
@@ -18,7 +19,8 @@ export default () => {
       listApi: products,
       downloadApi: downloadCsv,
       showApi: show,
-      batchListApi: batchList
+      batchListApi: batchList,
+      batchDelete: batchDelete
     },
     isAuth: false,
   };

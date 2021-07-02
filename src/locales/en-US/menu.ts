@@ -1,4 +1,5 @@
 export default {
+  'menu.Distributors.Dnh': 'DNH',
   'menu.Distributors.Maleb': 'Maleb',
   'menu.Calculation': 'Data Calculation',
   'menu.UserInfo': 'UserInfo',

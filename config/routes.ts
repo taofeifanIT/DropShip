@@ -97,6 +97,11 @@
         icon: 'smile',
         component: './distributors/Maleb',
       },
+      {
+        path: '/distributors/Dnh',
+        name: 'Dnh',
+        component: './distributors/Dnh',
+      }
     ],
   },
   {
