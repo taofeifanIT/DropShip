@@ -9,6 +9,7 @@ import update from 'immutability-helper';
 import { userList } from '@/services/setting/userManagement'
 import ParagraphText from '@/components/ParagraphText'
 import { getKesGroup } from '@/utils/utils';
+import { getAsonHref} from '@/utils/jumpUrl';
 import moment from 'moment';
 const data = [
   'Racing car sprays burning fuel into crowd.',
@@ -583,6 +584,7 @@ const CardList = (props: { items: itemPop, index: number, order: number; setRow:
               Asin: <a
                 target="_blank"
                 rel="noreferrer"
+                href={`${getAsonHref(items.sale_marketplace.indexOf('US') !== -1 ? 1 : 2)}${items.asin}`}
               >
                 {items.asin}
               </a>

@@ -44,6 +44,8 @@ import { marketplaces, priceAlgorithms, stores, tags, vendors } from '../../serv
 import { getKesGroup, getKesValue } from '../../utils/utils';
 import { getTargetHref, getAsonHref, getNewEggHref } from '../../utils/jumpUrl';
 import ParagraphText from '@/components/ParagraphText'
+import { createDownload } from '@/utils/utils';
+import type { FormInstance } from 'antd';
 const { Text, Link } = Typography;
 type GithubIssueItem = {
   id: number;
@@ -974,6 +976,7 @@ const columns = (
 
 export default () => {
   const actionRef = useRef<ActionType>();
+  const ref = useRef<FormInstance>();
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [visible, setVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -1133,6 +1136,7 @@ export default () => {
         size="small"
         columns={columns(refresh, editFn)}
         actionRef={actionRef}
+        formRef={ref}
         request={async (params = {}, sort) =>
           new Promise((resolve) => {
             let sortParms: any = {}
@@ -1253,6 +1257,32 @@ export default () => {
           >
             Batch change quantity
           </Button>,
+          <Button
+            onClick={() => {
+              const valObj = ref.current?.getFieldsValue();
+              let tempParams: any = '';
+              let index = 0;
+              for (let key in valObj) {
+                if (valObj[key]) {
+                  let paramsStr = `${key}=${valObj[key]}`;
+                  if (index === 1) {
+                    tempParams += `${paramsStr}`;
+                  } else {
+                    tempParams += '&' + paramsStr;
+                  }
+                }
+                index++;
+              }
+              if (tempParams) {
+                tempParams = 'http://api-multi.itmars.net/listing/index' + '?' + tempParams + '&is_download=1';
+              } else {
+                tempParams = 'http://api-multi.itmars.net/listing/index' + '?is_download=1';
+              }
+              createDownload(`test.csv`, tempParams);
+            }}
+          >
+            Download
+          </Button>
         ]}
       />
       <Modal

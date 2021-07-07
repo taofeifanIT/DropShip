@@ -139,13 +139,13 @@ const columns: ProColumns<GithubIssueItem>[] = [
               AddressLine1 : <Text copyable>{record.AddressLine1}</Text>
             </Text>
             <Text type="secondary">
-              PostalCode : <Text copyable>{record.PostalCode}</Text>
+              PostalCode : <Text copyable={{text: record.PostalCode.split('-')[0]}}>{record.PostalCode}</Text>
             </Text>
             <Text type="secondary">
               City : <Text copyable>{record.City}</Text>
             </Text>
             <Text type="secondary">
-              StateOrRegion : <Text>{record.StateOrRegion}</Text>
+              StateOrRegion : <Text copyable>{record.StateOrRegion}</Text>
             </Text>
             <Text type="secondary">
               <Tag color="#2db7f5">{record.CountryCode}</Tag>

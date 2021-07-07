@@ -11,7 +11,7 @@ import {
   import SupplierFunction from './supplierFunction';
   export default () => {
     const config = {
-      title: 'DNH',
+      title: 'D&H',
       api: {
         updateApi: update,
         listingApi: listing,

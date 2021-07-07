@@ -27,7 +27,6 @@ import {
   Table,
   Divider,
   BackTop,
-  Input
 } from 'antd';
 import type { FormInstance } from 'antd';
 import { log_vendor_quantity_and_price_change } from '../../services/distributors/ingramMicro';
@@ -141,6 +140,7 @@ const ButtonGroup = (props: {
   api: apiItem;
   isAuth?: boolean;
 }) => {
+  const { initialState } = useModel('@@initialState');
   const { record, refresh, api, isAuth } = props;
   const { updateApi, listingApi, deleteApi } = api;
   const size = 'small';
@@ -627,6 +627,7 @@ const ButtonGroup = (props: {
         confirmLoading={confirmLoading}
         visible={isModalVisible}
         onOk={onFinish}
+        width={600}
         onCancel={handleCancel}
       >
         <Form name="validate_other" form={form} {...formItemLayout} onFinish={onFinish}>
@@ -636,10 +637,11 @@ const ButtonGroup = (props: {
             rules={[{ required: true, message: 'Please select store!' }]}
           >
             <Checkbox.Group>
-              <Row gutter={[0, 0]} style={{ width: '342px' }}>
-                {getKesGroup('storeData').map((item: { id: number; name: string; ip: string }) => {
+              <Row style={{width: '500px'}}>
+                {/* {} */}
+                 {initialState?.currentUser?.auth_group?.title !== 'Outsourcer' ? (getKesGroup('storeData').map((item: { id: number; name: string; ip: string }) => {
                   return (
-                    <Col key={`${item.id}checkbox`} span={8}>
+                    <Col key={`${item.id}checkbox`} span={12}>
                       <Checkbox
                         key={`${item.id}checkbox`}
                         value={item.id}
@@ -650,7 +652,20 @@ const ButtonGroup = (props: {
                       </Checkbox>
                     </Col>
                   );
-                })}
+                })) : (getKesGroup('storeData').filter((flItem:{ id: number}) => flItem.id !== 6).map((item: { id: number; name: string; ip: string }) => {
+                  return (
+                    <Col key={`${item.id}checkbox`} span={12}>
+                      <Checkbox
+                        key={`${item.id}checkbox`}
+                        value={item.id}
+                        style={{ lineHeight: '32px', }}
+                        disabled={alreadyStoreId[item.id]}
+                      >
+                        {item.name}
+                      </Checkbox>
+                    </Col>
+                  );
+                }))}
               </Row>
             </Checkbox.Group>
           </Form.Item>
@@ -758,7 +773,7 @@ export const columns = (
       dataIndex: 'id',
       search: false,
       width: 450,
-      sorter: true,
+      sorter: false,
       render: (_, record: any) => {
         const getAuth = (status: number) => {
           switch (status) {
@@ -1448,19 +1463,19 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
         formRef={ref}
         request={async (params = {}, sort) =>
           new Promise((resolve) => {
-            let sortParams: {
-              sort_by?: string;
-              sort_field?: string;
-            } = {};
-            if (sort) {
-              for (let key in sort) {
-                sortParams.sort_by = sort[key] === 'descend' ? 'desc' : 'asc';
-                sortParams.sort_field = key;
-              }
-            }
+            // let sortParams: {
+            //   sort_by?: string;
+            //   sort_field?: string;
+            // } = {};
+            // if (sort) {
+            //   for (let key in sort) {
+            //     sortParams.sort_by = sort[key] === 'descend' ? 'desc' : 'asc';
+            //     sortParams.sort_field = key;
+            //   }
+            // }
             let tempParams = {
               ...params,
-              ...sortParams,
+              // ...sortParams,
               page: params.current,
               limit: params.pageSize,
             };
@@ -1572,16 +1587,16 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
                            actionRef.current?.reload()
                            resolve(null)
                          } else {
-                           res.msg
+                            throw res.msg
                          }
                       }).catch((e: string) => {
-                        reject()
                         message.error(e)
                       }).finally(() => {
                         shopFrom.resetFields()
+                        resolve(true)
                       })
-                    }).catch(() => {
-                      reject()
+                    }).catch((log) => {
+                      message.error(log)
                     })
                   })
                 }
@@ -1591,7 +1606,7 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
           >
             Batch list
         </Button>,
-          <Button
+          initialState?.currentUser?.auth_group?.title !== 'Outsourcer' ? (<Button
             onClick={() => {
               const valObj = ref.current?.getFieldsValue();
               let tempParams: any = '';
@@ -1599,7 +1614,7 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
               for (let key in valObj) {
                 if (valObj[key]) {
                   let paramsStr = `${key}=${valObj[key]}`;
-                  if (index === 1) {
+                  if (index === 1) {  
                     tempParams += `${paramsStr}`;
                   } else {
                     tempParams += '&' + paramsStr;
@@ -1617,7 +1632,8 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
             }}
           >
             Download
-          </Button>,
+          </Button>) : null
+          ,
           <Button disabled={!selectedRowKeys.length} key='toolDelete' danger type='primary' onClick={() => {
             deleteListItem()
           }}>Delete</Button>

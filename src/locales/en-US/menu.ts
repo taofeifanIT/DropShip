@@ -1,6 +1,6 @@
 export default {
-  'menu.Distributors.Dnh': 'DNH',
-  'menu.Distributors.Maleb': 'Maleb',
+  'menu.Distributors.Dnh': 'D&H',
+  'menu.Distributors.Maleb': 'Malab',
   'menu.Calculation': 'Data Calculation',
   'menu.UserInfo': 'UserInfo',
   'menu.order': 'Order',
