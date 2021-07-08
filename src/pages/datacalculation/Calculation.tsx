@@ -1,7 +1,7 @@
-import React, { useEffect, useState,useRef,useCallback  } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { List, Typography, Divider, message } from 'antd';
 import { ImportOutlined, ArrowUpOutlined, ArrowDownOutlined, RetweetOutlined, UpOutlined, BugOutlined, SettingOutlined, SmileFilled, AlertFilled } from '@ant-design/icons';
-import { Form, Input, Button, Pagination, Spin, Upload, Radio, BackTop, Select, InputNumber, Row, Col, Checkbox, Modal, Tooltip,Table,Alert   } from 'antd';
+import { Form, Input, Button, Pagination, Spin, Upload, Radio, BackTop, Select, InputNumber, Row, Col, Checkbox, Modal, Tooltip, Table, Alert } from 'antd';
 import { listingwuList, changePm, listingTest } from '../../services/calculation'
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -9,7 +9,7 @@ import update from 'immutability-helper';
 import { userList } from '@/services/setting/userManagement'
 import ParagraphText from '@/components/ParagraphText'
 import { getKesGroup } from '@/utils/utils';
-import { getAsonHref} from '@/utils/jumpUrl';
+import { getAsonHref } from '@/utils/jumpUrl';
 import moment from 'moment';
 const data = [
   'Racing car sprays burning fuel into crowd.',
@@ -47,27 +47,27 @@ type itemPop = {
   buybox_info: String,
   update_at: String | number,
   add_time: String | number,
-  user_update_at:String | number,
+  user_update_at: String | number,
   test_result: Array<{
     code?: number;
     msg: string;
     data: any;
   }>,
-  test: Array<{result: boolean; msg: string; storeName: string}>;
-  successfulInfo?: string; 
+  test: Array<{ result: boolean; msg: string; storeName: string }>;
+  successfulInfo?: string;
   errorInfo?: string;
   exchange_rate?: string;
 }
-type resultPop = {msg?: string, result?: boolean, storeName?: string, successfulInfo?: string; errorInfo?: string}
+type resultPop = { msg?: string, result?: boolean, storeName?: string, successfulInfo?: string; errorInfo?: string }
 type user = { id: number; username: string };
 
-const MARKETS: Array<{id: string;title: string}> = [
-  {id: 'sg', title: 'AMZ SG'},
-  {id: 'ca', title: 'AMZ CA'},
-  {id: 'de', title: 'AMZ DE'},
-  {id: 'jp', title: 'AMZ JP'},
-  {id: 'us', title: 'AMZ US'},
-  {id: 'uk', title: 'AMZ UK'},
+const MARKETS: Array<{ id: string; title: string }> = [
+  { id: 'sg', title: 'AMZ SG' },
+  { id: 'ca', title: 'AMZ CA' },
+  { id: 'de', title: 'AMZ DE' },
+  { id: 'jp', title: 'AMZ JP' },
+  { id: 'us', title: 'AMZ US' },
+  { id: 'uk', title: 'AMZ UK' },
 ]
 
 export default () => {
@@ -113,7 +113,7 @@ export default () => {
     visble: boolean;
     orderData: any[];
   }>({ visble: false, orderData: [] })
-  const [infoObj, setInfoObj] = useState<{successfulInfo?: string;errorInfo?: string}>({
+  const [infoObj, setInfoObj] = useState<{ successfulInfo?: string; errorInfo?: string }>({
     successfulInfo: '',
     errorInfo: ''
   })
@@ -150,10 +150,10 @@ export default () => {
       loading: true
     })
     let testStores: any[] = []
-    const orderStore:any = localStorage.getItem('orderStore')
-    if(orderStore){
+    const orderStore: any = localStorage.getItem('orderStore')
+    if (orderStore) {
       JSON.parse(orderStore)?.forEach((item: { id: number; name: string, order: number }, index: number) => {
-        if(storeModalObj.storeId.indexOf(item.id) !== -1){
+        if (storeModalObj.storeId.indexOf(item.id) !== -1) {
           testStores.push(item.id)
         }
       })
@@ -217,39 +217,42 @@ export default () => {
     })
   }
   const get_object_first_attribute = (data: any) => {
-    for (var key in data)
-        return data[key];
+    for (const key in data)
+      return data[key];
   }
   const initData = () => {
     setLoading(true)
     listingwuList(params).then(res => {
       if (res.code) {
-        let tempData = res.data.list.map((item: itemPop) => {
-          let testData: resultPop[] = []
+        const tempData = res.data.list.map((item: itemPop) => {
+          const testData: resultPop[] = []
           let successfulMsg = ''
           let errrorMsg = ''
+          // eslint-disable-next-line array-callback-return
           item.test_result.map(result => {
-            let testObj:resultPop = {}
+            const testObj: resultPop = {}
             testObj.result = false
-            if(result.code){
+            if (result.code) {
               testObj.result = true
             }
+            // eslint-disable-next-line no-param-reassign
             delete result.code
-            for(let resultKey in result){
-              if(typeof result[resultKey] === "string"){
+            // eslint-disable-next-line no-restricted-syntax
+            for (const resultKey in result) {
+              if (typeof result[resultKey] === "string") {
                 testObj.msg = result[resultKey]
               } else {
                 testObj.storeName = result[resultKey]?.store?.name || result[resultKey]?.param.store?.name
-                if(result[resultKey]?.param){
+                if (result[resultKey]?.param) {
                   testObj.errorInfo = result[resultKey]?.error
-                  errrorMsg += result[resultKey]?.error + '\n'
+                  errrorMsg += `${result[resultKey]?.error}\n`
                 } else {
                   testObj.successfulInfo = get_object_first_attribute(result[resultKey])
-                  successfulMsg += testObj.successfulInfo + '\n'
+                  successfulMsg += `${testObj.successfulInfo}\n`
                 }
               }
             }
-            
+
             item.successfulInfo = successfulMsg
             item.errorInfo = errrorMsg
             testData.push(testObj)
@@ -318,11 +321,11 @@ export default () => {
   const updateAllChecked = () => {
     let isIn = 0
     dataObj.data.forEach(item => {
-      if(selectRowsIds.indexOf(item.id) > -1){
-        isIn +=1
+      if (selectRowsIds.indexOf(item.id) > -1) {
+        isIn += 1
       }
     })
-    if(isIn === params.limit){
+    if (isIn === params.limit) {
       setAllCheckStates(true)
     } else {
       setAllCheckStates(false)
@@ -334,7 +337,7 @@ export default () => {
   }, [])
   useEffect(() => {
     initData()
-  }, [params])  
+  }, [params])
   useEffect(() => {
     updateAllChecked()
   }, [selectRowsIds])
@@ -357,7 +360,7 @@ export default () => {
                   style={{ width: '120px' }}
                 >
                   {users.map((item: user) => {
-                    return (<Option key={item.id + 'op'} value={item.id}>{item.username}</Option>)
+                    return (<Option key={`${item.id}op`} value={item.id}>{item.username}</Option>)
                   })}
                 </Select>
               </Form.Item>
@@ -368,7 +371,7 @@ export default () => {
                   style={{ width: '120px' }}
                 >
                   {MARKETS.map((item) => {
-                    return (<Option key={item.id + 'market'} value={item.id}>{item.title}</Option>)
+                    return (<Option key={`${item.id}market`} value={item.id}>{item.title}</Option>)
                   })}
                 </Select>
               </Form.Item>
@@ -408,34 +411,35 @@ export default () => {
             </Form>
           </div>
           <Spin spinning={loading}>
-          <Alert showIcon message={<><Checkbox checked={allCheckStatus} onChange={(e) => {
-            if(e.target.checked){
-              setSelectRowsIds(Array.from(new Set([...selectRowsIds,...dataObj.data.map(item => item.id)])))
-            } else {
-              let deleteItemIds = JSON.parse(JSON.stringify(selectRowsIds))
-              dataObj.data.forEach(item => {
-                let index = deleteItemIds.indexOf(item.id)
-                if(index > -1){
-                  deleteItemIds.splice(index, 1)
-                }
-              })
-              setSelectRowsIds(deleteItemIds)
-            }
-          }} />  已选择 {selectRowsIds.length}项 <a onClick={() => {
-            setSelectRowsIds([])
-          }}>清空</a></>} style={{marginTop: '10px'}} type="info" />
+            <Alert showIcon message={<><Checkbox checked={allCheckStatus} onChange={(e) => {
+              if (e.target.checked) {
+                setSelectRowsIds(Array.from(new Set([...selectRowsIds, ...dataObj.data.map(item => item.id)])))
+              } else {
+                const deleteItemIds = JSON.parse(JSON.stringify(selectRowsIds))
+                dataObj.data.forEach(item => {
+                  const index = deleteItemIds.indexOf(item.id)
+                  if (index > -1) {
+                    deleteItemIds.splice(index, 1)
+                  }
+                })
+                setSelectRowsIds(deleteItemIds)
+              }
+            }} />  已选择 {selectRowsIds.length}项 <a onClick={() => {
+              setSelectRowsIds([])
+            }}>清空</a></>} style={{ marginTop: '10px' }} type="info" />
             {dataObj.data.map((items: itemPop, index) => {
+              // eslint-disable-next-line @typescript-eslint/no-use-before-define
               return (<CardList items={items} index={items.id} order={index} setRow={setSelectRowsIds} rows={selectRowsIds} setInfo={setInfoObj} />)
             })}
           </Spin>
         </div>
         <div style={{ textAlign: 'center' }}>
-          <Pagination defaultCurrent={1} total={dataObj.total} pageSize={params.limit} onChange={(page:number,pageSize:number) => {
-            setParams({
+          <Pagination defaultCurrent={1} total={dataObj.total} pageSize={params.limit} onChange={(page: number, pageSize: number) => {
+            return setParams({
               ...params,
-              page: page,
+              page,
               limit: pageSize
-            })
+            });
           }} />
         </div>
       </Col>
@@ -481,7 +485,7 @@ export default () => {
         }}
       >
         {users.map((item: user) => {
-          return (<Option key={item.id + 'opm'} value={item.id}>{item.username}</Option>)
+          return (<Option key={`${item.id}opm`} value={item.id}>{item.username}</Option>)
         })}
       </Select>
     </Modal>
@@ -522,8 +526,8 @@ export default () => {
 
 
 
-const CardList = (props: { items: itemPop, index: number, order: number; setRow: (ids: number[] | Number[]) => void, rows: Number[],setInfo: (params: any) => void }) => {
-  const { items, index, order, setRow, rows,setInfo } = props
+const CardList = (props: { items: itemPop, index: number, order: number; setRow: (ids: number[] | number[]) => void, rows: number[], setInfo: (params: any) => void }) => {
+  const { items, index, order, setRow, rows, setInfo } = props
   const [price, setPrice] = useState(0)
   const [thisBuyBox, setThisBuyBox] = useState("0")
   return (<div onClick={() => {
@@ -533,20 +537,20 @@ const CardList = (props: { items: itemPop, index: number, order: number; setRow:
     })
   }}>
     <List
-      key={'list' + index}
+      key={`list${index}`}
       header={<div><h3><Text type='secondary'>User：</Text>{items.pm}</h3></div>}
       footer={<div>
         <Text type='secondary'>销售价格：
-          <Text style={{ fontSize: '21px' }}><InputNumber style={{ width: '100px' }} value={price} onChange={ (val) => {
+          <Text style={{ fontSize: '21px' }}><InputNumber style={{ width: '100px' }} value={price} onChange={(val) => {
             // ThisBuyBox（参考售价*（1-平台手续费）-采购单价*（1+进口关税率）-运费）/（(参考售价*（1-平台手续费））
             setPrice(val)
-            let platform_fee = parseFloat(items.platform_fee + "") / 100
-            let purchase_price = parseFloat(items.purchase_price + "")
-            let import_tariff_rate = parseFloat(items.import_tariff_rate + "") / 100
-            let shipping_fee = parseFloat(items.shipping_fee + "")
-            let value = (((val * (1 - platform_fee)) -
+            const platform_fee = parseFloat(`${items.platform_fee}`) / 100
+            const purchase_price = parseFloat(`${items.purchase_price}`)
+            const import_tariff_rate = parseFloat(`${items.import_tariff_rate}`) / 100
+            const shipping_fee = parseFloat(`${items.shipping_fee}`)
+            const value = (((val * (1 - platform_fee)) -
               purchase_price * (1 + import_tariff_rate) - shipping_fee) / (val * (1 - platform_fee)))
-            setThisBuyBox((parseFloat(value + '') * 100).toFixed(2) + '%')
+            setThisBuyBox(`${(parseFloat(`${value}`) * 100).toFixed(2)}%`)
 
           }} /></Text>
         </Text>
@@ -554,32 +558,33 @@ const CardList = (props: { items: itemPop, index: number, order: number; setRow:
           <Text style={{ fontSize: '21px' }}><span>{thisBuyBox}</span></Text>
         </Text>
         <Text type='secondary' style={{ float: 'right' }}>buybox：
-          <Text style={{ fontSize: '21px' }}>{(parseFloat(items.gross_margin + '') * 100).toFixed(2)}%</Text>
+          <Text style={{ fontSize: '21px' }}>{(parseFloat(`${items.gross_margin}`) * 100).toFixed(2)}%</Text>
         </Text>
-      </div>} 
+      </div>}
       style={{ background: '#fff', borderRadius: '10px', marginTop: '10px' }}
       bordered
       size='small'
       dataSource={data}
-      renderItem={item => (
+      renderItem={() => (
         <List.Item>
-          <Checkbox checked={rows.indexOf(items.id) !== -1 ? true : false} onChange={(val) => {
+          <Checkbox checked={rows.indexOf(items.id) !== -1} onChange={(val) => {
             if (val.target.checked) {
               setRow([
                 ...rows,
                 items.id
               ])
             } else {
-              let index = rows.indexOf(items.id)
+              // eslint-disable-next-line @typescript-eslint/no-shadow
+              const index = rows.indexOf(items.id)
               if (index !== -1) {
-                let tempRow = JSON.parse(JSON.stringify(rows))
+                const tempRow = JSON.parse(JSON.stringify(rows))
                 tempRow.splice(index, 1)
                 setRow(tempRow)
               }
             }
-          }} /><div style={orderStyle} key={'order' + index}>{order + 1}</div>
+          }} /><div style={orderStyle} key={`order${index}`}>{order + 1}</div>
           <Divider type='vertical' style={{ height: '70px' }} />
-          <div style={{ display: 'inline-block', width: '180px' }} key={'content' + index}>
+          <div style={{ display: 'inline-block', width: '180px' }} key={`content${index}`}>
             <Text type='secondary'>
               Asin: <a
                 target="_blank"
@@ -593,7 +598,7 @@ const CardList = (props: { items: itemPop, index: number, order: number; setRow:
               品牌: <Text>{items.brand}</Text>
             </Text><br />
             <Text type='secondary'>
-              描述: <ParagraphText content={items.description + ''} width={500} />
+              描述: <ParagraphText content={`${items.description}`} width={500} />
             </Text>
           </div>
           <Divider type='vertical' style={{ height: '70px' }} />
@@ -606,7 +611,7 @@ const CardList = (props: { items: itemPop, index: number, order: number; setRow:
             </Text><br />
           </div>
           <Divider type='vertical' style={{ height: '70px' }} />
-          <div style={{ display: 'inline-block' }} key={'sale_price' + index}>
+          <div style={{ display: 'inline-block' }} key={`sale_price${index}`}>
             <Text type='secondary'>
               预计销售单: <Text>${items.sale_price}</Text>
             </Text><br />
@@ -615,7 +620,7 @@ const CardList = (props: { items: itemPop, index: number, order: number; setRow:
             </Text><br />
           </div>
           <Divider type='vertical' style={{ height: '70px' }} />
-          <div style={{ display: 'inline-block' }} key={'platform_fee' + index}>
+          <div style={{ display: 'inline-block' }} key={`platform_fee${index}`}>
             <Text type='secondary'>
               平台手续费率: <Text>{items.platform_fee}%</Text>
             </Text><br />
@@ -627,25 +632,25 @@ const CardList = (props: { items: itemPop, index: number, order: number; setRow:
             </Text><br />
           </div>
           <Divider type='vertical' style={{ height: '70px' }} />
-          <div style={{ display: 'inline-block' }} key={'update_at' + index}>
+          <div style={{ display: 'inline-block' }} key={`update_at${index}`}>
             <Text type='secondary'>
               <div>最后一次更新时间:</div>
-              <Text>{moment(+(items.update_at + '000')).format('YYYY-MM-DD HH:mm:ss')}</Text>
+              <Text>{moment(+(`${items.update_at}000`)).format('YYYY-MM-DD HH:mm:ss')}</Text>
             </Text><br />
             <Text type='secondary'>
-            <div>最后一次上传时间:</div>
-              <Text>{moment(+(items.add_time + '000')).format('YYYY-MM-DD HH:mm:ss')}</Text>
+              <div>最后一次上传时间:</div>
+              <Text>{moment(+(`${items.add_time}000`)).format('YYYY-MM-DD HH:mm:ss')}</Text>
             </Text><br />
             <Text type='secondary'>
-            <div>最后一次更改用户时间:</div>
-              <Text>{moment(+(items.user_update_at + '000')).format('YYYY-MM-DD HH:mm:ss')}</Text>
+              <div>最后一次更改用户时间:</div>
+              <Text>{moment(+(`${items.user_update_at}000`)).format('YYYY-MM-DD HH:mm:ss')}</Text>
             </Text>
           </div>
           <Divider type='vertical' style={{ height: '70px' }} />
           <div style={{ display: 'inline-block' }}>
             <Text type='secondary'>
               <p>参考价格:</p>
-               $<Text copyable>{items.reference_price}</Text>(buy box)
+              $<Text copyable>{items.reference_price}</Text>(buy box)
               <p> CAD <Text copyable>{items.exchange_rate}</Text></p>
             </Text><br />
           </div>
@@ -653,8 +658,8 @@ const CardList = (props: { items: itemPop, index: number, order: number; setRow:
           <div style={{ display: 'inline-block' }}>
             {items.test?.map((item) => {
               return (<p><Text type='secondary'>
-              {item.storeName}: <Text>{item.msg}</Text>
-            </Text></p>)
+                {item.storeName}: <Text>{item.msg}</Text>
+              </Text></p>)
             })}
           </div>
         </List.Item>
@@ -719,7 +724,8 @@ const columns = [
 ];
 
 const DragSortingTable: React.FC = () => {
- 
+
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const [data, setData] = useState([]);
 
   const components = {
@@ -728,19 +734,19 @@ const DragSortingTable: React.FC = () => {
     },
   };
   useEffect(() => {
-    if(!localStorage.getItem('orderStore')){
-      let tpdata = getKesGroup('storeData')?.map((item: { id: number; name: string }, index: number) => {
-        return { store: item.name, order: index + 1,id: item.id }
+    if (!localStorage.getItem('orderStore')) {
+      const tpdata = getKesGroup('storeData')?.map((item: { id: number; name: string }, index: number) => {
+        return { store: item.name, order: index + 1, id: item.id }
       })
       localStorage.setItem('orderStore', JSON.stringify(tpdata))
       setData(tpdata)
     } else {
       setData(JSON.parse(localStorage.getItem('orderStore')))
     }
-  },[])
+  }, [])
   useEffect(() => {
     localStorage.setItem('orderStore', JSON.stringify(data))
-  },[data])
+  }, [data])
   const moveRow = useCallback(
     (dragIndex, hoverIndex) => {
       const dragRow = data[dragIndex];

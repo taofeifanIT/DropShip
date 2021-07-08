@@ -116,6 +116,11 @@ export const routerConfigs = {
     path: '/distributors/Dnh',
     name: 'Dnh',
     component: './distributors/Dnh',
+  },
+  NewEgg: {
+    path: '/distributors/NewEgg',
+    name: 'NewEgg',
+    component: './distributors/NewEgg',
   }
 };
 export const indexRouterMap = (routers: any) => {

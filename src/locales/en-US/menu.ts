@@ -1,4 +1,5 @@
 export default {
+  'menu.Distributors.NewEgg': 'NewEgg',
   'menu.Distributors.Dnh': 'D&H',
   'menu.Distributors.Maleb': 'Malab',
   'menu.Calculation': 'Data Calculation',

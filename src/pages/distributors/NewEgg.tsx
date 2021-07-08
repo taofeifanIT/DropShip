@@ -1,0 +1,36 @@
+import {
+    products,
+    listing,
+    update,
+    deleteItem,
+    downloadCsv,
+    show,
+    batchList,
+    batchDelete
+  } from '../../services/distributors/newEgg';
+  import SupplierFunction from './supplierFunction';
+
+  export default () => {
+    const config = {
+      title: 'NewEgg',
+      api: {
+        updateApi: update,
+        listingApi: listing,
+        deleteApi: deleteItem,
+        listApi: products,
+        downloadApi: downloadCsv,
+        showApi: show,
+        batchListApi: batchList,
+        batchDelete
+      },
+      isAuth: true,
+    };
+    return (
+        <>
+                 
+        <SupplierFunction {...config} />
+                
+      </>
+    );
+  };
+  

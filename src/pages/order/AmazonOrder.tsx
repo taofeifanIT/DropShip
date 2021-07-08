@@ -50,6 +50,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
         SellerSKU: string;
         listing: any;
         OrderItemTotal: number;
+        OrderItemId: number;
       },
     ) => {
       return (
@@ -97,6 +98,10 @@ const columns: ProColumns<GithubIssueItem>[] = [
                 </Text>
               </Tooltip>
             </Text>
+            <Text type="secondary">
+              OrderItemId:
+                <Text copyable>{record.OrderItemId}</Text>
+              </Text>
             <Text type="secondary">
                 Tag Name:
                 {record.listing && (<ParagraphText
@@ -181,7 +186,8 @@ const columns: ProColumns<GithubIssueItem>[] = [
             <Text type="secondary">
               Purchase Date :{' '}
               <Text>
-                {moment(parseInt(record.order_amazon.PurchaseDate + '000')).format(
+                 {/* eslint-disable-next-line radix */}
+                {moment(parseInt(`${record.order_amazon.PurchaseDate  }000`)).format(
                   'YYYY-MM-DD HH:mm:ss',
                 )}
               </Text>
@@ -189,7 +195,8 @@ const columns: ProColumns<GithubIssueItem>[] = [
             <Text type="secondary">
               update_at :{' '}
               <Text>
-                {moment(parseInt(record.update_at + '000')).format('YYYY-MM-DD HH:mm:ss')}
+                {/* eslint-disable-next-line radix */}
+                {moment(parseInt(`${record.update_at  }000`)).format('YYYY-MM-DD HH:mm:ss')}
               </Text>
             </Text>
           </Space>
@@ -248,37 +255,37 @@ const columns: ProColumns<GithubIssueItem>[] = [
         vendor: number;
       },
     ) => {
-      let str =
-        'Order 1:\n' +
+      const str =
+        `${'Order 1:\n' +
         '\n' +
         'Ship to:\n' +
-        '' +
-        record.Name +
-        '\n' +
-        '' +
-        record.AddressLine1 +
-        '\n' +
-        '' +
-        record.City +
-        ', ' +
-        record.StateOrRegion +
-        ' ' +
-        record.PostalCode +
-        '\n' +
-        '\n' +
-        'SKU: ' +
-        record.SellerSKU +
-        '\n' +
-        'QTY: ' +
-        record.QuantityOrdered +
-        '\n' +
-        'Price: $' +
-        record.vendor_price +
-        '\n' +
-        '\n' +
-        'Reference Number: ' +
-        record.AmazonOrderId.split('-')[record.AmazonOrderId.split('-').length - 1] +
-        '\n';
+        ''}${ 
+        record.Name 
+        }\n` +
+        `${ 
+        record.AddressLine1 
+        }\n` +
+        `${ 
+        record.City 
+        }, ${ 
+        record.StateOrRegion 
+        } ${ 
+        record.PostalCode 
+        }\n` +
+        `\n` +
+        `SKU: ${ 
+        record.SellerSKU 
+        }\n` +
+        `QTY: ${ 
+        record.QuantityOrdered 
+        }\n` +
+        `Price: $${ 
+        record.vendor_price 
+        }\n` +
+        `\n` +
+        `Reference Number: ${ 
+        record.AmazonOrderId.split('-')[record.AmazonOrderId.split('-').length - 1] 
+        }\n`;
       return record.vendor === 5 ? (
         <Paragraph copyable={{ text: str }}>{text}</Paragraph>
       ) : (

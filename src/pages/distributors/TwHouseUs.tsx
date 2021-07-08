@@ -20,7 +20,7 @@ export default () => {
       downloadApi: downloadCsv,
       showApi: show,
       batchListApi: batchList,
-      batchDelete:batchDelete
+      batchDelete
     },
     isAuth: false,
   };

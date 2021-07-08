@@ -101,6 +101,11 @@
         path: '/distributors/Dnh',
         name: 'Dnh',
         component: './distributors/Dnh',
+      },
+      {
+        path: '/distributors/NewEgg',
+        name: 'NewEgg',
+        component: './distributors/NewEgg',
       }
     ],
   },

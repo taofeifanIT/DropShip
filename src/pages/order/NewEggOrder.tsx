@@ -1,3 +1,4 @@
+/* eslint-disable radix */
 import { useEffect, useRef, useState } from 'react';
 import { Button, Typography, Space, Form, Modal, InputNumber, message,Input } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
@@ -5,12 +6,13 @@ import ProTable from '@ant-design/pro-table';
 import { newEggListing,shipOrder } from '../../services/order/newEggOrder';
 import { getNewEggHref } from '../../utils/jumpUrl';
 import { getKesGroup, getKesValue } from '../../utils/utils';
-import { vendors } from '../../services/publicKeys';
+import type { vendors } from '../../services/publicKeys';
 import { getPageHeight } from '../../utils/utils';
 import { getTargetHref } from '../../utils/jumpUrl';
 import ParagraphText from '@/components/ParagraphText'
 import moment from 'moment';
 import styles from './style.less';
+
 const { Text,Paragraph } = Typography;
 type GithubIssueItem = {
   NeweggItemNumber: string;
@@ -37,12 +39,13 @@ type GithubIssueItem = {
   vendor_sku: string;
   Status: string;
   Description: string;
+  OrderItemId: number;
 }
 
 const ActionModal = (props: {
   record: GithubIssueItem | any;
   visible: boolean;
-  onCancel: (params: any)=> void;
+  onCancel: (params: any) => void;
   init: () => void;
 }) => {
   const { record, visible, onCancel,init } = props
@@ -56,7 +59,7 @@ const ActionModal = (props: {
     form.validateFields().then(values => {
       setLoading(true)
       shipOrder(values).then(res => {
-        if(!res.code){
+        if(res.code){
           message.success('operation succcesful!')
           setTimeout(() => {
             onCancel(false)
@@ -99,7 +102,7 @@ const ActionModal = (props: {
   </>)
 }
 
-const columns = (init?: () =>void): ProColumns<GithubIssueItem>[] => [
+const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
   {
     dataIndex: 'index',
     valueType: 'indexBorder',
@@ -144,7 +147,10 @@ const columns = (init?: () =>void): ProColumns<GithubIssueItem>[] => [
               SellerPartNumber : <Text>{record.SellerPartNumber}</Text>
             </Text>
             <Text type="secondary">
-              OrderNumber : <Text>{record.OrderNumber}</Text>
+              OrderNumber : <Text copyable>{record.OrderNumber}</Text>
+            </Text>
+            <Text type="secondary">
+            OrderItemId : <Text copyable>{record.OrderItemId}</Text>
             </Text>
             <Text type="secondary">
               Tag Name:
@@ -236,7 +242,7 @@ const columns = (init?: () =>void): ProColumns<GithubIssueItem>[] => [
             <Text type="secondary">
               Order Date :{' '}
               <Text>
-                {moment(parseInt(record.order_newegg.OrderDate + '000')).format(
+                {moment(parseInt(`${record.order_newegg.OrderDate  }000`)).format(
                   'YYYY-MM-DD HH:mm:ss',
                 )}
               </Text>
@@ -244,7 +250,7 @@ const columns = (init?: () =>void): ProColumns<GithubIssueItem>[] => [
             <Text type="secondary">
               update_at :{' '}
               <Text>
-                {moment(parseInt(record.update_at + '000')).format('YYYY-MM-DD HH:mm:ss')}
+                {moment(parseInt(`${record.update_at  }000`)).format('YYYY-MM-DD HH:mm:ss')}
               </Text>
             </Text>
           </Space>
@@ -345,17 +351,17 @@ export default () => {
         className={styles.tableStyle}
         request={async (params = {}, sort) =>
           new Promise((resolve) => {
-            let sortParams: {
+            const sortParams: {
               sort_by?: string;
               sort_field?: string;
             } = {};
             if (sort) {
-              for (let key in sort) {
+              for (const key in sort) {
                 sortParams.sort_by = sort[key] === 'descend' ? 'desc' : 'asc';
                 sortParams.sort_field = key;
               }
             }
-            let tempParams: any = {
+            const tempParams: any = {
               ...params,
               ...sortParams,
               page: params.current,
@@ -402,7 +408,7 @@ export default () => {
         }
         onRow={(record: { id: number }) => {
           return {
-            onClick: (event) => {
+            onClick: () => {
               setCurrentRow(record.id);
             },
           };

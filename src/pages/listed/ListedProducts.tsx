@@ -40,7 +40,7 @@ import { useModel, history } from 'umi';
 import Notes, { Info } from '../../components/Notes';
 import { Column } from '@ant-design/charts';
 import moment from 'moment';
-import { marketplaces, priceAlgorithms, stores, tags, vendors } from '../../services/publicKeys';
+import type { marketplaces, priceAlgorithms, stores, tags, vendors } from '../../services/publicKeys';
 import { getKesGroup, getKesValue } from '../../utils/utils';
 import { getTargetHref, getAsonHref, getNewEggHref } from '../../utils/jumpUrl';
 import ParagraphText from '@/components/ParagraphText'
@@ -79,7 +79,7 @@ type GithubIssueItem = {
 const BatchPriceModal = (props: {
   batchPriceModalVisible: boolean;
   setBatchPriceModalVisible: (visible: boolean) => void;
-  listingId: Number;
+  listingId: number;
   record: any;
   refresh: () => void;
 }) => {
@@ -92,7 +92,7 @@ const BatchPriceModal = (props: {
     from.resetFields();
   };
   const changeOperation = (api: any, params: any) => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       api(params).then((res: { code: number; msg: string; data: any }) => {
         resolve(res);
       });
@@ -101,9 +101,9 @@ const BatchPriceModal = (props: {
   useEffect(() => {
     if (batchPriceModalVisible) {
       from.setFieldsValue({
-        quantity_offset: record['quantity_offset'],
-        price_offset: record['price_offset'],
-        custom_price: record['custom_price'],
+        quantity_offset: record.quantity_offset,
+        price_offset: record.price_offset,
+        custom_price: record.custom_price,
       });
     } else {
       return;
@@ -113,19 +113,19 @@ const BatchPriceModal = (props: {
     // do something
     from.validateFields().then(async (updatedValues: any) => {
       setConfirmLoading(true);
-      let resultMsg = [];
+      const resultMsg = [];
       const priceoffsetMsg: any = await changeOperation(priceOffset, {
-        price_offset: updatedValues['price_offset'],
+        price_offset: updatedValues.price_offset,
         listing_id: listingId,
       });
       resultMsg.push(<p>price offset modified {priceoffsetMsg.msg}</p>);
       const quantityoffsetMsg: any = await changeOperation(quantityOffset, {
-        quantity_offset: updatedValues['quantity_offset'],
+        quantity_offset: updatedValues.quantity_offset,
         listing_id: listingId,
       });
       resultMsg.push(<p>quantity offset modified {quantityoffsetMsg.msg}</p>);
       const customPriceMsg: any = await changeOperation(update, {
-        custom_price: updatedValues['custom_price'],
+        custom_price: updatedValues.custom_price,
         id: listingId,
       });
       resultMsg.push(<p>quantity offset modified {customPriceMsg.msg}</p>);
@@ -188,15 +188,17 @@ const ViewHistoryData = (props: { vendor_id: string; vendor_sku: string; style: 
   });
   const handleOpenView = () => {
     setHistoryVisible(true);
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     getHistoryData();
   };
   const handleOpenViewCancel = () => {
     setHistoryVisible(false);
   };
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const DemoColumn = (props: {
-    data: { log_vendor_price_change: []; log_vendor_quantity_change: [] };
+    data: { log_vendor_price_change: any[]; log_vendor_quantity_change: any[] };
   }) => {
-    var config = {
+    const config = {
       data: props.data.log_vendor_price_change,
       isGroup: true,
       xField: 'time',
@@ -213,7 +215,7 @@ const ViewHistoryData = (props: { vendor_id: string; vendor_sku: string; style: 
         ],
       },
     };
-    var quantityConfig = {
+    const quantityConfig = {
       data: props.data.log_vendor_quantity_change,
       isGroup: true,
       style: { height: '250px' },
@@ -242,14 +244,14 @@ const ViewHistoryData = (props: { vendor_id: string; vendor_sku: string; style: 
   const getHistoryData = () => {
     const params: any = {
       id: vendor_id,
-      vendor_sku: vendor_sku,
+      vendor_sku,
     };
     setHistoryDataLoading(true);
     log_vendor_quantity_and_price_change(params)
       .then((res) => {
         if (res.code) {
-          let priceHistoryData: any = [];
-          let quantityHistoryData: any = [];
+          const priceHistoryData: any = [];
+          const quantityHistoryData: any = [];
           res.data.log_vendor_price_change.forEach(
             (item: { add_datetime: string; after: string; before: string }) => {
               priceHistoryData.push({
@@ -338,7 +340,7 @@ const EditLinKStr = (props: {
       return;
     }
     update({
-      id: id,
+      id,
       asin: title,
     }).then((res) => {
       if (res.code) {
@@ -352,8 +354,6 @@ const EditLinKStr = (props: {
   useEffect(() => {
     if (editStatus) {
       inputEl?.current?.focus();
-    } else {
-      return;
     }
   }, [editStatus]);
   return (
@@ -433,7 +433,7 @@ const columns = (
     width: 300,
     sorter: true,
     render: (_, record: any) => {
-      var tagTitle = getKesValue('tagsData', record.tag_id)?.tag_name;
+      const tagTitle = getKesValue('tagsData', record.tag_id)?.tag_name;
       return (
         <>
           <Space direction="vertical">
@@ -485,7 +485,7 @@ const columns = (
         if (record.buybox_info === '[]' || record.buybox_info === null) {
           return <span style={{ color: '#c0c01e' }}>not yet</span>;
         }
-        return JSON.parse(record.buybox_info)[pop].Amount + '$';
+        return `${JSON.parse(record.buybox_info)[pop].Amount  }$`;
       };
       const getMarketPlace = () => {
         // marketplace大于50时，marketplace超过(marketplace/buyBox)30%时，文本变红处理
@@ -494,14 +494,14 @@ const columns = (
         if (record.buybox_info !== '[]' && record.buybox_info !== null) {
           const bugBox = parseFloat(JSON.parse(record.buybox_info)['ListingPrice'].Amount);
           if (marketplace > 50) {
-            let adtrus = marketplace - bugBox;
-            let adtrusRate = (adtrus / marketplace) * 100;
+            const adtrus = marketplace - bugBox;
+            const adtrusRate = (adtrus / marketplace) * 100;
             if (adtrusRate > 30) {
               color = 'red';
             }
           }
         }
-        return <span style={{ color: color }}>{marketplace}</span>;
+        return <span style={{ color }}>{marketplace}</span>;
       };
       return (
         <>
@@ -556,6 +556,7 @@ const columns = (
     width: 200,
     render: (_, record: any) => {
       const getCountryImg = (countryName: string) => {
+        // eslint-disable-next-line default-case
         switch (countryName) {
           case 'UK':
             return (
@@ -601,7 +602,14 @@ const columns = (
     dataIndex: 'time',
     search: false,
     width: 360,
-    render: (_, record: any) => {
+    render: (_, record: {
+      task_update_at: number;
+      batch_id: number;
+      update_at: number;
+      price_and_quantity_change_time: number;
+      add_time: number;
+      waiting_update_time: number;
+    }) => {
       return (
         <>
           <Space direction="vertical">
@@ -609,7 +617,7 @@ const columns = (
               task_update_at:
               <Text>
                 {(record.task_update_at &&
-                  moment(parseInt(record.task_update_at + '000')).format('YYYY-MM-DD HH:mm:ss')) ||
+                  moment(parseInt(`${record.task_update_at  }000`)).format('YYYY-MM-DD HH:mm:ss')) ||
                   'not yet'}
               </Text>
             </Text>
@@ -622,7 +630,7 @@ const columns = (
                   }}
                 >
                   {(record.update_at &&
-                    moment(parseInt(record.update_at + '000')).format('YYYY-MM-DD HH:mm:ss')) ||
+                    moment(parseInt(`${record.update_at  }000`)).format('YYYY-MM-DD HH:mm:ss')) ||
                     'not yet'}
                 </a>
               </Text>
@@ -631,7 +639,7 @@ const columns = (
               price_and_quantity_change_time:
               <Text>
                 {(record.price_and_quantity_change_time &&
-                  moment(parseInt(record.price_and_quantity_change_time + '000')).format(
+                  moment(parseInt(`${record.price_and_quantity_change_time  }000`)).format(
                     'YYYY-MM-DD HH:mm:ss',
                   )) ||
                   'not yet'}
@@ -641,7 +649,15 @@ const columns = (
               add_time:
               <Text>
                 {(record.add_time &&
-                  moment(parseInt(record.add_time + '000')).format('YYYY-MM-DD HH:mm:ss')) ||
+                  moment(parseInt(`${record.add_time  }000`)).format('YYYY-MM-DD HH:mm:ss')) ||
+                  'not yet'}
+              </Text>
+            </Text>
+            <Text type="secondary">
+            waiting_update_time:
+              <Text>
+                {(record.waiting_update_time &&
+                  moment(parseInt(`${record.waiting_update_time  }000`)).format('YYYY-MM-DD HH:mm:ss')) ||
                   'not yet'}
               </Text>
             </Text>
@@ -916,7 +932,6 @@ const columns = (
         vendor_sku: string;
       },
       _,
-      action,
     ) => {
       const [loadingBtn, setLoadingBtn] = useState(false);
       const relistFn = () => {
@@ -992,6 +1007,7 @@ export default () => {
   const refresh = (): void => {
     actionRef.current?.reload();
   };
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const editFn = (comlounVisible: boolean, listId: number, record: any) => {
     setVisible(comlounVisible);
     setListId(listId);
@@ -1042,7 +1058,7 @@ export default () => {
       icon: <ExclamationCircleOutlined />,
       content: `You have selected ${selectedRowKeys.length} pieces of data`,
       onOk() {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve) => {
           listDelete({
             listing_ids: selectedRowKeys,
           })
@@ -1056,6 +1072,7 @@ export default () => {
               }
             })
             .catch((e) => {
+              // eslint-disable-next-line no-console
               console.error(e);
               message.error(e);
             })
@@ -1075,7 +1092,7 @@ export default () => {
       icon: <ExclamationCircleOutlined />,
       content: `You have selected ${selectedRowKeys.length} pieces of data`,
       onOk() {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve) => {
           unlisting({
             listing_ids: selectedRowKeys,
           })
@@ -1108,11 +1125,13 @@ export default () => {
         showIcon
         style={{ marginBottom: '10px' }}
         message={`Next Amazon Listing update time:${moment(
-          parseInt(initialState?.listTimes?.getAmazonListingDeliverTime + '000'),
+          // eslint-disable-next-line radix
+          parseInt(`${initialState?.listTimes?.getAmazonListingDeliverTime  }000`),
         ).format('YYYY-MM-DD HH:mm:ss')}/
                              Next Amazon Feed/update price/quantity update time:${moment(
+                               // eslint-disable-next-line radix
                                parseInt(
-                                 initialState?.listTimes?.getAmazonNormalDeliverTime + '000',
+                                 `${initialState?.listTimes?.getAmazonNormalDeliverTime  }000`,
                                ),
                              ).format('YYYY-MM-DD HH:mm:ss')}`}
       />

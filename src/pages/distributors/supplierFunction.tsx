@@ -27,6 +27,7 @@ import {
   Table,
   Divider,
   BackTop,
+  MessageArgsProps,
 } from 'antd';
 import type { FormInstance } from 'antd';
 import { log_vendor_quantity_and_price_change } from '../../services/distributors/ingramMicro';
@@ -749,7 +750,7 @@ export const columns = (
               }
             >
               {getKesGroup('tagsData').map((item: tags) => {
-            return <Select.Option key={'op'+item.id} value={item.id}>{item.tag_name}</Select.Option>;
+            return <Select.Option key={`op${item.id}`} value={item.id}>{item.tag_name}</Select.Option>;
           })}
             </Select>
           );
@@ -776,6 +777,7 @@ export const columns = (
       sorter: false,
       render: (_, record: any) => {
         const getAuth = (status: number) => {
+          // eslint-disable-next-line default-case
           switch (status) {
             case -1:
               return 'none';
@@ -791,6 +793,7 @@ export const columns = (
           }
         };
         const getCountryImg = (countryName: string) => {
+          // eslint-disable-next-line default-case
           switch (countryName) {
             case 'UK':
               return (
@@ -888,6 +891,7 @@ export const columns = (
       width: 200,
       render: (_, record: any) => {
         const getStatusTag = (status: number) => {
+          // eslint-disable-next-line default-case
           switch (status) {
             case -1:
               return <span style={{ color: '#000000' }}>none</span>;
@@ -980,7 +984,7 @@ export const columns = (
       dataIndex: 'is_auth',
       valueType: 'select',
       align: 'center',
-      search: isAuth ? true : false,
+      search: !!isAuth,
       hideInTable: true,
       request: async () => [
         {
@@ -1048,11 +1052,13 @@ export const columns = (
                 {record.update_at ? (
                   <a
                     onClick={() => {
+                      // eslint-disable-next-line no-restricted-globals
                       history.push(`/log/OperationLog?batch_id=${record.batch_id}`);
                     }}
                   >
                     {(record.update_at &&
-                      moment(parseInt(record.update_at + '000')).format('YYYY-MM-DD HH:mm:ss')) ||
+                      // eslint-disable-next-line radix
+                      moment(parseInt(`${record.update_at  }000`)).format('YYYY-MM-DD HH:mm:ss')) ||
                       'not yet'}
                   </a>
                 ) : (
@@ -1063,7 +1069,8 @@ export const columns = (
                 add_time:
                 <Text>
                   {(record.add_time &&
-                    moment(parseInt(record.add_time + '000')).format('YYYY-MM-DD HH:mm:ss')) ||
+                    // eslint-disable-next-line radix
+                    moment(parseInt(`${record.add_time  }000`)).format('YYYY-MM-DD HH:mm:ss')) ||
                     'not yet'}{' '}
                 </Text>
               </Text>
@@ -1071,7 +1078,8 @@ export const columns = (
                 price_and_quantity_change_time:
                 <Text>
                   {(record.price_and_quantity_change_time &&
-                    moment(parseInt(record.price_and_quantity_change_time + '000')).format(
+                    // eslint-disable-next-line radix
+                    moment(parseInt(`${record.price_and_quantity_change_time  }000`)).format(
                       'YYYY-MM-DD HH:mm:ss',
                     )) ||
                     'not yet'}{' '}
@@ -1090,6 +1098,7 @@ export const columns = (
       align: 'center',
       render: (stores: any) => {
         const getStoreStatus = (key: number): string => {
+          // eslint-disable-next-line default-case
           switch (key) {
             case 1:
               return 'pendingListing';
@@ -1176,7 +1185,7 @@ export const columns = (
       fixed: 'right',
       width: 150,
       align: 'center',
-      render: (text, record: any, _, action) => {
+      render: (text, record: any) => {
         return (
           <>
             <ButtonGroup
@@ -1223,7 +1232,7 @@ const Head: FC<{ show: any }> = (props) => {
       tag_id: tagId || undefined,
     })
       .then((res) => {
-        let historyData = [];
+        const historyData = [];
         for (let countKey in res.data.adminusers[0].history) {
           let subItem = res.data.adminusers[0].history[countKey];
           for (let val in subItem) {
@@ -1259,7 +1268,7 @@ const Head: FC<{ show: any }> = (props) => {
     >
       {[{ id: undefined, tag_name: 'all' }, ...getKesGroup('tagsData')].map((item: tags) => {
         return (
-          <Select.Option key={item.id + 'tag'} value={item.id}>
+          <Select.Option key={`${item.id  }tag`} value={item.id}>
             {item.tag_name}
           </Select.Option>
         );
@@ -1268,7 +1277,7 @@ const Head: FC<{ show: any }> = (props) => {
   );
   const init = () => {
     show()
-      .then((res) => {
+      .then((res:any) => {
         setData(res.data);
       })
       .finally(() => {
@@ -1392,7 +1401,7 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
         >
           {getKesGroup('storeData')?.map((item: { id: number; name: string }) => {
             return (
-              <Select.Option key={'company' + item.id} value={item.id}>
+              <Select.Option key={`company${  item.id}`} value={item.id}>
                 {item.name}
               </Select.Option>
             );
@@ -1410,9 +1419,9 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
       icon: <ExclamationCircleOutlined />,
       content: `You have selected ${selectedRowKeys.length} pieces of data`,
       onOk() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
           api.batchDelete(selectedRowKeys)
-            .then((res) => {
+            .then((res:any) => {
               if (res.code) {
                 setSelectedRowKeys([]);
                 message.success('Operation successful!');
@@ -1421,7 +1430,8 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
                 throw res.msg;
               }
             })
-            .catch((e) => {
+            .catch((e: boolean | React.ReactChild | React.ReactFragment | React.ReactPortal | MessageArgsProps | null | undefined) => {
+              // eslint-disable-next-line no-console
               console.error(e);
               message.error(e);
             })
@@ -1461,7 +1471,7 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
         columns={columns(api, refresh, isAuth)}
         actionRef={actionRef}
         formRef={ref}
-        request={async (params = {}, sort) =>
+        request={async (params = {}) =>
           new Promise((resolve) => {
             // let sortParams: {
             //   sort_by?: string;
@@ -1473,7 +1483,7 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
             //     sortParams.sort_field = key;
             //   }
             // }
-            let tempParams = {
+            const tempParams = {
               ...params,
               // ...sortParams,
               page: params.current,
@@ -1521,8 +1531,10 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
         options={{
           search: false,
         }}
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         onRow={(record: { id: number; notes: string; vendor_sku: string; ts_sku: string }) => {
           return {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             onDoubleClick: (event): void => {
               setDrawerVisible(true);
               setRecord({
@@ -1531,7 +1543,7 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
                 title: record.ts_sku,
               });
             },
-            onClick: (event) => {
+            onClick: () => {
               if (drawerVisible) {
                 setRecord({
                   id: record.id,
@@ -1557,30 +1569,30 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
                 okText: 'submit',
                 cancelText: 'cancel',
                 onOk: ()=>{
-                  return new Promise((resolve, reject) => {
+                  return new Promise((resolve) => {
                     shopFrom.validateFields().then(values => {
                       api.batchListApi({...values, ids: selectedRowKeys}).then((res: {
                         code: number;
                         msg: string
                         data: {
-                          errors: String[];
-                          errors_products: Array<{ts_sku: string;}>[];
-                          success_products: Array<{ts_sku: string;}>[]
+                          errors: string[];
+                          errors_products: {ts_sku: string;}[][];
+                          success_products: {ts_sku: string;}[][]
                         }
                       }) => {
                          if(res.code){
-                           let info = res.data.errors.toString() + '\n'
+                           let info = `${res.data.errors.toString()  }\n`
                            if(res.data.errors_products.length > 0){
-                            info += '\nFailure data:' + [res.data.errors_products.map((item: any) => 
+                            info += `\nFailure data:${  [res.data.errors_products.map((item: any) => 
                               { 
                                 return item.ts_sku
-                             })].toString() + '\n'
+                             })].toString()  }\n`
                            }
                            if(res.data.success_products.length > 0){
-                            info += '\nSuccess data:' + [res.data.success_products.map((item: any) => 
+                            info += `\nSuccess data:${  [res.data.success_products.map((item: any) => 
                               { 
                                 return item.ts_sku
-                             })].toString() + '\n'
+                             })].toString()  }\n`
                            }
                            message.info(info, 3)
                            setSelectedRowKeys([])
@@ -1611,9 +1623,9 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
               const valObj = ref.current?.getFieldsValue();
               let tempParams: any = '';
               let index = 0;
-              for (let key in valObj) {
+              for (const key in valObj) {
                 if (valObj[key]) {
-                  let paramsStr = `${key}=${valObj[key]}`;
+                  const paramsStr = `${key}=${valObj[key]}`;
                   if (index === 1) {  
                     tempParams += `${paramsStr}`;
                   } else {
@@ -1623,9 +1635,9 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
                 index++;
               }
               if (tempParams) {
-                tempParams = api.downloadApi() + '?' + tempParams + '&is_download=1';
+                tempParams = `${api.downloadApi()  }?${  tempParams  }&is_download=1`;
               } else {
-                tempParams = api.downloadApi() + '?is_download=1';
+                tempParams = `${api.downloadApi()  }?is_download=1`;
               }
               createDownload(`test.csv`, tempParams);
               // console.log(tempParams)
