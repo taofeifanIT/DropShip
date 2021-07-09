@@ -21,9 +21,16 @@ import {
         downloadApi: downloadCsv,
         showApi: show,
         batchListApi: batchList,
-        batchDelete
+        batchDelete,
       },
       isAuth: true,
+      selfShow: true,
+      showPop: {
+        imageNames: ['Image1','Image2','Image3','Image4'],
+        otherPop: [
+          { }
+        ]
+      }
     };
     return (
         <>

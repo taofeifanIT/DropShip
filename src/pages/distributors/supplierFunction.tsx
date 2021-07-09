@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useRef, FC } from 'react';
+import type { FC } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   AmazonOutlined,
   ExclamationCircleOutlined,
@@ -26,14 +27,14 @@ import {
   Tooltip,
   Table,
   Divider,
-  BackTop,
-  MessageArgsProps,
+  BackTop
 } from 'antd';
-import type { FormInstance } from 'antd';
+import type { FormInstance ,
+  MessageArgsProps} from 'antd';
 import { log_vendor_quantity_and_price_change } from '../../services/distributors/ingramMicro';
 import { matchAndListing } from '../../services/dashboard';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
-import { tags } from '../../services/publicKeys';
+import type { tags } from '../../services/publicKeys';
 import { getKesGroup, getKesValue } from '../../utils/utils';
 import { getTargetHref, getAsonHref, getNewEggHref } from '../../utils/jumpUrl';
 import { useModel } from 'umi';
@@ -44,6 +45,8 @@ import { createDownload } from '../../utils/utils';
 import { Column } from '@ant-design/charts';
 import ParagraphText from '@/components/ParagraphText'
 import moment from 'moment';
+import ComparisonFrame from './components/ComparisonFrame'
+
 const { Text } = Typography;
 
 type apiItem = {
@@ -60,7 +63,7 @@ type apiItem = {
 const DemoColumn = (props: {
   data: { log_vendor_price_change: []; log_vendor_quantity_change: [] };
 }) => {
-  var config: any = {
+  const config: any = {
     data: props.data.log_vendor_price_change,
     isGroup: true,
     xField: 'time',
@@ -77,7 +80,7 @@ const DemoColumn = (props: {
       ],
     },
   };
-  var quantityConfig: any = {
+  const quantityConfig: any = {
     data: props.data.log_vendor_quantity_change,
     isGroup: true,
     style: { height: '250px' },
@@ -105,7 +108,7 @@ const DemoColumn = (props: {
 };
 
 const HistoryColumn = (props: { data: any }) => {
-  var config: any = {
+  const config: any = {
     data: props.data || [],
     isGroup: true,
     xField: 'time',
@@ -127,9 +130,9 @@ const ButtonGroup = (props: {
   refresh: () => void;
   record: {
     id: number;
-    listing_stores: Array<{
-      store_id: Number;
-    }>;
+    listing_stores: {
+      store_id: number;
+    }[];
     match_amazon: number;
     match_ebay: number;
     match_walmart: number;
@@ -176,13 +179,13 @@ const ButtonGroup = (props: {
     setIsModalVisible(false);
   };
   const getResponseInfo = (obj: {
-    errors_stores?: Array<{ name: string }>;
-    success_stores?: Array<{ name: string }>;
+    errors_stores?: { name: string }[];
+    success_stores?: { name: string }[];
   }): {
     success: string;
     errors: string;
   } => {
-    let successInfo: string | undefined = undefined;
+    let successInfo: string | undefined;
     if (obj.success_stores && obj.success_stores.length) {
       successInfo = [
         obj.success_stores.map((item: { name: string }) => {
@@ -190,7 +193,7 @@ const ButtonGroup = (props: {
         }),
       ].toString();
     }
-    let errorInfo: string | undefined = undefined;
+    let errorInfo: string | undefined;
     if (obj.errors_stores && obj.errors_stores.length) {
       errorInfo = [
         obj.errors_stores.map((item: { name: string }) => {
@@ -208,7 +211,7 @@ const ButtonGroup = (props: {
       .validateFields()
       .then((value) => {
         setConfirmMatchLoading(true);
-        let params = {
+        const params = {
           id: record.id,
           ...value,
         };
@@ -239,13 +242,13 @@ const ButtonGroup = (props: {
   const onFinish = () => {
     form
       .validateFields()
-      .then((value: { store_ids: Number[] }) => {
+      .then((value: { store_ids: number[] }) => {
         // 3.滤除已上架的店铺id
-        let tempValue = value;
-        for (var i = 0; i < tempValue.store_ids.length; i++) {
+        const tempValue = value;
+        for (let i = 0; i < tempValue.store_ids.length; i++) {
           if (alreadyStoreId[tempValue.store_ids[i].toString()]) {
             tempValue.store_ids.splice(i, 1);
-            i--; //i需要自减，否则每次删除都会讲原数组索引发生变化
+            i--; // i需要自减，否则每次删除都会讲原数组索引发生变化
           }
         }
         tempValue.store_ids = Array.from(new Set(tempValue.store_ids));
@@ -279,7 +282,7 @@ const ButtonGroup = (props: {
       });
   };
   const updatePop = (pop: string, value: any) => {
-    let params = {
+    const params = {
       id: record.id,
     };
     params[pop] = value;
@@ -299,7 +302,7 @@ const ButtonGroup = (props: {
         okText: 'ok',
         cancelText: 'cancel',
         onOk: () => {
-          return new Promise((resolve, reject) => {
+          return new Promise((resolve) => {
             deleteApi(props.id)
               .then((res: { code: number; data: any; msg: string }) => {
                 if (res.code) {
@@ -370,6 +373,7 @@ const ButtonGroup = (props: {
     );
   };
   const getAuthButton = () => {
+    // eslint-disable-next-line default-case
     switch (record.is_auth) {
       case -1:
         return (
@@ -424,7 +428,7 @@ const ButtonGroup = (props: {
   };
   useEffect(() => {
     if (isModalVisible) {
-      let tempObj = {};
+      const tempObj = {};
       const disableStatus = 0;
       // 1.标记已存在属性
       record.listing_stores?.forEach((item: any) => {
@@ -464,10 +468,10 @@ const ButtonGroup = (props: {
       //     })
       // }
       // 设置默认配置选线
-      let defaultStoresArr: number[] = [];
-      if (!!localStorage.getItem('defaultStore')) {
+      const defaultStoresArr: number[] = [];
+      if (localStorage.getItem('defaultStore')) {
         setIsDefaultStores(true);
-        let defaultStores = JSON.parse(localStorage.getItem('defaultStore') as string);
+        const defaultStores = JSON.parse(localStorage.getItem('defaultStore') as string);
         defaultStores.forEach((element: number) => {
           defaultStoresArr.push(element);
         });
@@ -484,8 +488,6 @@ const ButtonGroup = (props: {
           ...defaultStoresArr,
         ],
       });
-    } else {
-      return;
     }
   }, [isModalVisible]);
   const getHistoryData = () => {
@@ -497,8 +499,8 @@ const ButtonGroup = (props: {
     log_vendor_quantity_and_price_change(params)
       .then((res) => {
         if (res.code) {
-          let priceHistoryData: any = [];
-          let quantityHistoryData: any = [];
+          const priceHistoryData: any = [];
+          const quantityHistoryData: any = [];
           res.data.log_vendor_price_change.forEach(
             (item: { add_datetime: string; after: string; before: string }) => {
               priceHistoryData.push({
@@ -709,10 +711,13 @@ const ButtonGroup = (props: {
 };
 
 
+type showPopType =  {imageNames: string[],otherPop: {key: string,value: string}[]} | undefined
 export const columns = (
   api: apiItem,
   refresh: () => void,
   isAuth?: boolean | undefined,
+  selfShow?: boolean | undefined,
+  showPop?: showPopType, 
 ): ProColumns<any>[] => {
   const { updateApi, listingApi, deleteApi } = api;
   return [
@@ -817,19 +822,28 @@ export const columns = (
               );
           }
         };
+        const getRecoredImages = () => {
+          const recoredImages: string[] = []
+          showPop?.imageNames.forEach(showItem => {
+            recoredImages.push(record[showItem])
+          });
+          return recoredImages
+        }
         const countryName = getKesValue('countryData', record.country_id).country;
+        const comparisonRef = useRef();
         return (
           <>
             <Space direction="vertical">
               <Text type="secondary">
-                ID:
+              {selfShow ? <ComparisonFrame ref={comparisonRef} leftURL={`${getAsonHref(record.country_id)}${record.asin}`} showPop={{imageNames: getRecoredImages(),title: record.title, otherPop: record}} /> : null}
+              ID:{!selfShow ? (<>
                 <a
                   target="_blank"
                   rel="noreferrer"
                   href={`${getTargetHref(record.vendor_id)}${record.vendor_sku}`}
                 >
                   {record.vendor_sku}
-                </a>
+                </a></>) : (<><a onClick={() => comparisonRef.current.showModal()}>{record.vendor_sku}</a></>)}
                 {record.notes && <Info content={record.notes} />}
               </Text>
               {record.asin && (
@@ -1377,9 +1391,8 @@ const Head: FC<{ show: any }> = (props) => {
     </>
   );
 };
-
-const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean | undefined }) => {
-  const { title, api, isAuth } = props;
+const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean | undefined, selfShow?: boolean | undefined, showPop?: showPopType}) => {
+  const { title, api, isAuth, selfShow,showPop } = props;
   const actionRef = useRef<ActionType>();
   const ref = useRef<FormInstance>();
   const { initialState } = useModel('@@initialState');
@@ -1468,7 +1481,7 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
         }}
         size="small"
         bordered
-        columns={columns(api, refresh, isAuth)}
+        columns={columns(api, refresh, isAuth,selfShow,showPop)}
         actionRef={actionRef}
         formRef={ref}
         request={async (params = {}) =>
