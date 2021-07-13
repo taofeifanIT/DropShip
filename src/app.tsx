@@ -57,7 +57,7 @@ export async function getInitialState(): Promise<{
         (a: any, b: any) => a.sort_num - b.sort_num,
       );
       const historyPath = history.location.pathname;
-      let checkUrl = historyPath === '/' ? '/dashboard/Anlysis' : historyPath;
+      const checkUrl = historyPath === '/' ? '/dashboard/Anlysis' : historyPath;
       if (!throwMenu(menuList, checkUrl)) {
         history.location.pathname = findIndexPage(menuList);
       }
@@ -118,10 +118,7 @@ export const layout = ({ initialState }: any) => {
         history.push('/user/login');
       } else {
         // 如果不去登录页获取不去大屏页则处理无权限页面
-        if (
-          location.pathname !== '/user/login' &&
-          location.pathname !== '/largeScreen/DataComparison'
-        ) {
+        if (location.pathname !== '/user/login' && location.pathname !== '/largeScreen/DataComparison') {
           if (!throwMenu(routers, location.pathname)) {
             history.location.pathname = findIndexPage(routers);
           }
@@ -177,6 +174,9 @@ const errorHandler = (error: ResponseError) => {
       message: `请求错误 ${status}: ${url}`,
       description: errorText,
     });
+    setTimeout(() => {
+      history.push('/user/login');
+    }, 1500)
   }
 
   if (!response) {
@@ -184,24 +184,33 @@ const errorHandler = (error: ResponseError) => {
       description: '您的网络发生异常，无法连接服务器',
       message: '网络异常',
     });
+    setTimeout(() => {
+      history.push('/user/login');
+    }, 1500)
   }
   throw error;
 };
 const authHeaderInterceptor = (url: string, options: RequestOptionsInit) => {
   const token: string | undefined = getToken() || '';
   let authHeader = {};
-  if (token && url.indexOf('login') === -1) {
-    authHeader = { token: token || '' };
+  let tempParams = options.params;
+  const tempOption = JSON.parse(JSON.stringify(options))
+  // const basicParmas = JSON.parse(JSON.stringify(options.data))
+  const publicParams: any = getPublicParams();
+  authHeader = { token: token || '' };
+  if (publicParams) {
+    tempParams = { ...JSON.parse(publicParams), ...tempParams };
+    tempOption.params = tempParams;
+    tempOption.data = { ...options.data, ...tempParams };
+  }
+  
+  if (token && url.indexOf('login') !== -1) {
+    authHeader = {};
+    tempOption.data = options.data
+    tempOption.params = null
   }
   if (url.indexOf('logout') !== -1) {
     authHeader = { token: token || '' };
-  }
-  let tempParams = options.params;
-  let publicParams: any = getPublicParams();
-  if (publicParams) {
-    tempParams = { ...JSON.parse(publicParams), ...tempParams };
-    options.params = tempParams;
-    options.data = { ...options.data, ...tempParams };
   }
   // header加上
   // console.log(options)\
@@ -211,7 +220,7 @@ const authHeaderInterceptor = (url: string, options: RequestOptionsInit) => {
   }
   return {
     url: `${lastUrl}`,
-    options: { ...options, interceptors: true, headers: authHeader },
+    options: { ...tempOption, interceptors: true, headers: authHeader },
   };
 };
 // https://umijs.org/zh-CN/plugins/plugin-request

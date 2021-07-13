@@ -2,8 +2,8 @@ import { request } from 'umi';
 
 export async function products(params: any) {
   return request('/api/vendor/im/products', {
-    method: 'POST',
-    data: params,
+    method: 'get',
+    params,
   });
 }
 

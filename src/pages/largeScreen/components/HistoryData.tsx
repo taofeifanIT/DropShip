@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Spin, Tabs } from 'antd';
 import { Line } from '@ant-design/charts';
 import { storeRanking } from '../../../services/dashboard';
+
 const DemoLine: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [obj, setobj] = useState<{
@@ -10,6 +11,9 @@ const DemoLine: React.FC = () => {
   }>({ totalData: [], salaryData: [] });
   useEffect(() => {
     init();
+    setInterval(() => {
+      init();
+    }, 1000 * 60 * 5);
   }, []);
   const init = () => {
     setLoading(true);
@@ -47,7 +51,7 @@ const DemoLine: React.FC = () => {
         setLoading(false);
       });
   };
-  var config = {
+  const config = {
     data: obj.totalData,
     xField: 'year',
     yField: 'gdp',
@@ -64,7 +68,7 @@ const DemoLine: React.FC = () => {
       },
     },
   };
-  var salaryConfig = {
+  const salaryConfig = {
     data: obj.salaryData,
     xField: 'year',
     yField: 'gdp',
@@ -73,7 +77,7 @@ const DemoLine: React.FC = () => {
     style: { height: '30vh' },
     yAxis: {
       label: {
-        formatter: function formatter(v) {
+        formatter: function formatter(v: string) {
           return ''.concat(v).replace(/\d{1,3}(?=(\d{3})+$)/g, function (s) {
             return ''.concat(s, ',');
           });

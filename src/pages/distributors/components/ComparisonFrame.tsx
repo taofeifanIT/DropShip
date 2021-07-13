@@ -79,7 +79,7 @@ const ComparisonFrame = React.forwardRef((props: {
   };
   return <Modal bodyStyle={style} width={style.width} title="Data comparison" ref={inputRef} visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
    <Spin spinning={loading} tip='Page loading...'> 
-   <div style={{...contain, border: '1px solid gray', overflowY: 'scroll', padding: '8px'}}>
+   <div style={{...contain, border: '1px solid gray', overflowY: 'scroll', padding: '8px', height:style.height}}>
    <h2><img width={50} src="https://c1.neweggimages.com/WebResource/Themes/Nest/logos/logo_424x210.png" alt="Newegg" />{title}</h2>
    <Image.PreviewGroup>
        {props.showPop?.imageNames.map(image => {

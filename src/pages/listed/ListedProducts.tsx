@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState,useImperativeHandle } from 'react';
 import {
   ReconciliationOutlined,
   AmazonOutlined,
@@ -21,6 +21,7 @@ import {
   Alert,
   Spin,
   Input,
+  Select
 } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
@@ -46,6 +47,7 @@ import { getTargetHref, getAsonHref, getNewEggHref } from '../../utils/jumpUrl';
 import ParagraphText from '@/components/ParagraphText'
 import { createDownload } from '@/utils/utils';
 import type { FormInstance } from 'antd';
+import React from 'react';
 const { Text, Link } = Typography;
 type GithubIssueItem = {
   id: number;
@@ -75,6 +77,7 @@ type GithubIssueItem = {
   vendor_quantity: number;
   vendor_price: string;
   update_at: number;
+  sales: number;
 };
 const BatchPriceModal = (props: {
   batchPriceModalVisible: boolean;
@@ -105,8 +108,6 @@ const BatchPriceModal = (props: {
         price_offset: record.price_offset,
         custom_price: record.custom_price,
       });
-    } else {
-      return;
     }
   }, [batchPriceModalVisible]);
   const onEmit = () => {
@@ -793,9 +794,9 @@ const columns = (
     render: (_, record: { marketplace_and_db_diff: number; listing_status: string }) => {
       if (record.marketplace_and_db_diff === 2) {
         return <span style={{ color: 'red' }}>{record.listing_status}</span>;
-      } else {
+      } 
         return record.listing_status;
-      }
+      
     },
   },
   {
@@ -883,6 +884,12 @@ const columns = (
         }),
       ];
     },
+  },
+  {
+    title: 'sales',
+    dataIndex: 'sales',
+    width: 150,
+    sorter: true
   },
   {
     title: 'Custom price',
@@ -988,11 +995,70 @@ const columns = (
     },
   },
 ];
-
+const ComparisonFrame = React.forwardRef((props: {
+  initData: () => void;
+}, ref) => {
+const { initData } = props
+const [from] = Form.useForm();
+const [isModalVisible, setIsModalVisible] = useState(false);
+const [loading, setLoading] = useState(false)
+const inputRef = useRef();
+useImperativeHandle(ref, () => ({
+  showModal: () => {
+  setIsModalVisible(true)
+  }
+}));
+const handleOk = () => {
+  from.validateFields().then(async (updatedValues: {tag_id: number}) => {
+    setLoading(true)
+    unlisting({
+      tag_id: updatedValues.tag_id,
+    })
+      .then((res) => {
+        if (res.code) {
+          message.success('Operation successful!');
+          initData()
+        } else {
+          throw res.msg;
+        }
+      })
+      .catch((e) => {
+        console.error(e);
+        message.error(e);
+      })
+      .finally(() => {
+        setLoading(false)
+        setIsModalVisible(false)
+      });
+  })
+};
+const handleCancel = () => {
+  setIsModalVisible(false);
+};
+return <Modal title="batch unlist by tag"  confirmLoading={loading} ref={inputRef} visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
+    <Form form={from} labelCol={{ span: 6 }} wrapperCol={{ span: 14 }} layout="horizontal">
+    <Form.Item label="tags" name="tag_id">
+          <Select
+              showSearch
+              style={{ width: '100%' }}
+              placeholder="Select a tag"
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {getKesGroup('tagsData').map((item: tags) => {
+            return <Select.Option key={`op${item.id}`} value={item.id}>{item.tag_name}</Select.Option>;
+          })}
+            </Select>
+            </Form.Item>
+        </Form>
+</Modal>
+});
 export default () => {
   const actionRef = useRef<ActionType>();
   const ref = useRef<FormInstance>();
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
   const [visible, setVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
@@ -1002,6 +1068,7 @@ export default () => {
   const [listId, setListId] = useState<number | number[]>(-1);
   const [currentItem, setCurrentItem] = useState(null);
   const { initialState } = useModel('@@initialState');
+  const comparisonRef = useRef();
   // 生成 intl 对象
   // const enUSIntl = createIntl('en_US', enUS);
   const refresh = (): void => {
@@ -1148,7 +1215,7 @@ export default () => {
           // 注释该行则默认不显示下拉选项
           selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
           selectedRowKeys,
-          onChange: (selectedRowKeys: Number[]) => {
+          onChange: (selectedRowKeys: number[]) => {
             setSelectedRowKeys(selectedRowKeys);
           },
         }}
@@ -1158,19 +1225,26 @@ export default () => {
         formRef={ref}
         request={async (params = {}, sort) =>
           new Promise((resolve) => {
-            let sortParms: any = {}
+            const sortParms: any = {}
+            const tempParam = JSON.parse(JSON.stringify(params))
             if(sort && JSON.stringify(sort) !== "{}"){
-              sortParms.sort = sort.id === 'ascend' ? 'asc' : 'desc'
-              sortParms.sort_field = 'add_time'
+              if(sort.id){
+                sortParms.sort_field = 'add_time'
+                sortParms.sort = sort.id === 'ascend' ? 'asc' : 'desc'
+              }
+              if(sort.sales){
+                sortParms.sort_field = 'sales'
+                sortParms.sort = sort.sales === 'ascend' ? 'asc' : 'desc'
+              }
             }
             if (params.is_delete === '10000') {
-              params.is_delete = undefined;
+              tempParam.is_delete = undefined;
             }
-            let tempParams = {
-              ...params,
+            const tempParams = {
+              ...tempParam,
+              ...sortParms,
               page: params.current,
               limit: params.pageSize,
-              ...sortParms
             };
             listIndex(tempParams).then((res) => {
               resolve({
@@ -1233,7 +1307,7 @@ export default () => {
                 title: record.vendor_sku,
               });
             }, // 鼠标移入行
-            onClick: (event) => {
+            onClick: () => {
               if (drawerVisible) {
                 setRecord({
                   id: record.id,
@@ -1267,6 +1341,15 @@ export default () => {
           >
             Batch unlist
           </Button>,
+           <Button
+           key="batchunlishbytag"
+           onClick={() => {
+            comparisonRef.current.showModal()
+           }}
+           icon={<ReconciliationOutlined />}
+         >
+           Batch unlist by tag
+         </Button>,
           <Button
             key="uploadAndDown"
             disabled={!selectedRowKeys.length}
@@ -1331,6 +1414,9 @@ export default () => {
         listingId={listId}
         refresh={refresh}
       />
+      <ComparisonFrame  ref={comparisonRef} initData={refresh} />
     </>
   );
 };
+
+

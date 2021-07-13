@@ -11,18 +11,18 @@ type listItem = {
 export async function listIndex(params: listItem) {
   return request('/api/listing/index', {
     method: 'get',
-    params: params,
+    params,
   });
 }
 
-export async function listDelete(params: Number[]) {
+export async function listDelete(params: number[]) {
   return request('/api/listing/delete', {
     method: 'POST',
     data: params,
   });
 }
 
-export async function unlisting(params: { tag_id: number; listing_ids: number[] }) {
+export async function unlisting(params: { tag_id?: number; listing_ids?: number[] }) {
   return request('/api/listing/unlisting', {
     method: 'POST',
     data: params,

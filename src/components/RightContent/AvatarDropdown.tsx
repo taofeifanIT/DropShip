@@ -22,7 +22,7 @@ const loginOut = async (
     okText: 'ok',
     cancelText: 'cancel',
     onOk: () => {
-      return new Promise(async (resolve, reject) => {
+      return new Promise(async (resolve) => {
         setInitialState({ ...initialState, menuList: [], currentUser: undefined });
         const msg = await outLogin();
         resolve(msg);
@@ -40,7 +40,7 @@ const loginOut = async (
   // await outLogin();
 };
 
-const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu }) => {
+const AvatarDropdown: React.FC<GlobalHeaderRightProps> = () => {
   const { initialState, setInitialState, refresh } = useModel('@@initialState');
 
   const onMenuClick = (key: any) => {

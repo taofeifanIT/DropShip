@@ -533,7 +533,7 @@ function clickDown () {
           },
         }}
         pagination={{
-          pageSizeOptions: ['10', '20', '30', '40', '50', '100', '200', '500'],
+          pageSizeOptions: ['10', '20', '30', '40', '50', '100', '200', '400'],
           pageSize: 50,
         }}
         options={{
@@ -541,10 +541,10 @@ function clickDown () {
         }}
         scroll={{ x: scrollX, y: getPageHeight() - 250 }}
         onColumnsStateChange={(col) => {
-          let allWidth = columns.reduce((sum, e) => sum + Number(e.width || 0), 0);
+          const allWidth = columns.reduce((sum, e) => sum + Number(e.width || 0), 0);
           let reduceNum: number = 0;
-          for (let c in col) {
-            reduceNum += columns[c]['width'] || 0;
+          for (const c in col) {
+            reduceNum += columns[c].width || 0;
           }
           setScrollX(allWidth - reduceNum);
         }}

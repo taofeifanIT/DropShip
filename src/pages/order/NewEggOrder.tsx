@@ -181,19 +181,16 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
         <>
           <Space direction="vertical">
             <Text type="secondary">
-              CustomerName : <Text copyable>{record.CustomerName}</Text>
-            </Text>
-            <Text type="secondary">
-              CustomerPhoneNumber : <Text copyable>{record.CustomerPhoneNumber}</Text>
-            </Text>
-            <Text type="secondary">
-              CustomerEmailAddress : <Text copyable>{record.CustomerEmailAddress}</Text>
+              ShipName : <Text copyable>{`${record.ShipToFirstName} ${record.ShipToLastName}`}</Text>
             </Text>
             <Text type="secondary">
               ShipToAddress1 : <Text copyable>{record.ShipToAddress1}</Text>
             </Text>
             <Text type="secondary">
               ShipToAddress2 : <Text copyable>{record.ShipToAddress2}</Text>
+            </Text>
+            <Text type="secondary">
+              ShipToCountryCode : <Text copyable>{record.ShipToCountryCode}</Text>
             </Text>
             <Text type="secondary">
               ShipToCityName : <Text copyable>{record.ShipToCityName}</Text>
@@ -203,18 +200,6 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
             </Text>
             <Text type="secondary">
               ShipToZipCode : <Text copyable>{record.ShipToZipCode}</Text>
-            </Text>
-            <Text type="secondary">
-              ShipToCountryCode : <Text copyable>{record.ShipToCountryCode}</Text>
-            </Text>
-            <Text type="secondary">
-              ShipService : <Text copyable>{record.ShipService}</Text>
-            </Text>
-            <Text type="secondary">
-              ShipToFirstName : <Text copyable>{record.ShipToFirstName}</Text>
-            </Text>
-            <Text type="secondary">
-              ShipToLastName : <Text copyable>{record.ShipToLastName}</Text>
             </Text>
           </Space>
         </>
@@ -273,6 +258,11 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
         }),
       ];
     },
+  },
+  {
+    title: 'Order Number',
+    dataIndex: 'OrderNumber',
+    hideInTable: true
   },
   {
     title: 'Vendor price',
@@ -432,7 +422,7 @@ export default () => {
           },
         }}
         pagination={{
-          pageSizeOptions: ['10', '20', '30', '40', '50', '100', '200', '500'],
+          pageSizeOptions: ['10', '20', '30', '40', '50', '100', '200', '400'],
           pageSize: 50,
         }}
         options={{

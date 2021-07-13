@@ -24,13 +24,13 @@ export async function store_ranking() {
 export async function vendor_ranking(params: any) {
   return request('/api/dashboard/vendor_ranking', {
     method: 'GET',
-    params: params,
+    params,
   });
 }
 export async function tag_ranking(params: any) {
   return request('/api/dashboard/tag_ranking', {
     method: 'GET',
-    params: params,
+    params,
   });
 }
 
@@ -45,7 +45,7 @@ export async function saleRanking() {
 }
 export async function tagRanking(params: { page: number; limit: number }) {
   return request('/api/dashboard/tag_ranking', {
-    params: params,
+    params,
     method: 'GET',
   });
 }
