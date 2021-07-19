@@ -21,7 +21,8 @@ import {
   Alert,
   Spin,
   Input,
-  Select
+  Select,
+  Cascader 
 } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
@@ -41,13 +42,14 @@ import { useModel, history } from 'umi';
 import Notes, { Info } from '../../components/Notes';
 import { Column } from '@ant-design/charts';
 import moment from 'moment';
-import type { marketplaces, priceAlgorithms, stores, tags, vendors } from '../../services/publicKeys';
+import type { marketplaces, priceAlgorithms, stores, tags, vendors, listing_sort_field } from '../../services/publicKeys';
 import { getKesGroup, getKesValue } from '../../utils/utils';
 import { getTargetHref, getAsonHref, getNewEggHref } from '../../utils/jumpUrl';
-import ParagraphText from '@/components/ParagraphText'
+import ParagraphText from '@/components/ParagraphText';
 import { createDownload } from '@/utils/utils';
 import type { FormInstance } from 'antd';
 import React from 'react';
+
 const { Text, Link } = Typography;
 type GithubIssueItem = {
   id: number;
@@ -406,16 +408,32 @@ const columns = (
     dataIndex: 'tag_id',
     valueType: 'select',
     hideInTable: true,
-    request: async () => {
-      return [
-        ...getKesGroup('tagsData').map((item: tags) => {
-          return {
-            label: item.tag_name,
-            value: item.id,
-          };
-        }),
-      ];
-    },
+    renderFormItem: (_, { type, defaultRender, formItemProps, fieldProps}, form) => {
+      if (type === 'form') {
+        return null;
+      }
+      const status = form.getFieldValue('state');
+      if (status !== 'open') {
+        return (
+          // value 和 onchange 会通过 form 自动注入。
+          <Select
+          {...fieldProps}
+            showSearch
+            style={{ width: '100%' }}
+            placeholder="Select a tag"
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+          >
+            {getKesGroup('tagsData').map((item: tags) => {
+          return <Select.Option key={`op${item.id}`} value={item.id}>{item.tag_name}</Select.Option>;
+        })}
+          </Select>
+        );
+      }
+      return defaultRender(_);
+    }
   },
   {
     title: 'vendor_sku',
@@ -493,7 +511,7 @@ const columns = (
         let color = '';
         const marketplace = parseFloat(record.store_price_now);
         if (record.buybox_info !== '[]' && record.buybox_info !== null) {
-          const bugBox = parseFloat(JSON.parse(record.buybox_info)['ListingPrice'].Amount);
+          const bugBox = parseFloat(JSON.parse(record.buybox_info).ListingPrice.Amount);
           if (marketplace > 50) {
             const adtrus = marketplace - bugBox;
             const adtrusRate = (adtrus / marketplace) * 100;
@@ -764,6 +782,42 @@ const columns = (
         </>
       );
     },
+  },
+  {
+    title: 'Sort',
+    dataIndex: 'sort_field',
+    valueType: 'select',
+    hideInTable: true,
+    renderFormItem: (_, { type, defaultRender, formItemProps, fieldProps}, form) => {
+      const basicData = getKesGroup('listing_sort_field')
+      const options = [...Object.keys(basicData).map((item)=>{
+        return {
+          value: item,
+          label: basicData[item],
+          children:[
+            {
+              value: `${item} desc`,
+              label: `desc`,
+            },
+            {
+              value: `${item} asc`,
+              label: `asc`,
+            },
+          ]
+        }
+      })];
+      if (type === 'form') {
+        return null;
+      }
+      const status = form.getFieldValue('state');
+      if (status !== 'open') {
+        return (
+          // value 和 onchange 会通过 form 自动注入。
+          <Cascader options={options} placeholder="Please select" />
+        );
+      }
+      return defaultRender(_);
+    }
   },
   {
     title: 'Inventory Offset',
@@ -1240,6 +1294,9 @@ export default () => {
             if (params.is_delete === '10000') {
               tempParam.is_delete = undefined;
             }
+            if(params.sort_field && params.sort_field.length > 0){
+              tempParam.sort_field =  params?.sort_field[1]
+            }
             const tempParams = {
               ...tempParam,
               ...sortParms,
@@ -1297,9 +1354,10 @@ export default () => {
         }}
         dateFormatter="string"
         headerTitle="Listed product"
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         onRow={(record: { id: number; notes: string; vendor_sku: string }) => {
           return {
-            onDoubleClick: (event) => {
+            onDoubleClick: () => {
               setDrawerVisible(true);
               setRecord({
                 id: record.id,

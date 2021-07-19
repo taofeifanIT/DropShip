@@ -144,9 +144,6 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
               </Text>
             </Text>
             <Text type="secondary">
-              SellerPartNumber : <Text>{record.SellerPartNumber}</Text>
-            </Text>
-            <Text type="secondary">
               OrderNumber : <Text copyable>{record.OrderNumber}</Text>
             </Text>
             <Text type="secondary">
@@ -205,6 +202,16 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
         </>
       );
     },
+  },
+  {
+    title: 'Sku',
+    dataIndex: 'SellerPartNumber',
+    hideInTable: true,
+  },
+  {
+    title: 'NeweggId',
+    dataIndex: 'NeweggItemNumber',
+    hideInTable: true,
   },
   {
     title: 'Date',

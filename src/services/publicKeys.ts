@@ -32,14 +32,15 @@ export async function getAllKeysValue() {
 }
 
 export type allPopType = {
-  companyData: any;
-  countryData: any;
-  marketPlaceData: any;
-  vendorData: any;
-  storeData: any;
-  tagsData: any;
-  configsData: any;
-  priceAlgorithmsData: any;
+  companyData: company[];
+  countryData: country[];
+  marketPlaceData: marketplaces[];
+  vendorData: vendors[];
+  storeData: stores[];
+  tagsData: tags[];
+  configsData: configs[];
+  priceAlgorithmsData: priceAlgorithms[];
+  listing_sort_field: listing_sort_field;
 };
 export type stores = {
   id: number;
@@ -74,33 +75,36 @@ export type priceAlgorithms = {
   id: number;
   name: string;
 };
+
+export type listing_sort_field = any
 export const getAllPop = async (): Promise<allPopType> => {
-  var keys: Promise<
+  const keys: Promise<
     | {
-        companys: any;
-        vendors: any;
-        countrys: any;
-        marketplaces: any;
-        stores: any;
-        tags: any;
-        configs: any;
-        price_algorithms: any;
+        companys: company[];
+        vendors: vendors[];
+        countrys: country[];
+        marketplaces: marketplaces[];
+        stores: stores[];
+        tags: tags[];
+        configs: configs[];
+        price_algorithms: priceAlgorithms[];
+        listing_sort_field: listing_sort_field[];
       }
-    | undefined
   > = new Promise((resolve) => {
     getAllKeysValue().then((res) => {
       resolve(res.data);
     });
   });
   const tempKeys = await keys;
-  const companyData: company[] = tempKeys?.companys;
-  const countryData: country[] = tempKeys?.countrys;
-  const marketPlaceData: marketplaces[] = tempKeys?.marketplaces;
-  const vendorData: vendors[] = tempKeys?.vendors;
-  const storeData: stores[] = tempKeys?.stores;
-  const tagsData: tags[] = tempKeys?.tags;
-  const configsData: configs = tempKeys?.configs;
-  const priceAlgorithmsData: priceAlgorithms[] = tempKeys?.price_algorithms;
+  const companyData = tempKeys?.companys;
+  const countryData = tempKeys?.countrys;
+  const marketPlaceData = tempKeys?.marketplaces;
+  const vendorData= tempKeys?.vendors;
+  const storeData = tempKeys?.stores;
+  const tagsData= tempKeys?.tags;
+  const configsData = tempKeys?.configs;
+  const priceAlgorithmsData = tempKeys?.price_algorithms;
+  const listing_sort_field = tempKeys?.listing_sort_field;
   return {
     companyData,
     countryData,
@@ -110,5 +114,6 @@ export const getAllPop = async (): Promise<allPopType> => {
     tagsData,
     configsData,
     priceAlgorithmsData,
+    listing_sort_field
   };
 };

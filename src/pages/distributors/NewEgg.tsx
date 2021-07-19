@@ -26,7 +26,7 @@ import {
       isAuth: true,
       selfShow: true,
       showPop: {
-        imageNames: ['Image1','Image2','Image3','Image4'],
+        imageNames: ['Image1','Image2','Image3','Image4','Image5'],
         otherPop: [
           { }
         ]

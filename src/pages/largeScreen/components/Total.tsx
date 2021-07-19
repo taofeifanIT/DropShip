@@ -11,6 +11,7 @@ const Tatal = () => {
     total_vendor: number;
     total_listing_today: number;
     order_total_sales_today: number;
+    total_listing_active: number;
   }>({
     order_total: 0,
     order_total_sales: 0,
@@ -19,13 +20,14 @@ const Tatal = () => {
     total_vendor: 0,
     total_listing_today: 0,
     order_total_sales_today: 0,
+    total_listing_active: 0
   });
   const [loading, setLoading] = useState(false);
   const GetCard = (props: {
     one_level_title: string;
     one_level_number: number | string;
     color: string;
-    info?: boolean | number;
+    info?: boolean | string;
     fontColor?: string;
   }) => {
     const { one_level_title, one_level_number, info, fontColor } = props;
@@ -56,7 +58,7 @@ const Tatal = () => {
                   width: '200px',
                 }}
               >
-                Day sales: {info}
+                {info}
               </span>
             )}
           </div>
@@ -95,7 +97,7 @@ const Tatal = () => {
                   one_level_title={'Total sales'}
                   color={'red'}
                   fontColor={'white'}
-                  info={totalObj.order_total_sales_today}
+                  info={`Day sales: ${totalObj.order_total_sales_today}`}
                 />
               </Col>
             </Row>
@@ -143,6 +145,7 @@ const Tatal = () => {
                 one_level_title={'Total listing'}
                 color={'red'}
                 fontColor={'white'}
+                info={`total listing active:${totalObj.total_listing_active}`}
               />
             </Col>
           </Row>

@@ -84,7 +84,7 @@ const ComparisonFrame = React.forwardRef((props: {
    <Image.PreviewGroup>
        {props.showPop?.imageNames.map(image => {
            return (<Image
-            width={200}
+            width={165}
             src={image}
           />)
        })}

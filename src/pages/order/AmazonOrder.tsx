@@ -51,6 +51,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
         listing: any;
         OrderItemTotal: number;
         OrderItemId: number;
+        IsReplacementOrder: number;
       },
     ) => {
       return (
@@ -112,6 +113,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
             <Text type="secondary">
               title : <ParagraphText content={record.Title} width={300} />
             </Text>
+            {record.IsReplacementOrder ? <Tag  color="#f50">IsReplacementOrder</Tag> : <Tag color="#108ee9">IsReplacementOrder</Tag>}
           </Space>
         </>
       );
@@ -178,6 +180,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
           PurchaseDate: string;
         };
         update_at: string;
+        vendor_change_time: string;
       },
     ) => {
       return (
@@ -197,6 +200,13 @@ const columns: ProColumns<GithubIssueItem>[] = [
               <Text>
                 {/* eslint-disable-next-line radix */}
                 {moment(parseInt(`${record.update_at  }000`)).format('YYYY-MM-DD HH:mm:ss')}
+              </Text>
+            </Text>
+            <Text type="secondary">
+            vendor_change_time :{' '}
+              <Text>
+                {/* eslint-disable-next-line radix */}
+                {moment(parseInt(`${record.vendor_change_time  }000`)).format('YYYY-MM-DD HH:mm:ss')}
               </Text>
             </Text>
           </Space>
@@ -342,7 +352,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
   },
 ];
 
-let strs: any = '';
+const strs: any = '';
 export default () => {
   const actionRef = useRef<ActionType>();
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -363,7 +373,7 @@ export default () => {
         .then((res) => {
           if (res.code) {
             message.success('operation successful!');
-            setLimit(updatedValues['order_quantity_limit']);
+            setLimit(updatedValues.order_quantity_limit);
           } else {
             throw res.msg;
           }
@@ -378,40 +388,40 @@ export default () => {
     });
   };
   function downLoadExcel(data: any[], fileName: string) {
-    //定义表头
+    // 定义表头
     let str = `Date,Marketplace,Order ID,SKU,Price Per Unit,QTY,Total Revenue,Amazon Fee,Purchase Price,Profit,Purchased from,Notes\n`;
-    //增加\t为了不让表格显示科学计数法或者其他格式
+    // 增加\t为了不让表格显示科学计数法或者其他格式
     for(let i = 0 ; i < data.length ; i++ ){
-        for(let item in data[i]){
-            str+=`${data[i][item] + '\t'},`;     
+        for(const item in data[i]){
+            str+=`${`${data[i][item]}\t`},`;     
         }
         str+='\n';
     }
-    //encodeURIComponent解决中文乱码
-    let uri = 'data:text/xls;charset=utf-8,\ufeff' + encodeURIComponent(str);
-    //通过创建a标签实现
-    let link = document.createElement("a");
+    // encodeURIComponent解决中文乱码
+    const uri = `data:text/xls;charset=utf-8,\ufeff${encodeURIComponent(str)}`;
+    // 通过创建a标签实现
+    const link = document.createElement("a");
     link.href = uri;
-    //对下载的文件命名
+    // 对下载的文件命名
     link.download = `${fileName || '表格数据'}.xls`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 }
 function clickDown () {
-    let tableData = tableRows.map((item: any) => {
+    const tableData = tableRows.map((item: any) => {
       return {
         Date: moment().format('YYYY/MM/DD'),
-        Marketplace: item.storeName,
-        OrderID: item.AmazonOrderId,
-        SKU: item.SellerSKU,
+        Marketplace: item.storeName.replace(/(^\s*)|(\s*$)/g, ""),
+        OrderID: item.AmazonOrderId.replace(/(^\s*)|(\s*$)/g, ""),
+        SKU: item.SellerSKU.replace(/(^\s*)|(\s*$)/g, ""),
         PricePerUnit: parseFloat(item.ItemPriceAmount) / parseInt(item.QuantityOrdered),
-        QTY: item.QuantityOrdered,
+        QTY: item.QuantityOrdered.toString().replace(/(^\s*)|(\s*$)/g, ""),
         TotalRevenue: '',
         AmazonFee: '',
         PurchasePrice: '',
         Profit: '',
-        PurchasedFrom: item.vendorName,
+        PurchasedFrom: item.vendorName.replace(/(^\s*)|(\s*$)/g, ""),
         Notes: ''
       }
     })
@@ -421,7 +431,7 @@ function clickDown () {
   React.useEffect(() => {
     document.addEventListener('copy', (event: any) => {
       if (event.clipboardData || event.originalEvent) {
-        var clipboardData = event.clipboardData || event.originalEvent.clipboardData;
+        const clipboardData = event.clipboardData || event.originalEvent.clipboardData;
         if (strs.map) {
           const first = strs.map((strItem: string) => strItem).join('\t');
           const selection = `${first}`;
@@ -452,17 +462,17 @@ function clickDown () {
         }}
         request={async (params = {}, sort) =>
           new Promise((resolve) => {
-            let sortParams: {
+            const sortParams: {
               sort_by?: string;
               sort_field?: string;
             } = {};
             if (sort) {
-              for (let key in sort) {
+              for (const key in sort) {
                 sortParams.sort_by = sort[key] === 'descend' ? 'desc' : 'asc';
                 sortParams.sort_field = key;
               }
             }
-            let tempParams: any = {
+            const tempParams: any = {
               ...params,
               ...sortParams,
               page: params.current,
@@ -474,6 +484,7 @@ function clickDown () {
                   listing: {
                     vendor_id: number;
                     vendor_price: number;
+                    vendor_change_time: string;
                   };
                   order_amazon: {
                     ShippingAddress: string;
@@ -488,18 +499,19 @@ function clickDown () {
                     vendorName: getKesValue('vendorData',item?.listing.vendor_id)?.vendor_name,
                     vendor_price: item.listing ? item?.listing.vendor_price : '-',
                     vendor: item.listing ? item?.listing.vendor_id : -10000,
-                    City: JSON.parse(item.order_amazon.ShippingAddress)['City'] || '-',
+                    City: JSON.parse(item.order_amazon.ShippingAddress).City || '-',
                     AddressType:
-                      JSON.parse(item.order_amazon.ShippingAddress)['AddressType'] || '-',
-                    PostalCode: JSON.parse(item.order_amazon.ShippingAddress)['PostalCode'] || '-',
+                      JSON.parse(item.order_amazon.ShippingAddress).AddressType || '-',
+                    PostalCode: JSON.parse(item.order_amazon.ShippingAddress).PostalCode || '-',
                     StateOrRegion:
-                      JSON.parse(item.order_amazon.ShippingAddress)['StateOrRegion'] || '-',
+                      JSON.parse(item.order_amazon.ShippingAddress).StateOrRegion || '-',
                     CountryCode:
-                      JSON.parse(item.order_amazon.ShippingAddress)['CountryCode'] || '-',
-                    Name: JSON.parse(item.order_amazon.ShippingAddress)['Name'] || '-',
+                      JSON.parse(item.order_amazon.ShippingAddress).CountryCode || '-',
+                    Name: JSON.parse(item.order_amazon.ShippingAddress).Name || '-',
                     AddressLine1:
-                      JSON.parse(item.order_amazon.ShippingAddress)['AddressLine1'] || '-',
+                      JSON.parse(item.order_amazon.ShippingAddress).AddressLine1 || '-',
                     OrderItemTotal: item.order_amazon.OrderItemTotal,
+                    vendor_change_time:item.listing.vendor_change_time
                   };
                 },
               );
@@ -568,10 +580,10 @@ function clickDown () {
           ItemPriceAmount: string;
         }) => {
           return {
-            onClick: (event) => {
+            onClick: () => {
               setCurrentRow(record.id);
             },
-            onDoubleClick: (event) => {
+            onDoubleClick: () => {
               // btnClick(record)
             },
             onContextMenu: (event) => console.log(event),

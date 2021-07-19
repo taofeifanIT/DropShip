@@ -36,7 +36,7 @@ export async function batchList(data: {
   store_id: number;
   ids: number[]
 }){
-  return request('/api/vendor/Twhouse_us/batch_listing',{
+  return request('/api/vendor/newegg_vendor/batch_listing',{
     method: "POST",
     data
   })
