@@ -840,7 +840,7 @@ export const columns = (
                 <a
                   target="_blank"
                   rel="noreferrer"
-                  href={`${getTargetHref(record.vendor_id)}${record.vendor_sku}`}
+                  href={`${getTargetHref(record.vendor_id,record.vendor_sku)}`}
                 >
                   {record.vendor_sku}
                 </a></>) : (<><a onClick={() => comparisonRef.current.showModal()}>{record.vendor_sku}</a></>)}
@@ -1539,7 +1539,8 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
         }}
         pagination={{
           pageSize: 30,
-          pageSizeOptions:['10', '20','30','50','100','200']
+          pageSizeOptions:['10', '20','30','50','100','200'],
+          showQuickJumper: true
         }}
         options={{
           search: false,

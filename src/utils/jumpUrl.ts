@@ -22,17 +22,18 @@ export const getHref = (contryId: number) => {
   return srcObj;
 };
 
-export const getTargetHref = (venderId: number | string) => {
+export const getTargetHref = (venderId: number | string, sku: string) => {
   const srcObj = {
-    1: 'https://usa.ingrammicro.com/Site/Search#keywords:',
-    2: 'https://www.grainger.com/search?searchBar=true&searchQuery=',
-    3: 'https://portal.icintracom.com/shop?order=&search=',
-    4: 'https://uk-new.ingrammicro.com/Site/Search#keywords:',
-    5: 'https://www.twhouse.com/?s=',
-    7: 'https://order.petra.com/product/?search=',
-    8: 'https://www.malabs.com/product/',
-    9: 'https://www.dandh.com/v4/view?pageReq=MProductDetail&item=',
-    10: 'https://www.newegg.com/p/pl?d='
+    1: `https://usa.ingrammicro.com/Site/Search#keywords:${sku}`,
+    2: `https://www.grainger.com/search?searchBar=true&searchQuery=${sku}`,
+    3: `https://portal.icintracom.com/shop?order=&search=${sku}`,
+    4: `https://uk-new.ingrammicro.com/Site/Search#keywords:${sku}`,
+    5: `https://www.twhouse.com/?s=${sku}`,
+    7: `https://order.petra.com/product/?search=${sku}`,
+    8: `https://www.malabs.com/product/${sku}`,
+    9: `https://www.dandh.com/v4/view?pageReq=MProductDetail&item=${sku}`,
+    10: `https://www.newegg.com/p/pl?d=${sku}`,
+    11: `https://www.scansource.com/product?sku=${sku}`
   };
   return srcObj[venderId];
 };

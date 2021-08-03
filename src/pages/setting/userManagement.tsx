@@ -1,15 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, message, Input, Modal, Form, Select, Popconfirm, Tag, Switch } from 'antd';
-import { FormInstance } from 'antd/lib/form';
-import ProTable, { ProColumns } from '@ant-design/pro-table';
+import type { FormInstance } from 'antd/lib/form';
+import type { ProColumns } from '@ant-design/pro-table';
+import ProTable from '@ant-design/pro-table';
 import { roleList } from '../../services/setting/roleManagement';
 import { addUser, updateUser, deleteUser } from '../../services/setting/userManagement';
-import { tags } from '../../services/publicKeys';
+import type { tags } from '../../services/publicKeys';
 import { getKesGroup, getKesValue } from '../../utils/utils';
-const { Option } = Select;
 import request from 'umi-request';
 import { useModel } from 'umi';
+
+const { Option } = Select;
 
 type role = {
   id: number;
@@ -37,7 +39,7 @@ const OperationModal = (props: {
       .validateFields()
       .then((value: any) => {
         let api = addUser;
-        let param = value;
+        const param = value;
         param.open_tag_permission = param.open_tag_permission ? 1 : 0;
         if (record) {
           api = updateUser;
@@ -155,10 +157,12 @@ const OperationModal = (props: {
           </Form.Item>
           {showTag && (
             <Form.Item label="tags" name="tag_ids">
-              <Select mode="multiple" placeholder="Please select" style={{ width: '100%' }}>
+              <Select mode="multiple" placeholder="Please select" style={{ width: '100%' }} filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }>
                 {getKesGroup('tagsData').map((item: tags) => {
                   return (
-                    <Option key={item.id} value={item.id}>
+                    <Option style={{ background: item.is_assigned ? 'gold' : '' }} key={item.id} value={item.id}>
                       {item.tag_name}
                     </Option>
                   );
@@ -264,9 +268,9 @@ export default () => {
           return hasTags.map((item, index) => {
             return <p key={item.id}>{`${index + 1}.${item.tag_name}`}</p>;
           });
-        } else {
-          return 'All tags';
         }
+        return 'All tags';
+
       },
     },
     {
@@ -336,8 +340,8 @@ export default () => {
                   ...item,
                   hasTags: item.tag_ids
                     ? JSON.parse(item.tag_ids).map((tagId: number) => {
-                        return getKesValue('tagsData', tagId);
-                      })
+                      return getKesValue('tagsData', tagId);
+                    })
                     : [],
                 };
               });

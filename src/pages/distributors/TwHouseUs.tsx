@@ -9,6 +9,7 @@ import {
   batchDelete
 } from '../../services/distributors/twHouseUs';
 import SupplierFunction from './supplierFunction';
+
 export default () => {
   const config = {
     title: 'Twhouse',

@@ -73,7 +73,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
                     <a
                       target="_blank"
                       rel="noreferrer"
-                      href={`${getTargetHref(record?.listing?.vendor_id)}${record.SellerSKU}`}
+                      href={`${getTargetHref(record?.listing?.vendor_id,record.SellerSKU)}`}
                     >
                       {record.SellerSKU}
                     </a>
@@ -134,6 +134,8 @@ const columns: ProColumns<GithubIssueItem>[] = [
         StateOrRegion: string;
         CountryCode: string;
         AddressLine1: string;
+        phone: string;
+        vendor: number;
       },
     ) => {
       return (
@@ -154,6 +156,11 @@ const columns: ProColumns<GithubIssueItem>[] = [
             <Text type="secondary">
               StateOrRegion : <Text copyable>{record.StateOrRegion}</Text>
             </Text>
+            {
+              record.vendor === 10 ? (<Text type="secondary">
+              phone : <Text copyable>{record.phone}</Text>
+              </Text>) : null
+            }
             <Text type="secondary">
               <Tag color="#2db7f5">{record.CountryCode}</Tag>
               {record.AddressType === 'Commercial' ? (
@@ -511,7 +518,8 @@ function clickDown () {
                     AddressLine1:
                       JSON.parse(item.order_amazon.ShippingAddress).AddressLine1 || '-',
                     OrderItemTotal: item.order_amazon.OrderItemTotal,
-                    vendor_change_time:item.listing.vendor_change_time
+                    vendor_change_time:item.listing.vendor_change_time,
+                    phone: JSON.parse(item.order_amazon.ShippingAddress).Phone || '-',
                   };
                 },
               );

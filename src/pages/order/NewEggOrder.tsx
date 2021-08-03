@@ -131,7 +131,7 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
                     <a
                       target="_blank"
                       rel="noreferrer"
-                      href={`${getTargetHref(record?.vendor_id)}${record.vendor_sku}`}
+                      href={`${getTargetHref(record?.vendor_id,record.vendor_sku)}`}
                     >
                       {record.vendor_sku}
                     </a>

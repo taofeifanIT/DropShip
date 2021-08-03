@@ -61,6 +61,7 @@ export type vendors = {
 export type tags = {
   id: number;
   tag_name: string;
+  is_assigned: boolean;
 };
 export type marketplaces = {
   id: number;

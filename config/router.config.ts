@@ -121,6 +121,16 @@ export const routerConfigs = {
     path: '/distributors/NewEgg',
     name: 'NewEgg',
     component: './distributors/NewEgg',
+  },
+  Scansource: {
+    path: '/distributors/Scansource',
+    name: 'Scansource',
+    component: './distributors/Scansource',
+  },
+  Synnex: {
+        path: '/distributors/Synnex',
+        name: 'Synnex',
+        component: './distributors/Synnex',
   }
 };
 export const indexRouterMap = (routers: any) => {

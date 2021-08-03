@@ -1,4 +1,6 @@
 export default {
+  'menu.Distributors.Synnex': 'Synnex',
+  'menu.Distributors.Scansource': 'Scansource',
   'menu.Distributors.NewEgg': 'NewEgg',
   'menu.Distributors.Dnh': 'D&H',
   'menu.Distributors.Maleb': 'Malab',

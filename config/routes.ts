@@ -106,6 +106,16 @@
         path: '/distributors/NewEgg',
         name: 'NewEgg',
         component: './distributors/NewEgg',
+      },
+      {
+        path: '/distributors/Scansource',
+        name: 'Scansource',
+        component: './distributors/Scansource',
+      },
+      {
+        path: '/distributors/Synnex',
+        name: 'Synnex',
+        component: './distributors/Synnex',
       }
     ],
   },

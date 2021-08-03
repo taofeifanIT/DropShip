@@ -49,6 +49,7 @@ import ParagraphText from '@/components/ParagraphText';
 import { createDownload } from '@/utils/utils';
 import type { FormInstance } from 'antd';
 import React from 'react';
+import Brand from './compoents/Brand'
 
 const { Text, Link } = Typography;
 type GithubIssueItem = {
@@ -458,7 +459,7 @@ const columns = (
           <Space direction="vertical">
             <Text type="secondary">
               ID:{' '}
-              <a target="_blank" href={`${getTargetHref(record.vendor_id)}${record.ts_sku}`}>
+              <a target="_blank" href={`${getTargetHref(record.vendor_id,record.ts_sku)}`}>
                 {record.ts_sku}
               </a>
               {record.notes && <Info content={record.notes} />}
@@ -745,7 +746,7 @@ const columns = (
       return (
         <>
           <Space direction="vertical">
-            <Text>{`${store_price_now}$`}</Text>
+            <Text>{`$${store_price_now}`}</Text>
           </Space>
         </>
       );
@@ -1121,6 +1122,34 @@ export default () => {
   const [from] = Form.useForm();
   const [listId, setListId] = useState<number | number[]>(-1);
   const [currentItem, setCurrentItem] = useState(null);
+  const [brandModal, setBrandModal] = useState<{
+    visible: boolean;
+    confirmLoading: boolean;
+    handleOk: () => void;
+    onCancel: () => void;
+    showModal: () => void;
+  }>({
+    visible: false,
+    confirmLoading: false,
+    handleOk: () => {
+      setBrandModal({
+        ...brandModal,
+        visible: true
+      })
+    },
+    onCancel: () => {
+      setBrandModal({
+        ...brandModal,
+        visible: false
+      })
+    },
+    showModal: () => {
+      setBrandModal({
+        ...brandModal,
+        visible: true
+      })
+    }
+  })
   const { initialState } = useModel('@@initialState');
   const comparisonRef = useRef();
   // 生成 intl 对象
@@ -1128,6 +1157,7 @@ export default () => {
   const refresh = (): void => {
     actionRef.current?.reload();
   };
+
   // eslint-disable-next-line @typescript-eslint/no-shadow
   const editFn = (comlounVisible: boolean, listId: number, record: any) => {
     setVisible(comlounVisible);
@@ -1378,6 +1408,14 @@ export default () => {
         }}
         toolBarRender={() => [
           <Button
+          key="BrandBtn"
+          onClick={() => {
+            brandModal.showModal()
+          }}
+        >
+          Brand manage
+        </Button>,
+          <Button
             key="ImportOutlined"
             icon={<DeleteOutlined />}
             type="primary"
@@ -1424,7 +1462,7 @@ export default () => {
               let index = 0;
               for (let key in valObj) {
                 if (valObj[key]) {
-                  let paramsStr = `${key}=${valObj[key]}`;
+                  const paramsStr = `${key}=${valObj[key]}`;
                   if (index === 1) {
                     tempParams += `${paramsStr}`;
                   } else {
@@ -1434,7 +1472,7 @@ export default () => {
                 index++;
               }
               if (tempParams) {
-                tempParams = 'http://api-multi.itmars.net/listing/index' + '?' + tempParams + '&is_download=1';
+                tempParams = `${'http://api-multi.itmars.net/listing/index' + '?'}${  tempParams  }&is_download=1`;
               } else {
                 tempParams = 'http://api-multi.itmars.net/listing/index' + '?is_download=1';
               }
@@ -1447,6 +1485,7 @@ export default () => {
       />
       <Modal
         title="batch update"
+        key='batchupdate'
         visible={isModalVisible}
         onOk={handleOk}
         confirmLoading={confirmLoading}
@@ -1464,6 +1503,16 @@ export default () => {
             </Form.Item>
           </Form.Item>
         </Form>
+      </Modal>
+      <Modal
+        title="brand black list"
+        key='brandList'
+        visible={brandModal.visible}
+        onOk={brandModal.handleOk}
+        confirmLoading={brandModal.confirmLoading}
+        onCancel={brandModal.onCancel}
+      >
+        <Brand />
       </Modal>
       <BatchPriceModal
         batchPriceModalVisible={visible}

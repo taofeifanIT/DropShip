@@ -60,3 +60,15 @@ export async function update(params: { id: number; notes?: string; asin?: string
     data: params,
   });
 }
+
+export async function listBlackBrand() {
+  return request(`/api/brand_black/lists`);
+}
+
+export async function addBlackBrand(name: string) {
+  return request(`/api/brand_black/add?name=${name}`);
+}
+
+export async function deleteBlackBrand(id: string) {
+  return request(`/api/brand_black/delete?id=${id}`);
+}
