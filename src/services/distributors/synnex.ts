@@ -1,7 +1,7 @@
 import { request } from 'umi';
 
 export async function products(params: any) {
-  return request('/api/vendor/Twhouse_us/products', {
+  return request('/api/vendor/synnex/products', {
     method: 'POST',
     data: params,
   });

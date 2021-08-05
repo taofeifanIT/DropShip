@@ -33,7 +33,6 @@ import {
   quantityOffset,
   priceOffset,
   batchChangeQuantity,
-  relisting,
   update,
 } from '../../services/listedProduct';
 import { log_vendor_quantity_and_price_change } from '../../services/distributors/ingramMicro';
@@ -995,25 +994,6 @@ const columns = (
       },
       _,
     ) => {
-      const [loadingBtn, setLoadingBtn] = useState(false);
-      const relistFn = () => {
-        setLoadingBtn(true);
-        relisting(record.id)
-          .then((res) => {
-            if (res.code) {
-              message.success('operation successful!');
-              refresh();
-            } else {
-              throw res.msg;
-            }
-          })
-          .catch((e: string) => {
-            message.error(e);
-          })
-          .finally(() => {
-            setLoadingBtn(false);
-          });
-      };
       return (
         <>
           <Button
@@ -1026,19 +1006,6 @@ const columns = (
           >
             <EditOutlined />
             Edit
-          </Button>
-          <Button
-            loading={loadingBtn}
-            type="ghost"
-            style={{ width: '115px', marginTop: '8px' }}
-            disabled={record.listing_status === 'Listed'}
-            size="small"
-            onClick={() => {
-              relistFn();
-            }}
-          >
-            <RetweetOutlined />
-            Relisting
           </Button>
           <ViewHistoryData
             style={{ width: '115px', marginTop: '8px' }}

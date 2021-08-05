@@ -33,7 +33,8 @@ export const getTargetHref = (venderId: number | string, sku: string) => {
     8: `https://www.malabs.com/product/${sku}`,
     9: `https://www.dandh.com/v4/view?pageReq=MProductDetail&item=${sku}`,
     10: `https://www.newegg.com/p/pl?d=${sku}`,
-    11: `https://www.scansource.com/product?sku=${sku}`
+    11: `https://www.scansource.com/product?sku=${sku}`,
+    12: `https://ec.synnex.com/ecx/part/techNote.html?skuNo=${sku}`
   };
   return srcObj[venderId];
 };

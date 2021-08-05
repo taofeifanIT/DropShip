@@ -50,9 +50,6 @@ export async function batchChangeQuantity(params: { listing_ids: number[]; quant
   });
 }
 
-export async function relisting(id: number) {
-  return request(`/api/listing/relisting?id=${id}`);
-}
 
 export async function update(params: { id: number; notes?: string; asin?: string }) {
   return request('/api/listing/update', {
