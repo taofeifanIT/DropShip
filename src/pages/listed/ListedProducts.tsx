@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState,useImperativeHandle } from 'react';
+import React, { useEffect, useRef, useState,useImperativeHandle } from 'react';
 import {
   ReconciliationOutlined,
   AmazonOutlined,
@@ -6,7 +6,6 @@ import {
   ExclamationCircleOutlined,
   BarChartOutlined,
   EditOutlined,
-  RetweetOutlined,
   EnterOutlined,
 } from '@ant-design/icons';
 import {
@@ -22,7 +21,8 @@ import {
   Spin,
   Input,
   Select,
-  Cascader 
+  Cascader,
+  DatePicker
 } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
@@ -34,6 +34,7 @@ import {
   priceOffset,
   batchChangeQuantity,
   update,
+  batchRelisting
 } from '../../services/listedProduct';
 import { log_vendor_quantity_and_price_change } from '../../services/distributors/ingramMicro';
 import { getPageHeight } from '../../utils/utils';
@@ -47,10 +48,11 @@ import { getTargetHref, getAsonHref, getNewEggHref } from '../../utils/jumpUrl';
 import ParagraphText from '@/components/ParagraphText';
 import { createDownload } from '@/utils/utils';
 import type { FormInstance } from 'antd';
-import React from 'react';
 import Brand from './compoents/Brand'
 
 const { Text, Link } = Typography;
+const { RangePicker } = DatePicker;
+
 type GithubIssueItem = {
   id: number;
   store_price_now: string;
@@ -81,6 +83,8 @@ type GithubIssueItem = {
   update_at: number;
   sales: number;
 };
+
+
 const BatchPriceModal = (props: {
   batchPriceModalVisible: boolean;
   setBatchPriceModalVisible: (visible: boolean) => void;
@@ -628,6 +632,7 @@ const columns = (
       price_and_quantity_change_time: number;
       add_time: number;
       waiting_update_time: number;
+      unlisting_time: number;
     }) => {
       return (
         <>
@@ -677,6 +682,14 @@ const columns = (
               <Text>
                 {(record.waiting_update_time &&
                   moment(parseInt(`${record.waiting_update_time  }000`)).format('YYYY-MM-DD HH:mm:ss')) ||
+                  'not yet'}
+              </Text>
+            </Text>
+            <Text type="secondary">
+            unlisting_time:
+              <Text>
+                {(record.waiting_update_time &&
+                  moment(parseInt(`${record.unlisting_time  }000`)).format('YYYY-MM-DD HH:mm:ss')) ||
                   'not yet'}
               </Text>
             </Text>
@@ -790,7 +803,7 @@ const columns = (
     hideInTable: true,
     renderFormItem: (_, { type, defaultRender, formItemProps, fieldProps}, form) => {
       const basicData = getKesGroup('listing_sort_field')
-      const options = [...Object.keys(basicData).map((item)=>{
+      const options = [...Object.keys(basicData).map((item: listing_sort_field)=>{
         return {
           value: item,
           label: basicData[item],
@@ -1017,28 +1030,43 @@ const columns = (
     },
   },
 ];
-const ComparisonFrame = React.forwardRef((props: {
+type listingArugment = {
   initData: () => void;
-}, ref) => {
-const { initData } = props
-const [from] = Form.useForm();
-const [isModalVisible, setIsModalVisible] = useState(false);
-const [loading, setLoading] = useState(false)
-const inputRef = useRef();
-useImperativeHandle(ref, () => ({
-  showModal: () => {
-  setIsModalVisible(true)
-  }
+  ids: number[];
+  setIds: (ids: number[]) => void;
+}
+const RelistingFrame =React.forwardRef((props: listingArugment,ref)=>{
+  const { initData, ids,setIds } = props
+  const [from] = Form.useForm();
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false)
+  const [apiType, setApiType] = useState("")
+  const [title, setTitle] = useState("")
+  const inputRef = useRef();
+  useImperativeHandle(ref, () => ({
+    showModal: (type: string) => {
+    setIsModalVisible(true)
+    setApiType(type)
+    const tempTitle = type === "unlist" ? "batch unlist" : "batch relisting"
+    setTitle(tempTitle)
+    }
 }));
 const handleOk = () => {
-  from.validateFields().then(async (updatedValues: {tag_id: number}) => {
+  from.validateFields().then(async (updatedValues: {tag_id?: number,unlisting_time_after?: any,unlisting_time_before?: any}) => {
+    let batchApi = batchRelisting
+    const params = {listing_ids: ids, ...updatedValues}
+    if(apiType === "unlist"){
+      batchApi = unlisting
+    } else {
+      params.unlisting_time_after = params.unlisting_time_after ? moment(params.unlisting_time_after).format('YYYY-MM-DD HH:mm:ss') : undefined
+      params.unlisting_time_before = params.unlisting_time_before ? moment(params.unlisting_time_before).format('YYYY-MM-DD HH:mm:ss') : undefined
+    }
     setLoading(true)
-    unlisting({
-      tag_id: updatedValues.tag_id,
-    })
+    batchApi(params)
       .then((res) => {
         if (res.code) {
           message.success('Operation successful!');
+          setIds([])
           initData()
         } else {
           throw res.msg;
@@ -1054,29 +1082,41 @@ const handleOk = () => {
       });
   })
 };
+
 const handleCancel = () => {
   setIsModalVisible(false);
 };
-return <Modal title="batch unlist by tag"  confirmLoading={loading} ref={inputRef} visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
+return <Modal title={title}  confirmLoading={loading} ref={inputRef} visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
     <Form form={from} labelCol={{ span: 6 }} wrapperCol={{ span: 14 }} layout="horizontal">
-    <Form.Item label="tags" name="tag_id">
-          <Select
-              showSearch
-              style={{ width: '100%' }}
-              placeholder="Select a tag"
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-            >
-              {getKesGroup('tagsData').map((item: tags) => {
-            return <Select.Option key={`op${item.id}`} value={item.id}>{item.tag_name}</Select.Option>;
-          })}
-            </Select>
+            <Form.Item label="tags" name="tag_id">
+                  <Select
+                      showSearch
+                      allowClear
+                      style={{ width: '100%' }}
+                      placeholder="Select a tag"
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                      }
+                    >
+                      {getKesGroup('tagsData').map((item: tags) => {
+                    return <Select.Option key={`op${item.id}`} value={item.id}>{item.tag_name}</Select.Option>;
+                  })}
+                    </Select>
             </Form.Item>
+           {title !== "batch unlist" ? (<>
+            <Form.Item label="start time" name="unlisting_time_after">
+             <DatePicker showTime/>
+            </Form.Item>
+            <Form.Item label="end time" name="unlisting_time_before">
+             <DatePicker showTime/>
+            </Form.Item>
+           </>) : null}
         </Form>
+        <h3>Selected {ids.length} item</h3>
 </Modal>
-});
+})
+
 export default () => {
   const actionRef = useRef<ActionType>();
   const ref = useRef<FormInstance>();
@@ -1087,7 +1127,7 @@ export default () => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [record, setRecord] = useState();
   const [from] = Form.useForm();
-  const [listId, setListId] = useState<number | number[]>(-1);
+  const [listId, setListId] = useState<number>(-1);
   const [currentItem, setCurrentItem] = useState(null);
   const [brandModal, setBrandModal] = useState<{
     visible: boolean;
@@ -1201,39 +1241,6 @@ export default () => {
       },
       onCancel() {
         console.log('Cancel');
-      },
-    });
-  }
-  function unlistingListItem() {
-    Modal.confirm({
-      title: 'Do you want to unlist these products?',
-      icon: <ExclamationCircleOutlined />,
-      content: `You have selected ${selectedRowKeys.length} pieces of data`,
-      onOk() {
-        return new Promise<void>((resolve) => {
-          unlisting({
-            listing_ids: selectedRowKeys,
-          })
-            .then((res) => {
-              if (res.code) {
-                setSelectedRowKeys([]);
-                message.success('Operation successful!');
-                actionRef.current?.reload();
-              } else {
-                throw res.msg;
-              }
-            })
-            .catch((e) => {
-              console.error(e);
-              message.error(e);
-            })
-            .finally(() => {
-              resolve();
-            });
-        });
-      },
-      onCancel() {
-        // console.log('Cancel');
       },
     });
   }
@@ -1375,6 +1382,14 @@ export default () => {
         }}
         toolBarRender={() => [
           <Button
+          key="batchunlishbytag"
+          onClick={() => {
+            comparisonRef.current.showModal('relisting')
+          }}
+        >
+          Batch relisting
+        </Button>,
+          <Button
           key="BrandBtn"
           onClick={() => {
             brandModal.showModal()
@@ -1394,24 +1409,14 @@ export default () => {
           >
             Delete
           </Button>,
-          <Button
-            key="uploadAndDown"
-            disabled={!selectedRowKeys.length}
-            onClick={() => {
-              unlistingListItem();
-            }}
-            icon={<ReconciliationOutlined />}
-          >
-            Batch unlist
-          </Button>,
            <Button
            key="batchunlishbytag"
            onClick={() => {
-            comparisonRef.current.showModal()
+            comparisonRef.current.showModal('unlist')
            }}
            icon={<ReconciliationOutlined />}
          >
-           Batch unlist by tag
+           Batch unlist
          </Button>,
           <Button
             key="uploadAndDown"
@@ -1488,7 +1493,7 @@ export default () => {
         listingId={listId}
         refresh={refresh}
       />
-      <ComparisonFrame  ref={comparisonRef} initData={refresh} />
+      <RelistingFrame  ref={comparisonRef} ids={selectedRowKeys} setIds={selectedRowKeys}  initData={refresh} />
     </>
   );
 };

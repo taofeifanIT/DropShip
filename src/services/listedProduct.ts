@@ -69,3 +69,11 @@ export async function addBlackBrand(name: string) {
 export async function deleteBlackBrand(id: string) {
   return request(`/api/brand_black/delete?id=${id}`);
 }
+
+
+export async function batchRelisting(params: { tag_id?: number; listing_ids?: number[] }) {
+  return request('/api/listing/batch_relisting', {
+    method: 'POST',
+    data: params,
+  });
+}

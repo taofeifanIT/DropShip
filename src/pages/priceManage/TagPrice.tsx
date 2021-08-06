@@ -5,7 +5,9 @@ import ProTable from '@ant-design/pro-table';
 import { getTagList } from '../../services/publicKeys';
 import { edit } from '../../services/priceManage/tagPrice';
 import { getKesGroup, getKesValue } from '../../utils/utils';
-import { priceAlgorithms } from '../../services/publicKeys';
+import type { priceAlgorithms } from '../../services/publicKeys';
+import {WarningOutlined} from '@ant-design/icons';
+
 const { Option } = Select;
 type GithubIssueItem = {
   url: string;
@@ -250,6 +252,7 @@ const BatchPriceModal = (props: {
           <InputNumber />
         </Form.Item>
       </Form>
+      <div><span style={{color: 'red', fontSize: '18px'}}>({<WarningOutlined />}Warning: A negative number subtracts inventory, and a positive number increases inventory)</span></div>
     </Modal>
   );
 };
