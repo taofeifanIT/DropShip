@@ -401,21 +401,20 @@ const DemoRose: React.FC = () => {
     setLoading(true);
     marketplaceRanking()
       .then((res) => {
-        let tempData: any = [];
-        for (let market in res.data) {
-          tempData.push({
-            type: market,
-            value: res.data[market],
-          });
-        }
+        const tempData: any = Object.keys(res.data).map(key => {
+          return {
+            type: key,
+            value: res.data[key]
+          }
+        })
         setData(tempData);
       })
       .finally(() => {
         setLoading(false);
       });
   };
-  var config = {
-    data: data,
+  const config = {
+    data,
     xField: 'type',
     yField: 'value',
     seriesField: 'type',
@@ -606,7 +605,7 @@ export default () => {
               one_level_title={'Total orders'}
               one_level_number={totalObj.order_total}
               color="#f4516c"
-              info={'Day order: ' + totalObj.order_total_today}
+              info={`Day order: ${  totalObj.order_total_today}`}
               BigIcon={MoneyCollectOutlined}
               bgImg="https://d301.paixin.com/thumbs/5000011/78531214/staff_1024.jpg?imageView2/2/w/450/format/webp"
             />
@@ -618,7 +617,7 @@ export default () => {
               one_level_title={'Total sales'}
               one_level_number={totalObj.order_total_sales.toFixed(0)}
               color="#eef082"
-              info={'Day sales: ' + totalObj.order_total_sales_today}
+              info={`Day sales: ${  totalObj.order_total_sales_today}`}
               BigIcon={DollarOutlined}
               bgImg="https://d302.paixin.com/thumbs/13349494/159688778/staff_1024.jpg?imageView2/2/w/450/format/webp"
             />

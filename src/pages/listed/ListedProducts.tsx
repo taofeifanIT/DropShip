@@ -51,7 +51,6 @@ import type { FormInstance } from 'antd';
 import Brand from './compoents/Brand'
 
 const { Text, Link } = Typography;
-const { RangePicker } = DatePicker;
 
 type GithubIssueItem = {
   id: number;
@@ -1033,7 +1032,7 @@ const columns = (
 type listingArugment = {
   initData: () => void;
   ids: number[];
-  setIds: (ids: number[]) => void;
+  setIds: (ids?: number[]) => void;
 }
 const RelistingFrame =React.forwardRef((props: listingArugment,ref)=>{
   const { initData, ids,setIds } = props
@@ -1062,21 +1061,18 @@ const handleOk = () => {
       params.unlisting_time_before = params.unlisting_time_before ? moment(params.unlisting_time_before).format('YYYY-MM-DD HH:mm:ss') : undefined
     }
     setLoading(true)
-    batchApi(params)
-      .then((res) => {
+    batchApi(params).then((res) => {
         if (res.code) {
+          console.log(res)
           message.success('Operation successful!');
           setIds([])
           initData()
         } else {
           throw res.msg;
         }
-      })
-      .catch((e) => {
-        console.error(e);
+      }).catch((e) => {
         message.error(e);
-      })
-      .finally(() => {
+      }).finally(() => {
         setLoading(false)
         setIsModalVisible(false)
       });
@@ -1493,7 +1489,7 @@ export default () => {
         listingId={listId}
         refresh={refresh}
       />
-      <RelistingFrame  ref={comparisonRef} ids={selectedRowKeys} setIds={selectedRowKeys}  initData={refresh} />
+      <RelistingFrame  ref={comparisonRef} ids={selectedRowKeys} setIds={setSelectedRowKeys}  initData={refresh} />
     </>
   );
 };

@@ -113,7 +113,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
             <Text type="secondary">
               title : <ParagraphText content={record.Title} width={300} />
             </Text>
-            {record.IsReplacementOrder ? <Tag  color="#f50">IsReplacementOrder</Tag> : <Tag color="#108ee9">IsReplacementOrder</Tag>}
+            {record.IsReplacementOrder ? <Tag  color="#f50">IsReplacementOrder</Tag> : null}
           </Space>
         </>
       );
