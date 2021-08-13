@@ -996,16 +996,7 @@ const columns = (
     fixed: 'right',
     align: 'center',
     width: 100,
-    render: (
-      text,
-      record: {
-        id: number;
-        listing_status: string;
-        vendor_id: string;
-        vendor_sku: string;
-      },
-      _,
-    ) => {
+    render: (text,record) => {
       return (
         <>
           <Button
@@ -1116,7 +1107,7 @@ return <Modal title={title}  confirmLoading={loading} ref={inputRef} visible={is
 export default () => {
   const actionRef = useRef<ActionType>();
   const ref = useRef<FormInstance>();
-  const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [visible, setVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
@@ -1426,24 +1417,14 @@ export default () => {
           <Button
             onClick={() => {
               const valObj = ref.current?.getFieldsValue();
-              let tempParams: any = '';
-              let index = 0;
-              for (let key in valObj) {
+              let tempParams: string = '';
+              Object.keys(valObj).forEach((key,index) => {
                 if (valObj[key]) {
-                  const paramsStr = `${key}=${valObj[key]}`;
-                  if (index === 1) {
-                    tempParams += `${paramsStr}`;
-                  } else {
-                    tempParams += '&' + paramsStr;
-                  }
+                      const paramsStr = `${key}=${valObj[key]}`;
+                      tempParams += `${index ? '&' : ''}${paramsStr}`;
                 }
-                index++;
-              }
-              if (tempParams) {
-                tempParams = `${'http://api-multi.itmars.net/listing/index' + '?'}${  tempParams  }&is_download=1`;
-              } else {
-                tempParams = 'http://api-multi.itmars.net/listing/index' + '?is_download=1';
-              }
+              })
+              tempParams = `${'http://api-multi.itmars.net/listing/index?'}${  tempParams  }&is_download=1`;
               createDownload(`test.csv`, tempParams);
             }}
           >
