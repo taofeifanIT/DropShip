@@ -3,11 +3,11 @@ import { AmazonOutlined, LockOutlined, BellOutlined } from '@ant-design/icons';
 import { Button, Typography, Space, Form, Modal, InputNumber, message, Tag, Tooltip,Table } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { list, saleLimit } from '../../services/order/order';
-import { getPageHeight } from '../../utils/utils';
-import { getTargetHref, getAsonHref } from '../../utils/jumpUrl';
-import { getKesGroup, getKesValue } from '../../utils/utils';
-import { vendors, configs } from '../../services/publicKeys';
+import { list, saleLimit } from '@/services/order/order';
+import { getPageHeight } from '@/utils/utils';
+import { getTargetHref, getAsonHref } from '@/utils/jumpUrl';
+import { getKesGroup, getKesValue } from '@/utils/utils';
+import { vendors, configs } from '@/services/publicKeys';
 import moment from 'moment';
 import styles from './style.less';
 import ParagraphText from '@/components/ParagraphText'
@@ -27,7 +27,7 @@ type GithubIssueItem = {
   updated_at: string;
   closed_at?: string;
 };
-
+// https://www.google.com.hk/search?q=aini+13
 const columns: ProColumns<GithubIssueItem>[] = [
   {
     dataIndex: 'index',
@@ -52,6 +52,8 @@ const columns: ProColumns<GithubIssueItem>[] = [
         OrderItemTotal: number;
         OrderItemId: number;
         IsReplacementOrder: number;
+        vpn: string;
+        brand: string;
       },
     ) => {
       return (
@@ -100,9 +102,21 @@ const columns: ProColumns<GithubIssueItem>[] = [
               </Tooltip>
             </Text>
             <Text type="secondary">
-              OrderItemId:
+            OrderItemId:
                 <Text copyable>{record.OrderItemId}</Text>
               </Text>
+              <Text type="secondary">
+              vpn :
+              <Text>
+                  <a
+                          target="_blank"
+                          rel="noreferrer"
+                          href={`https://www.google.com.hk/search?q=${record.vpn}+${record.brand}`}
+                        >
+                          {record.vpn}
+                        </a>
+              </Text>
+            </Text>
             <Text type="secondary">
                 Tag Name:
                 {record.listing && (<ParagraphText
@@ -368,8 +382,8 @@ export default () => {
   const [currentRow, setCurrentRow] = useState(-1);
   const [limit, setLimit] = useState<configs>(getKesValue('configsData', 'order_quantity_limit'));
   const [scrollX, setScrollX] = useState(columns.reduce((sum, e) => sum + Number(e.width || 0), 0));
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [tableRows,setTableRows] = useState([])
+  const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
+  const [tableRows,setTableRows] = useState<number[]>([])
   const showModal = () => {
     setIsModalVisible(true);
   };
@@ -456,6 +470,7 @@ function clickDown () {
         columns={columns}
         actionRef={actionRef}
         className={styles.tableStyle}
+        headerTitle="Amazon orders"
         rowSelection={{
           // 自定义选择项参考: https://ant.design/components/table-cn/#components-table-demo-row-selection-custom
           // 注释该行则默认不显示下拉选项
@@ -492,6 +507,7 @@ function clickDown () {
                     vendor_id: number;
                     vendor_price: number;
                     vendor_change_time: string;
+                    vpn: string;
                   };
                   order_amazon: {
                     ShippingAddress: string;
@@ -516,10 +532,12 @@ function clickDown () {
                       JSON.parse(item.order_amazon.ShippingAddress).CountryCode || '-',
                     Name: JSON.parse(item.order_amazon.ShippingAddress).Name || '-',
                     AddressLine1:
-                      JSON.parse(item.order_amazon.ShippingAddress).AddressLine1 || '-',
+                      ((JSON.parse(item.order_amazon.ShippingAddress).AddressLine1 || '')+' '+(JSON.parse(item.order_amazon.ShippingAddress).AddressLine2 || '')) || '-',
                     OrderItemTotal: item.order_amazon.OrderItemTotal,
                     vendor_change_time:item.listing.vendor_change_time,
                     phone: JSON.parse(item.order_amazon.ShippingAddress).Phone || '-',
+                    vpn: item.listing ? item?.listing.vpn : "",
+                    brand: item.listing ? item?.listing.vpn : "",
                   };
                 },
               );

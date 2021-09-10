@@ -116,7 +116,17 @@
         path: '/distributors/Synnex',
         name: 'Synnex',
         component: './distributors/Synnex',
-      }
+      },
+      {
+        path: '/distributors/Ebay',
+        name: 'Ebay',
+        component: './distributors/Ebay',
+      },
+      {
+        path: '/distributors/Eldorado',
+        name: 'Eldorado',
+        component: './distributors/Eldorado',
+      },
     ],
   },
   {
@@ -187,6 +197,7 @@
       },
       {
         name: 'NeweggReturns',
+        icon: 'table',
         path: '/returns/NeweggReturns',
         component: './returns/NeweggReturns',
       },
@@ -211,6 +222,12 @@
         icon: 'table',
         path: '/order/NewEggOrder',
         component: './order/NewEggOrder',
+      },
+      {
+        name: 'EbayOrder',
+        icon: 'table',
+        path: '/order/EbayOrder',
+        component: './order/EbayOrder',
       },
     ],
   },

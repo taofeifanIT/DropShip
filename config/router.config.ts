@@ -47,7 +47,7 @@ export const routerConfigs = {
     component: './order/NewEggOrder',
     path: '/order/NewEggOrder',
   },
-  EbayOrders: { name: 'EbayOrders', component: './order/AmazonOrder', path: '/order/EbayOrders' },
+  EbayOrder: { name: 'EbayOrder', component: './order/EbayOrder', path: '/order/EbayOrder' },
   amazonListing: {
     name: 'amazonListing',
     path: '/marketProduct/AmazonListing',
@@ -131,7 +131,17 @@ export const routerConfigs = {
         path: '/distributors/Synnex',
         name: 'Synnex',
         component: './distributors/Synnex',
-  }
+  },
+  Ebay: {
+    path: '/distributors/Ebay',
+    name: 'Ebay',
+    component: './distributors/Ebay',
+  },
+  Eldorado: {
+    path: '/distributors/Eldorado',
+    name: 'Eldorado',
+    component: './distributors/Eldorado',
+  },
 };
 export const indexRouterMap = (routers: any) => {
   return [

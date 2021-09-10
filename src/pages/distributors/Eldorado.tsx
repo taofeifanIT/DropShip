@@ -7,12 +7,12 @@ import {
     show,
     batchList,
     batchDelete
-  } from '../../services/distributors/newEgg';
+  } from '../../services/distributors/eldorado';
   import SupplierFunction from './supplierFunction';
-
+  
   export default () => {
     const config = {
-      title: 'NewEgg',
+      title: 'eldorado',
       api: {
         updateApi: update,
         listingApi: listing,
@@ -21,19 +21,13 @@ import {
         downloadApi: downloadCsv,
         showApi: show,
         batchListApi: batchList,
-        batchDelete,
+        batchDelete
       },
-      selfShow: true,
-      showPop: {
-        imageNames: ['Image1','Image2','Image3','Image4','Image5'],
-        otherPop: [
-          { }
-        ]
-      }
+      isAuth: false,
     };
     return (
-        <>
-                 
+      <>
+                   
         <SupplierFunction {...config} />
                 
       </>

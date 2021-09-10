@@ -65,7 +65,7 @@ type GithubIssueItem = {
   quantity_offset: number;
   price_offset: string;
   after_algorithm_price: string;
-  vendor_id: number;
+  vendor_id: string;
   vendor_sku: string;
   ts_sku: string;
   title: string;

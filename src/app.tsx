@@ -215,10 +215,10 @@ const authHeaderInterceptor = (url: string, options: RequestOptionsInit) => {
   // header加上
   // console.log(options)\
   let lastUrl = url;
-  lastUrl = `http://api-multi.itmars.net${url.replace('/api', '')}`;
-  // if (process.env.NODE_ENV !== 'development') {
-  //   lastUrl = `http://api-multi.itmars.net${url.replace('/api', '')}`;
-  // }
+  // lastUrl = `http://api-multi.itmars.net${url.replace('/api', '')}`;
+  if (process.env.NODE_ENV !== 'development') {
+    lastUrl = `http://api-multi.itmars.net${url.replace('/api', '')}`;
+  }
   return {
     url: `${lastUrl}`,
     options: { ...tempOption, interceptors: true, headers: authHeader },

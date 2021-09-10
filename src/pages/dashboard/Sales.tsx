@@ -1,4 +1,4 @@
-import { Row, Col, Card, Spin, Tabs, Table, Typography } from 'antd';
+import { Row, Col, Card, Spin, Tabs, Table, Typography,Select } from 'antd';
 import ProTable from '@ant-design/pro-table';
 import { Line, Pie } from '@ant-design/charts';
 import {
@@ -10,12 +10,14 @@ import {
 } from '../../services/dashboard';
 import { useState, useEffect, useRef } from 'react';
 import type { ActionType } from '@ant-design/pro-table';
-import { getKesGroup } from '../../utils/utils';
+import { getKesGroup,getKesValue } from '../../utils/utils';
 import { ShopOutlined, TagOutlined, SkinOutlined } from '@ant-design/icons';
-import { vendors } from '../../services/publicKeys';
+import { vendors,tags } from '../../services/publicKeys';
 import type { ProColumns } from '@ant-design/pro-table';
 const { Text } = Typography;
 import moment from 'moment';
+
+
 const { TabPane } = Tabs;
 export default () => {
   const [loading, setLoading] = useState(false);
@@ -24,8 +26,8 @@ export default () => {
     compare_lastweek_return: number;
     compare_lastweek_sales: number;
     order_total: number;
-    order_total_sales: number;
-    order_total_sales_today: number;
+    order_total_sales: string;
+    order_total_sales_today: string;
     order_total_today: number;
     return_total: number;
     return_total_today: number;
@@ -36,15 +38,15 @@ export default () => {
     compare_lastweek_return: 0,
     compare_lastweek_sales: 0,
     order_total: 0,
-    order_total_sales: 0,
-    order_total_sales_today: 0,
+    order_total_sales: "0",
+    order_total_sales_today: "0",
     order_total_today: 0,
     return_total: 0,
     return_total_today: 0,
     lineData: [],
     status_data: [],
   });
-  const headCard = (all: number, day: number, rate: number, title: string) => (
+  const headCard = (all: number | string, day: number | string, rate: number, title: string) => (
     <>
       <Card
         style={{ margin: '8px' }}
@@ -63,6 +65,7 @@ export default () => {
       </Card>
     </>
   );
+
   const init = () => {
     setLoading(true);
     total()
@@ -97,7 +100,7 @@ export default () => {
     }, 1000 * 60 * 5);
   }, []);
   return (
-    <div style={{ background: '#fff', padding: '8px' }}>
+    <div style={{ background: '#fff', padding: '8px' }} id="salsePage">
       <Spin spinning={loading}>
         <Row>
           <Col span={16}>
@@ -112,8 +115,8 @@ export default () => {
               </Col>
               <Col span={8}>
                 {headCard(
-                  topObj.order_total_sales,
-                  topObj.order_total_sales_today,
+                  '$'+topObj.order_total_sales,
+                  '$'+topObj.order_total_sales_today,
                   topObj.compare_lastweek_sales,
                   'sales',
                 )}
@@ -136,16 +139,14 @@ export default () => {
             </Row>
           </Col>
           <Col span={8}>
-            <Card title="order status diagram" size="small" style={{ margin: '8px' }}>
-              <DemoRose data={topObj.status_data} />
-            </Card>
+            <DemoRose data={topObj.status_data} />
           </Col>
         </Row>
         <Row>
-          <Col span={11}>
+          <Col span={14}>
             <OrderTable />
           </Col>
-          <Col span={13}>
+          <Col span={10}>
             <Card title={null} bodyStyle={{ paddingTop: '10px' }} style={{ margin: '8px' }}>
               <PopSales />
             </Card>
@@ -172,6 +173,7 @@ const PopSales = () => {
       title: 'Total order/Day order',
       dataIndex: 'allAndDay',
       key: 'allAndDay',
+      width: 170,
       render: (_, record: any) => {
         return (
           <>
@@ -184,6 +186,7 @@ const PopSales = () => {
       title: 'Total sales/Day sales',
       dataIndex: 'allAndsales',
       key: 'allAndsales',
+      width: 170,
       render: (_, record: any) => {
         return (
           <>
@@ -196,6 +199,7 @@ const PopSales = () => {
       title: 'Total net profit/Day net profit',
       dataIndex: 'allAndnetprofit',
       key: 'allAndnetprofit',
+      width: 300,
       render: (_, record: any) => {
         return (
           <>
@@ -210,6 +214,7 @@ const PopSales = () => {
       title: 'store Name',
       dataIndex: 'name',
       key: 'name',
+      width: 150
     },
     ...publicCol,
   ];
@@ -218,6 +223,7 @@ const PopSales = () => {
       title: 'Tag name',
       dataIndex: 'tag_name',
       key: 'name',
+      width: 150,
       render: (text: string) => {
         return (
           <Text style={{ width: '10vw' }} ellipsis title={text}>
@@ -233,6 +239,7 @@ const PopSales = () => {
       title: 'vendor Name',
       dataIndex: 'vendor_name',
       key: 'vendor_name',
+      width: 150
     },
     ...publicCol,
   ];
@@ -252,12 +259,13 @@ const PopSales = () => {
       });
   };
   useEffect(() => {
-    setPopData('storeData', 'stores', store_ranking);
+    setPopData('vendorData', 'vendors', vendor_ranking);
   }, []);
   return (
     <>
       <Tabs
-        defaultActiveKey="1"
+        defaultActiveKey="2"
+        style={{height: '590px'}}
         onTabClick={(key) => {
           let api: any = store_ranking;
           let popKey = 'storeData';
@@ -285,22 +293,6 @@ const PopSales = () => {
         <TabPane
           tab={
             <span>
-              <ShopOutlined />
-              store
-            </span>
-          }
-          key="1"
-        >
-          <Table
-            size="small"
-            columns={StoreColumns}
-            loading={loading}
-            dataSource={dataObj.storeData}
-          />
-        </TabPane>
-        <TabPane
-          tab={
-            <span>
               <SkinOutlined />
               vendor
             </span>
@@ -309,12 +301,30 @@ const PopSales = () => {
         >
           <Table
             size="small"
+            scroll={{ y: 590 }}
             columns={vendorColumns}
             loading={loading}
             dataSource={dataObj.vendorData}
             onChange={(page: any) => {
               setPopData('vendorData', 'vendors', vendor_ranking, page.current);
             }}
+          />
+        </TabPane>
+        <TabPane
+          tab={
+            <span>
+              <ShopOutlined />
+              store
+            </span>
+          }
+          key="1"
+        >
+          <Table
+            size="small"
+            scroll={{ y: 590 }}
+            columns={StoreColumns}
+            loading={loading}
+            dataSource={dataObj.storeData}
           />
         </TabPane>
         <TabPane
@@ -328,10 +338,13 @@ const PopSales = () => {
         >
           <Table
             size="small"
-            scroll={{ y: 210 }}
+            scroll={{ y: 590 }}
             columns={tagColumns}
             loading={loading}
             dataSource={dataObj.tagData}
+            pagination={{
+              pageSize: 10,
+            }}
             onChange={(page: any) => {
               setPopData('tagData', 'tags', tag_ranking, page.current);
             }}
@@ -348,11 +361,51 @@ const OrderTable = () => {
     {
       title: 'orderId',
       dataIndex: 'marketplace_order_id',
+      width: 160
+    },
+    {
+      title: 'Tag name',
+      dataIndex: 'tag_id',
+      valueType: 'select',
+      width: 260,
+      render: (_, record) => {
+        const tagTitle = getKesValue('tagsData', record.tag_id)?.tag_name;
+        return (<Text style={{ width: '260px' }} title={tagTitle} ellipsis>
+        {tagTitle}
+      </Text>)
+      },
+      renderFormItem: (_, { type, defaultRender, formItemProps, fieldProps}, form) => {
+        if (type === 'form') {
+          return null;
+        }
+        const status = form.getFieldValue('state');
+        if (status !== 'open') {
+          return (
+            // value 和 onchange 会通过 form 自动注入。
+            <Select
+            {...fieldProps}
+              showSearch
+              style={{ width: '530px' }}
+              placeholder="Select a tag"
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {getKesGroup('tagsData').map((item: tags) => {
+            return <Select.Option key={`op${item.id}`} value={item.id}>{item.tag_name}</Select.Option>;
+          })}
+            </Select>
+          );
+        }
+        return defaultRender(_);
+      }
     },
     {
       title: 'amount',
       dataIndex: 'amount',
       key: 'amount',
+      valueType: 'money',
       width: 80,
       search: false,
     },
@@ -360,12 +413,14 @@ const OrderTable = () => {
       title: 'vendor',
       dataIndex: 'vendor_id',
       valueType: 'select',
+      width: 100,
       request: async () => {
         return [
           ...getKesGroup('vendorData').map((item: vendors) => {
             return {
               label: item.vendor_name,
               value: item.id,
+              key: item.id
             };
           }),
         ];
@@ -382,6 +437,7 @@ const OrderTable = () => {
             return {
               label: item.marketplace,
               value: item.id,
+              key: item.id,
             };
           }),
         ];
@@ -392,6 +448,7 @@ const OrderTable = () => {
       dataIndex: 'order_time',
       key: 'order_time',
       search: false,
+      width: 160,
       render: (_, record: any) => {
         return (
           (record.add_time &&
@@ -406,42 +463,54 @@ const OrderTable = () => {
       search: false,
       key: 'status',
     },
+    {
+      title: 'title',
+      dataIndex: 'title',
+      search: false,
+      key: 'title',
+      width: 500,
+      render: (text: string) => {
+        return (<Text style={{ width: '500px' }} title={text} ellipsis>
+        {text}
+      </Text>)
+      },
+    },
   ];
   return (
     <>
       <ProTable
         size="small"
-        bordered
+        style={{height: '100%'}}
         columns={columns}
         actionRef={actionRef}
         request={async (params = {}) =>
-          new Promise((resolve) => {
-            let tempParams = {
-              ...params,
-              // ...sortParams,
-              page: params.current,
-              limit: params.pageSize,
-            };
-            orderItem(tempParams).then(
-              (res: {
-                data: {
-                  list: any[];
-                  total: number;
-                };
-                code: number;
-              }) => {
-                resolve({
-                  data: res.data.list,
-                  // success 请返回 true，
-                  // 不然 table 会停止解析数据，即使有数据
-                  success: !!res.code,
-                  // 不传会使用 data 的长度，如果是分页一定要传
-                  total: res.data.total,
-                });
-              },
-            );
-          })
-        }
+        new Promise((resolve) => {
+          let tempParams = {
+            ...params,
+            // ...sortParams,
+            page: params.current,
+            limit: params.pageSize,
+          };
+          orderItem(tempParams).then(
+            (res: {
+              data: {
+                list: any[];
+                total: number;
+              };
+              code: number;
+            }) => {
+              resolve({
+                data: res.data.list,
+                // success 请返回 true，
+                // 不然 table 会停止解析数据，即使有数据
+                success: !!res.code,
+                // 不传会使用 data 的长度，如果是分页一定要传
+                total: res.data.total,
+              });
+            },
+          );
+        })
+      }
         editable={{
           type: 'multiple',
         }}
@@ -458,12 +527,27 @@ const OrderTable = () => {
             xxl: 6,
           },
         }}
+        form={{
+          // 由于配置了 transform，提交的参与与定义的不同这里需要转化一下
+          syncToUrl: (values, type) => {
+            if (type === 'get') {
+              return {
+                ...values,
+                created_at: [values.startTime, values.endTime],
+              };
+            }
+            return values;
+          },
+        }}
         pagination={{
           pageSize: 10,
         }}
-        scroll={{ y: 210 }}
+        scroll={{ x: 800 }}
+        options={{
+          search: false,
+        }}
         dateFormatter="string"
-        headerTitle={'All orders'}
+        headerTitle="All Order"
       />
     </>
   );
@@ -471,6 +555,9 @@ const OrderTable = () => {
 
 const DemoRose = (props: { data: any[] }) => {
   const { data } = props;
+  var weeks = new Array("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday");
+  var currentWeek = weeks[moment().day()]
+  const [currentTime, setCurrentTime] = useState(moment().format('YYYY-MM-DD HH:mm:ss') + ' ' + currentWeek)
   var config = {
     appendPadding: 10,
     data: data,
@@ -484,7 +571,16 @@ const DemoRose = (props: { data: any[] }) => {
     legend: { position: 'bottom' },
     interactions: [{ type: 'pie-legend-active' }, { type: 'element-active' }],
   };
-  return <Pie {...config} />;
+  const refreshTime = setInterval(() => {
+    if(document.getElementById("salsePage") === null){
+      clearInterval(refreshTime); return;
+    } else {
+      setCurrentTime(moment().format('YYYY-MM-DD HH:mm:ss')+ ' ' + currentWeek)
+    }
+  }, 1000)
+  return (<Card title="order status diagram" size="small" style={{ margin: '8px' }} extra={currentTime}>
+            <Pie {...config} />
+            </Card>);
 };
 const DemoLine = (props: { data: any[] }) => {
   const { data } = props;

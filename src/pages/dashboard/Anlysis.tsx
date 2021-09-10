@@ -530,7 +530,7 @@ export default () => {
   });
   const [totalLoading, setTotalLoading] = useState(false);
   const GetCard = (props: {
-    one_level_title: string;
+    one_level_title: string | JSX.Element;
     one_level_number: number | string;
     color: string;
     info?: boolean | number | string;
@@ -614,7 +614,7 @@ export default () => {
         <Col className="gutter-row" span={5}>
           <Spin spinning={totalLoading}>
             <GetCard
-              one_level_title={'Total sales'}
+              one_level_title={<span style={{fontSize: '1.5vw'}}>Total sales</span>}
               one_level_number={totalObj.order_total_sales.toFixed(0)}
               color="#eef082"
               info={`Day sales: ${  totalObj.order_total_sales_today}`}

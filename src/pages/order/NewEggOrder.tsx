@@ -344,6 +344,7 @@ export default () => {
         columns={columns(() => {
           actionRef.current?.reload()
         })}
+        headerTitle="NewEgg orders"
         actionRef={actionRef}
         className={styles.tableStyle}
         request={async (params = {}, sort) =>

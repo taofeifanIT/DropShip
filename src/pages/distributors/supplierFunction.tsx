@@ -27,11 +27,14 @@ import {
   Tooltip,
   Table,
   Divider,
-  BackTop
+  BackTop,
+  Input,
+  Image
 } from 'antd';
 import type { FormInstance ,
   MessageArgsProps} from 'antd';
 import { log_vendor_quantity_and_price_change } from '../../services/distributors/ingramMicro';
+import { aspectRequired } from '../../services/distributors/ebay';
 import { matchAndListing } from '../../services/dashboard';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import type { tags } from '../../services/publicKeys';
@@ -48,6 +51,15 @@ import moment from 'moment';
 import ComparisonFrame from './components/ComparisonFrame'
 
 const { Text } = Typography;
+
+// 映射ebay店铺上架字段， 本地数据库未有ebay映射字段时key值为unknownKey
+var DATA_BASE_TO_EBAY_FIELD  = [{
+  'brand':'Brand',
+  'value': '',
+},{
+  'unknowKey':'Type',
+  'value': 'Sex Toy',
+}]
 
 type apiItem = {
   updateApi: any;
@@ -115,6 +127,10 @@ const HistoryColumn = (props: { data: any }) => {
     yField: 'value',
     seriesField: 'name',
     style: { marginRight: '16px' },
+    slider: {
+      start: 0,
+      end: 1,
+    },
     label: {
       position: 'middle',
       layout: [
@@ -140,6 +156,7 @@ const ButtonGroup = (props: {
     is_auth: number;
     vendor_sku: string;
     vendor_id: string;
+    brand: string;
   };
   api: apiItem;
   isAuth?: boolean;
@@ -155,6 +172,10 @@ const ButtonGroup = (props: {
   const [matchlVisible, setMatchlVisible] = useState(false);
   const [historyVisible, setHistoryVisible] = useState(false);
   const [historyConfirmLoading, setHistoryConfirmLoading] = useState(false);
+  const [configurationVisible,setConfigurationVisible] = useState(false);
+  const [dynamicFormData,setDynamicFormData]= useState<{key: string}[]>([]);
+  const [ebayParams,setEbayParams]=  useState<any>({});
+  const [configurationLoading,setConfigurationLoading] = useState(false);
   const [historyDataLoading, setHistoryDataLoading] = useState(false);
   const [isDefaultStores, setIsDefaultStores] = useState(false);
   const [historyData, setHistoryData] = useState({
@@ -162,7 +183,19 @@ const ButtonGroup = (props: {
     log_vendor_quantity_change: [],
   });
   const [form] = Form.useForm();
+  const [dynamicForm] = Form.useForm();
   const [matchForm] = Form.useForm();
+  type requestForm = {
+    localizedAspectName: string;
+    aspectConstraint: {
+      aspectDataType: string;
+      aspectEnabledForVariations: boolean;
+      aspectMode: string;
+      aspectRequired: boolean;
+      aspectUsage: string;
+      itemToAspectCardinality: string;
+    }
+  }
   const formItemLayout = {
     labelCol: { span: 6 },
     wrapperCol: { span: 14 },
@@ -173,17 +206,21 @@ const ButtonGroup = (props: {
   const handleOk = () => {
     form.resetFields();
     setIsModalVisible(false);
+    setEbayParams({})
     refresh();
   };
   const handleCancel = () => {
     setIsModalVisible(false);
+    setEbayParams({})
   };
   const getResponseInfo = (obj: {
     errors_stores?: { name: string }[];
     success_stores?: { name: string }[];
+    errors?: string[];
   }): {
     success: string;
     errors: string;
+    errorInfo: string;
   } => {
     let successInfo: string | undefined;
     if (obj.success_stores && obj.success_stores.length) {
@@ -201,9 +238,15 @@ const ButtonGroup = (props: {
         }),
       ].toString();
     }
+    
+    let successStr: string | undefined;
+    if (obj.errors && obj.errors.length) {
+      successStr = obj.errors.toString();
+    }
     return {
       success: successInfo || '',
       errors: errorInfo || '',
+      errorInfo:successStr || ''
     };
   };
   const onMatchFinish = () => {
@@ -252,17 +295,19 @@ const ButtonGroup = (props: {
           }
         }
         tempValue.store_ids = Array.from(new Set(tempValue.store_ids));
+        var listParmas = { id: record.id, ...tempValue }
+        if(tempValue.store_ids.indexOf(7) !== -1){
+          listParmas['aspects'] = ebayParams
+        }
         setConfirmLoading(true);
-        listingApi({ id: record.id, ...tempValue })
+        listingApi(listParmas)
           .then((res: { code: number; data: any; msg: string }) => {
             if (res.code) {
-              const { success, errors } = getResponseInfo(res.data);
+              const { success, errorInfo } = getResponseInfo(res.data);
               message.info(
                 <div>
-                  {success && <p>{`${success.join(' ')}'  Listed succssful!`}</p>}
-                  {errors && <p>{`${errors.join(' ')}  Listed faild!`}</p>}
-                  {!success && <p>{`0 Listed succssful!`}</p>}
-                  {!errors && <p>{`0 Listed faild!`}</p>}
+                  {success && <p>{`${success}'  Listed succssful!`}</p>}
+                  {errorInfo && <p style={{color: 'red'}}>{`${errorInfo}  Listed faild!`}</p>}
                 </div>,
               );
             } else {
@@ -281,6 +326,27 @@ const ButtonGroup = (props: {
         console.log(e);
       });
   };
+  const onConfigurationFinish = () => {
+    dynamicForm
+      .validateFields()
+      .then((value: any) => {
+         console.log(value)
+         setEbayParams(value)
+         setConfigurationVisible(false)
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }
+  const checkEbayParams = () => {
+    // 有填写表单才能显示勾选
+    if(!Object.getOwnPropertyNames(ebayParams).length){
+       var isCheckedStoreIds = JSON.parse(JSON.stringify(form.getFieldValue("store_ids")))
+       form.setFieldsValue({
+        store_ids: isCheckedStoreIds.filter((id: number) => id !== 7),
+      });
+    }
+  }
   const updatePop = (pop: string, value: any) => {
     const params = {
       id: record.id,
@@ -426,6 +492,19 @@ const ButtonGroup = (props: {
   const handleOpenViewCancel = () => {
     setHistoryVisible(false);
   };
+  const getDynamicFormData = (storeId: number) => {
+    setConfigurationLoading(true)
+    aspectRequired(storeId).then(res => {
+      var formObj = res.data.aspectRequired.map((item: requestForm) => {
+        return {
+          key: item.localizedAspectName
+        }
+      })
+      setDynamicFormData(formObj)
+    }).finally(() => {
+      setConfigurationLoading(false)
+    })
+  }
   useEffect(() => {
     if (isModalVisible) {
       const tempObj = {};
@@ -478,6 +557,21 @@ const ButtonGroup = (props: {
       } else {
         setIsDefaultStores(false);
       }
+      var ebayPrams = {}
+      DATA_BASE_TO_EBAY_FIELD.forEach(fieldItem => {
+        var fieldItemKey = Object.keys(fieldItem)[0]
+        Object.keys(record).forEach(recordField => {
+          // console.log(recordField,fieldItem)
+          if(fieldItemKey === recordField){
+              // fieldItem.value = record[fieldItemKey]
+              ebayPrams[fieldItem[fieldItemKey]] = record[fieldItemKey]
+          }
+        })
+        if(fieldItemKey === 'unknowKey'){
+          ebayPrams[(fieldItem as any)[fieldItemKey]] = fieldItem.value
+        }
+      })
+      setEbayParams(ebayPrams)
       // 2.设置已存在属性
       setAlreadyStoreId(tempObj);
       form.setFieldsValue({
@@ -633,6 +727,26 @@ const ButtonGroup = (props: {
         width={600}
         onCancel={handleCancel}
       >
+         <Modal title="configuration" visible={configurationVisible} onOk={onConfigurationFinish} onCancel={() => {
+          setConfigurationVisible(false)
+          checkEbayParams()
+         }}>
+          <Spin spinning={configurationLoading}>
+          <Form
+              name="dynamicForm"
+              form={dynamicForm}
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 12 }}
+              onFinish={onMatchFinish}
+            >
+          {dynamicFormData.length && (dynamicFormData.map(itemForm => {
+            return (<Form.Item name={itemForm.key} label={itemForm.key} rules={[{ required: true, message: `Please select ${itemForm.key}!` }]}>
+                   <Input />    
+                </Form.Item>)
+          }))}
+          </Form>
+          </Spin>
+        </Modal>
         <Form name="validate_other" form={form} {...formItemLayout} onFinish={onFinish}>
           <Form.Item
             name="store_ids"
@@ -641,7 +755,6 @@ const ButtonGroup = (props: {
           >
             <Checkbox.Group>
               <Row style={{width: '500px'}}>
-                {/* {} */}
                  {initialState?.currentUser?.auth_group?.title !== 'Outsourcer' ? (getKesGroup('storeData').map((item: { id: number; name: string; ip: string }) => {
                   return (
                     <Col key={`${item.id}checkbox`} span={12}>
@@ -650,9 +763,30 @@ const ButtonGroup = (props: {
                         value={item.id}
                         style={{ lineHeight: '32px' }}
                         disabled={alreadyStoreId[item.id]}
+                        onChange={(e) => {
+                          if(e.target.value === 7 && e.target.checked && JSON.stringify(ebayParams) === '{}'){
+                            setConfigurationVisible(true)
+                            // 如果没有参数则发起请求
+                            if (!dynamicFormData.length){
+                              getDynamicFormData(e.target.value)
+                            }
+                          }
+                          // if(e.target.value === 7 && !e.target.checked){
+                          //   setEbayParams({})
+                          // }
+                        }}
                       >
                         {item.name}
                       </Checkbox>
+                      {item.id === 7 && Object.getOwnPropertyNames(ebayParams).length ? (Object.getOwnPropertyNames(ebayParams).map(tagItem => {
+                        return <Tag style={{cursor: 'pointer'}} onClick={()=> {
+                          if (!dynamicFormData.length){
+                            getDynamicFormData(item.id)
+                          }
+                          setConfigurationVisible(true)
+                          dynamicForm.setFieldsValue(ebayParams);
+                        }}>{ebayParams[tagItem]}</Tag>
+                      })):null}
                     </Col>
                   );
                 })) : (getKesGroup('storeData').filter((flItem:{ id: number}) => flItem.id !== 6).map((item: { id: number; name: string; ip: string }) => {
@@ -712,6 +846,7 @@ const ButtonGroup = (props: {
 
 
 type showPopType =  {imageNames: string[],otherPop: {key: string,value: string}[]} | undefined
+
 export const columns = (
   api: apiItem,
   refresh: () => void,
@@ -778,7 +913,7 @@ export const columns = (
       title: 'Product',
       dataIndex: 'id',
       search: false,
-      width: 450,
+      width: selfShow ? 450 : 350,
       sorter: false,
       render: (_, record: any) => {
         const getAuth = (status: number) => {
@@ -836,7 +971,7 @@ export const columns = (
             <Space direction="vertical">
               <Text type="secondary">
               {selfShow ? <ComparisonFrame ref={comparisonRef} leftURL={`${getAsonHref(record.country_id)}${record.asin}`} showPop={{imageNames: getRecoredImages(),title: record.title, otherPop: record}} /> : null}
-              ID:{!selfShow ? (<>
+              ID：{!selfShow ? (<>
                 <a
                   target="_blank"
                   rel="noreferrer"
@@ -852,7 +987,7 @@ export const columns = (
                     <AmazonOutlined />
                     Asin
                   </span>
-                  :
+                  ：
                   <a target="_Blank" href={`${getAsonHref(record.country_id)}${record.asin}`}>
                     {record.asin}
                   </a>
@@ -860,7 +995,7 @@ export const columns = (
               )}
               {record.newegg_id && (
                 <Text type="secondary">
-                  <span>Newegg</span>:
+                  <span>Newegg</span>：
                   <a target="_Blank" href={`${getNewEggHref(record.newegg_id)}`}>
                     {record.newegg_id}
                   </a>
@@ -875,28 +1010,39 @@ export const columns = (
               </Text>
               {isAuth && (
                 <Text type="secondary">
-                  Is auth: <Text>{getAuth(record.is_auth)}</Text>
+                  Is auth：<Text>{getAuth(record.is_auth)}</Text>
                 </Text>
               )}
               {record.dimweight && (
                 <Text type="secondary">
-                  dimweight: <Text>{record.dimweight}</Text>
+                  dimweight：<Text>{record.dimweight}</Text>
                 </Text>
               )}
               <Text type="secondary">
-                Tag Name:
+                Tag Name：
                 <ParagraphText
                   content={getKesValue('tagsData', record.tag_id).tag_name}
                   width={280}
                 />
               </Text>
               <Text type="secondary">
-                Description: <ParagraphText content={record.title} width={270} />
+                Description：<ParagraphText content={record.title} width={selfShow ? 250 : 190} />
               </Text>
             </Space>
           </>
         );
       },
+    },
+    {
+      title: 'Image',
+      dataIndex: 'Image1',
+      hideInTable: !selfShow,
+      search: false,
+      align: 'center',
+      width: selfShow ? 180 : 0,
+      render: (text: string) => {
+        return (<Image width={180} src={text} />)
+      }
     },
     {
       title: 'Match',

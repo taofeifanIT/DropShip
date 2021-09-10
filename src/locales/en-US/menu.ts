@@ -1,4 +1,7 @@
 export default {
+  'menu.Distributors.Eldorado': 'Eldorado',
+  'menu.Ebay': 'Ebay',
+  'menu.Distributors.Ebay': 'Ebay',
   'menu.Distributors.Synnex': 'Synnex',
   'menu.Distributors.Scansource': 'Scansource',
   'menu.Distributors.NewEgg': 'NewEgg',
@@ -20,7 +23,7 @@ export default {
   'menu.Dashboard.Sales': 'Sales',
   'menu.Dashboard': 'Dashboard',
   'menu.marketProduct': 'Market Product',
-  'menu.order.EbayOrders': 'Ebay',
+  'menu.order.EbayOrder': 'Ebay',
   'menu.order.NewEggOrder': 'NewEgg',
   'menu.priceManage.tagPrice': 'Tag Price',
   'menu.tagPrice': 'Tag Price',
