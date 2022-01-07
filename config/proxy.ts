@@ -8,21 +8,21 @@
 export default {
   dev: {
     '/api/': {
-      target: 'http://api-multi.itmars.net',
+      target: 'https://api-multi.itmars.net',
       changeOrigin: true,
       pathRewrite: { '^/api/': '' },
     },
   },
   test: {
     '/api/': {
-      target: 'http://api.itmars.net',
+      target: 'https://api-multi.itmars.net',
       changeOrigin: true,
       pathRewrite: { '^': '' },
     },
   },
   pre: {
     '/api/': {
-      target: 'your pre url',
+      target: 'https://api-multi.itmars.net',
       changeOrigin: true,
       pathRewrite: { '^': '' },
     },

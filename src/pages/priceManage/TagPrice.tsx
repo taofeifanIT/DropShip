@@ -4,8 +4,8 @@ import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import { getTagList } from '../../services/publicKeys';
 import { edit } from '../../services/priceManage/tagPrice';
-import { getKesGroup, getKesValue } from '../../utils/utils';
-import type { priceAlgorithms } from '../../services/publicKeys';
+import { getKesGroup, getKesValue, } from '../../utils/utils';
+import type { priceAlgorithms,vendors } from '../../services/publicKeys';
 import {WarningOutlined} from '@ant-design/icons';
 
 const { Option } = Select;
@@ -23,6 +23,13 @@ type GithubIssueItem = {
   created_at: string;
   updated_at: string;
   closed_at?: string;
+  amazon_price_algorithm_id: number;
+  newegg_price_algorithm_id: number;
+  walmart_price_algorithm_id: number;
+  shopify_price_algorithm_id: number;
+  ebay_price_algorithm_id: number;
+  listing_num: number;
+  total_num: number;
 };
 
 const columns = (editFn: (visible: boolean, id: number) => void): ProColumns<GithubIssueItem>[] => [
@@ -31,86 +38,102 @@ const columns = (editFn: (visible: boolean, id: number) => void): ProColumns<Git
     valueType: 'indexBorder',
     width: 48,
   },
-  {
-    title: 'ID',
-    dataIndex: 'id',
-  },
+  // {
+  //   title: 'ID',
+  //   dataIndex: 'id',
+  //   search: false,
+  // },
   {
     title: 'Tag name',
     dataIndex: 'tag_name',
-    render: (_, record: any) => {
-      return record.tag_name;
-    },
+    search: false,
   },
   {
     title: 'vendor',
-    dataIndex: 'vendor',
-    render: (
-      _,
-      record: {
-        vendor: {
-          vendor_name: string;
-        };
-      },
-    ) => {
-      return record.vendor.vendor_name;
+    dataIndex: 'vendor_id',
+    valueType: 'select',
+    width: 120,
+    request: async () => {
+      return [
+        ...getKesGroup('vendorData').map((item: vendors) => {
+          return {
+            label: item.vendor_name,
+            value: item.id,
+          };
+        }),
+      ];
     },
+  },
+  {
+    title: 'Total',
+    dataIndex: 'total_num',
+    width: 100,
+    search: false,
+    sorter: true,
+  },
+  {
+    title: 'Total listing',
+    dataIndex: 'listing_num',
+    width: 100,
+    search: false,
+    sorter: true,
   },
   {
     title: 'Amazon price algorithm',
     dataIndex: 'amazon_price_algorithm_id',
-    render: (
-      _,
-      record: {
-        amazon_price_algorithm_id: number;
-      },
-    ) => {
+    search: false,
+    width: 230,
+    render: (_,record) => {
       return getKesValue('priceAlgorithmsData', record.amazon_price_algorithm_id).name;
     },
   },
   {
     title: 'Newegg price algorithm',
     dataIndex: 'newegg_price_algorithm_id',
-    render: (
-      _,
-      record: {
-        newegg_price_algorithm_id: number;
-      },
-    ) => {
+    search: false,
+    width: 230,
+    render: (_,record) => {
       return getKesValue('priceAlgorithmsData', record.newegg_price_algorithm_id).name;
     },
   },
   {
     title: 'Walmart price algorithm',
     dataIndex: 'walmart_price_algorithm_id',
-    render: (
-      _,
-      record: {
-        walmart_price_algorithm_id: number;
-      },
-    ) => {
+    search: false,
+    width: 230,
+    render: (_,record) => {
       return getKesValue('priceAlgorithmsData', record.walmart_price_algorithm_id).name;
     },
   },
   {
     title: 'Ebay price algorithm',
     dataIndex: 'ebay_price_algorithm_id',
-    render: (
-      _,
-      record: {
-        ebay_price_algorithm_id: number;
-      },
-    ) => {
+    search: false,
+    width: 230,
+    render: (_,record) => {
       return getKesValue('priceAlgorithmsData', record.ebay_price_algorithm_id).name;
+    },
+  },
+  {
+    title: 'shopify price algorithm',
+    dataIndex: 'shopify_price_algorithm_id',
+    search: false,
+    width: 230,
+    render: (_,record) => {
+      return getKesValue('priceAlgorithmsData', record.shopify_price_algorithm_id).name;
     },
   },
   {
     title: 'quantity_offset',
     dataIndex: 'quantity_offset',
+    search: false,
   },
   {
     title: 'Action',
     dataIndex: 'action',
+    search: false,
+    width:100,
+    fixed: 'right',
     render: (_, record: any) => {
       return (
         <>
@@ -143,7 +166,6 @@ const BatchPriceModal = (props: {
   };
   const onEmit = () => {
     setConfirmLoading(true);
-    // do something
     from.validateFields().then((updatedValues: any) => {
       edit({
         tag_id: listingId.id,
@@ -245,6 +267,21 @@ const BatchPriceModal = (props: {
           </Select>
         </Form.Item>
         <Form.Item
+          label="shopify algorithm"
+          name="shopify_price_algorithm_id"
+          rules={[{ required: true, message: 'Please input your price algorithm!' }]}
+        >
+          <Select placeholder="Select a option and change input text above" allowClear>
+            {getKesGroup('priceAlgorithmsData').map((item: priceAlgorithms) => {
+              return (
+                <Option key={`option${item.id}`} value={item.id}>
+                  {item.name}
+                </Option>
+              );
+            })}
+          </Select>
+        </Form.Item>
+        <Form.Item
           label="quantity_offset"
           name="quantity_offset"
           rules={[{ required: true, message: 'Please input your quantity_offset!' }]}
@@ -278,23 +315,35 @@ export default () => {
         actionRef={actionRef}
         request={async (params = {}, sort) =>
           new Promise((resolve) => {
-            getTagList().then((res) => {
+            getTagList(params).then((res:{
+              data: {
+                list:GithubIssueItem[],
+                total: number
+              },
+              code: number,
+            }) => { 
+               let tempData = res.data.list
+               if (sort){
+                  let sortPop =  Object.keys(sort)[0]
+                  if (sort[sortPop] === 'descend'){
+                    tempData = res.data.list.sort((a, b) => a[sortPop] - b[sortPop])
+                  } else {
+                    tempData = res.data.list.sort((a, b) => b[sortPop] - a[sortPop])
+                  }
+               }
               resolve({
-                data: res.data.list,
-                // success 请返回 true，
-                // 不然 table 会停止解析数据，即使有数据
+                data: tempData,
                 success: !!res.code,
-                // 不传会使用 data 的长度，如果是分页一定要传
                 total: res.data.total,
               });
             });
           })
         }
+        scroll={{x: columns(editFn).reduce((sum, e) => sum + Number(e.width || 0), 0),}}
         editable={{
           type: 'multiple',
         }}
         rowKey="id"
-        search={false}
         pagination={{
           pageSize: 50,
         }}

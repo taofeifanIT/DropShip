@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { Button, message, Typography } from 'antd';
+import { useRef, useState } from 'react';
+import { Button, message } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import { ClearOutlined } from '@ant-design/icons';
 import ProTable from '@ant-design/pro-table';
@@ -44,25 +44,22 @@ const columns: ProColumns<GithubIssueItem>[] = [
     align: 'center',
   },
   {
+    dataIndex: 'add_date',
+    title: 'add_date',
+    search: false,
+    width: 150,
+  },
+  {
     dataIndex: 'msg',
     title: 'message',
     width: 308,
-  },
+  },  
   {
     dataIndex: 'data',
     title: 'error log',
     width: 300,
     search: false,
     valueType: 'code',
-    // render: (_, record: any) => {
-    //     return (
-    //         <>
-    //             <Space direction="vertical">
-    //                 <ParagraphText content={record.data} width={1500} />
-    //             </Space>
-    //         </>
-    //     )
-    // }
   },
   {
     dataIndex: 'level',
@@ -82,11 +79,6 @@ const columns: ProColumns<GithubIssueItem>[] = [
   {
     dataIndex: 'log_group',
     title: 'log_group',
-    search: false,
-  },
-  {
-    dataIndex: 'add_date',
-    title: 'add_date',
     search: false,
   },
 ];
@@ -122,6 +114,7 @@ export default () => {
         columns={columns}
         actionRef={actionRef}
         bordered
+        scroll={{ x: columns.reduce((sum, e) => sum + Number(e.width || 0), 0) }}
         request={async (params = {}, sort) =>
           new Promise((resolve) => {
             let sortParams: {

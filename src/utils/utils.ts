@@ -27,6 +27,7 @@ export function getMenu(params: Array<any>): any {
   return params.map((item) => {
     let routeObj: any = {
       sort_num: item.sort_num,
+      hideInMenu: !item.is_show,
       icon: item.icon && React.createElement(Icon[item.icon.replace(/\s+/g, '')]),
       routes: item.children
         ? getMenu(item.children).sort((a: any, b: any) => a.sort_num - b.sort_num)
@@ -75,13 +76,13 @@ export function getQueryVariable(variable: string) {
   return false;
 }
 
-export function getKesGroup(parentKey: string) {
-  const allKeys = JSON.parse(getPublicKey() || []);
+export function getKesGroup(parentKey: 'companyData' | 'countryData' | 'marketPlaceData' | 'vendorData' | 'storeData' | 'tagsData' | 'configsData' | 'priceAlgorithmsData' | 'listing_sort_field') {
+  const allKeys = JSON.parse(getPublicKey());
   return allKeys[parentKey];
 }
 
-export function getKesValue(parentKey: string, key: string | number) {
-  const allKeys = JSON.parse(getPublicKey() || []);
+export function getKesValue(parentKey: 'companyData' | 'countryData' | 'marketPlaceData' | 'vendorData' | 'storeData' | 'tagsData' | 'configsData' | 'priceAlgorithmsData' | 'listing_sort_field', key: string | number) {
+  const allKeys = JSON.parse(getPublicKey());
   const group = allKeys[parentKey];
   if (group instanceof Array) {
     return group.find((item) => item.id === key);
@@ -98,7 +99,6 @@ export function getPageHeight() {
 export function throwMenu(Arr: Array<any>, ID: string): any {
   var _result = null;
   for (let i = 0; i < Arr.length; i++) {
-    //console.log(Arr[i], Arr[i].id == ID)
     if (Arr[i].path == ID) return Arr[i];
     if (Arr[i].routes) _result = throwMenu(Arr[i].routes, ID);
     if (_result != null) return _result;
@@ -108,26 +108,7 @@ export function throwMenu(Arr: Array<any>, ID: string): any {
 
 export function enterF11() {
   var docElm: any = document.documentElement;
-
-  //W3C
-
   try {
-    // if (docElm.requestFullscreen) {
-
-    //   docElm.requestFullscreen();
-
-    //   }
-
-    //   //FireFox
-
-    //   else if (docElm.mozRequestFullScreen) {
-
-    //   docElm.mozRequestFullScreen();
-
-    //   }
-
-    //Chrome等
-
     if (docElm.webkitRequestFullScreen) {
       docElm.webkitRequestFullScreen();
     }
@@ -136,20 +117,6 @@ export function enterF11() {
   }
 }
 
-// export function getIndexPage(arr: Array<any>): any{
-//   if(arr[0].path === '/IndexPage'){
-//     return arr[0]
-//   }
-//   for (let obj of arr) {
-//     if (obj.hasPage) {
-//       return obj
-//     } else {
-//       if (obj.children){
-//         return getIndexPage(obj.children)
-//       }
-//     }
-//   }
-// }
 
 export function findIndexPage(arr: any[]) {
   let path = '';

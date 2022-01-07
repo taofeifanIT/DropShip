@@ -1,70 +1,205 @@
-import { Row, Col, Card, Spin, Tabs, Table, Typography,Select } from 'antd';
+import { Row, Col, Card, Spin, Tabs, Table, Typography,Select,Radio} from 'antd';
 import ProTable from '@ant-design/pro-table';
-import { Line, Pie } from '@ant-design/charts';
+import { Line, Pie,G2 } from '@ant-design/charts';
 import {
   total,
   orderItem,
   store_ranking,
   vendor_ranking,
   tag_ranking,
-} from '../../services/dashboard';
-import { useState, useEffect, useRef } from 'react';
+} from '@/services/dashboard';
+import React, { useState, useEffect, useRef } from 'react';
 import type { ActionType } from '@ant-design/pro-table';
-import { getKesGroup,getKesValue } from '../../utils/utils';
-import { ShopOutlined, TagOutlined, SkinOutlined } from '@ant-design/icons';
-import { vendors,tags } from '../../services/publicKeys';
+import { getKesGroup,getKesValue } from '@/utils/utils';
+import { ShopOutlined, TagOutlined, SkinOutlined,RiseOutlined, FallOutlined } from '@ant-design/icons';
+import { vendors,tags } from '@/services/publicKeys';
 import type { ProColumns } from '@ant-design/pro-table';
+// import Dos from '@/components/Dos'
+
 const { Text } = Typography;
 import moment from 'moment';
+// const { Option } = Select;
 
+const riseOutlinedStyle: React.CSSProperties = {
+  fontSize: '26px',
+  position: 'absolute',
+  bottom: '8px',
+  right: '9px',
+  color: 'red',
+  transform: 'rotate(-20deg)'
+}
+
+const fallOutlineddStyle: React.CSSProperties = {
+  fontSize: '26px',
+  position: 'absolute',
+  bottom: '8px',
+  right: '9px',
+  color: 'green',
+  transform: 'rotate(10deg)'
+}
+
+type Total = {
+  compare_lastweek_order: number;
+  compare_lastmonth_order: number;
+  compare_lastyear_order: number;
+  compare_lastweek_return: number;
+  compare_lastmonth_return: number;
+  compare_lastyear_return: number;
+  compare_lastweek_sales: number;
+  compare_lastmonth_sales: number;
+  compare_lastyear_sales: number;
+  order_total: number;
+  order_total_month: number;
+  order_total_week: number;
+  order_total_sales: number;
+  order_total_sales_today: number;
+  total_order_sales_week: number;
+  total_order_sales_month: number;
+  total_order_sales_year: number;
+  order_total_today: number;
+  return_total: number;
+  return_total_today: number;
+  order_total_year: number;
+  return_total_month: number;
+  return_total_week:  number;
+  return_total_year: number;
+  lineData: any[];
+  maxValue: number;
+  status_data: any[];
+}
+
+type showValueTyle = {
+  title: string;
+  value: number;
+  compared: number;
+}
 
 const { TabPane } = Tabs;
-export default () => {
-  const [loading, setLoading] = useState(false);
-  const [topObj, setTopObj] = useState<{
-    compare_lastweek_order: number;
-    compare_lastweek_return: number;
-    compare_lastweek_sales: number;
-    order_total: number;
-    order_total_sales: string;
-    order_total_sales_today: string;
-    order_total_today: number;
-    return_total: number;
-    return_total_today: number;
-    lineData: any[];
-    status_data: any[];
-  }>({
-    compare_lastweek_order: 0,
-    compare_lastweek_return: 0,
-    compare_lastweek_sales: 0,
-    order_total: 0,
-    order_total_sales: "0",
-    order_total_sales_today: "0",
-    order_total_today: 0,
-    return_total: 0,
-    return_total_today: 0,
-    lineData: [],
-    status_data: [],
-  });
-  const headCard = (all: number | string, day: number | string, rate: number, title: string) => (
+
+const HeadCard = (props: 
+      {
+          all: number; 
+          day: number;
+          week: number;
+          month: number;
+          year: number; 
+          rate: number;
+          monthRate: number;
+          yearRate: number;
+          title: string;
+      }
+  ) => {
+  const {all,day,week,month,year,rate,monthRate,yearRate,title} = props
+  const [tab, setTab] = useState<string>('Day')
+  const [showValue, setShowValue]= useState<showValueTyle>({
+    value: day,
+    title: 'Day sales',
+    compared: rate
+  })
+  const getShowValue = (type = tab):showValueTyle =>  {
+    var value = 0
+    var showTitle = ""
+    var thanValue = 0
+    switch(type){
+      case 'Day':
+        value = day
+        showTitle = 'Day '
+        thanValue = rate
+      break;
+        case 'Week':
+        value = week
+        showTitle = 'Week '
+        thanValue = rate
+        break;
+      case 'Month':
+        value = month
+        showTitle = 'Monthly '
+        thanValue = monthRate
+        break;
+      case 'Year':
+        value = year
+        showTitle = 'Annual '
+        thanValue = yearRate
+        break;
+      default:
+        value = day
+        showTitle = 'Day '
+        thanValue = rate
+    }
+    return {
+      value: value,
+      title: showTitle + title,
+      compared: thanValue
+    }
+  }
+  const handleChange = (value: any) => {
+    setTab(value.target.value)
+  }
+  useEffect(() => {
+    setShowValue(getShowValue(tab))
+  }, [tab,day,month,year])
+  return (
     <>
       <Card
         style={{ margin: '8px' }}
+        size='small'
         bodyStyle={{ paddingTop: '20px', paddingBottom: '0px' }}
-        title={null}
+        title={<>
+          <Radio.Group value={tab} size='small' onChange={handleChange}>
+              <Radio.Button value="Day">Day</Radio.Button>
+              <Radio.Button value="Week">Week</Radio.Button>
+              <Radio.Button value="Month">Month</Radio.Button>
+              <Radio.Button value="Year">Year</Radio.Button>
+          </Radio.Group>
+        </>}
       >
         <p style={{ textAlign: 'center' }}>
           Total {title}：<span style={{ fontWeight: 'bold', fontSize: '1.3vw' }}>{all}</span>
         </p>
         <p style={{ textAlign: 'center' }}>
-          Day {title}：<span style={{ fontWeight: 'bold', fontSize: '1.3vw' }}>{day}</span>
+          {showValue.title}：<span style={{ fontWeight: 'bold', fontSize: '1.3vw' }}>{showValue.value}</span>
         </p>
-        <p style={{ textAlign: 'right', fontSize: '12px' }}>
-          Compared with last week {Math.round(rate * 100)}%
+        <p style={{ textAlign: 'right', fontSize: '12px', paddingRight: '20px' }}>
+          Compared with last {tab === "Day" ? 'week' : tab} {Math.round(showValue.compared * 100)}%
+          {Math.round(showValue.compared * 100) > 100 ? ( <RiseOutlined style={riseOutlinedStyle}/>) : (<FallOutlined style={fallOutlineddStyle} />)}
         </p>
       </Card>
     </>
   );
+}
+
+export default () => {
+  const [loading, setLoading] = useState(false);
+  const [topObj, setTopObj] = useState<Total>({
+    compare_lastweek_order: 0,
+    compare_lastweek_return: 0,
+    compare_lastweek_sales: 0,
+    compare_lastmonth_order: 0,
+    compare_lastmonth_return: 0,
+    compare_lastmonth_sales: 0,
+    compare_lastyear_order: 0,
+    compare_lastyear_return: 0,
+    compare_lastyear_sales: 0,
+    order_total: 0,
+    order_total_month: 0,
+    order_total_week: 0,
+    order_total_year:0,
+    order_total_sales: 0,
+    order_total_sales_today: 0,
+    total_order_sales_week: 0,
+    total_order_sales_month: 0,
+    total_order_sales_year: 0,
+    order_total_today: 0,
+    return_total: 0,
+    return_total_today: 0,
+    return_total_month: 0,
+    return_total_week: 0,
+    return_total_year: 0,
+    lineData: [],
+    maxValue:0,
+    status_data: [],
+  });
+
 
   const init = () => {
     setLoading(true);
@@ -87,6 +222,8 @@ export default () => {
             };
           }),
         ];
+       var maxValue = Math.max.apply(Math,data.lineData.map((item:any) => { return item.gdp }))
+       data.maxValue = maxValue
         setTopObj(data);
       })
       .finally(() => {
@@ -106,34 +243,46 @@ export default () => {
           <Col span={16}>
             <Row>
               <Col span={8}>
-                {headCard(
-                  topObj.order_total,
-                  topObj.order_total_today,
-                  topObj.compare_lastweek_order,
-                  'order',
-                )}
+                <HeadCard
+                    all={topObj.order_total} 
+                    day={topObj.order_total_today} 
+                    week={topObj.order_total_week}
+                    month={topObj.order_total_month}
+                    year={topObj.order_total_year}
+                    rate={topObj.compare_lastweek_order} 
+                    monthRate={topObj.compare_lastmonth_order}
+                    yearRate={topObj.compare_lastyear_order}
+                    title={'order'} />
               </Col>
               <Col span={8}>
-                {headCard(
-                  '$'+topObj.order_total_sales,
-                  '$'+topObj.order_total_sales_today,
-                  topObj.compare_lastweek_sales,
-                  'sales',
-                )}
+                <HeadCard 
+                    all={topObj.order_total_sales} 
+                    day={topObj.order_total_sales_today} 
+                    week={topObj.total_order_sales_week}
+                    month={topObj.total_order_sales_month}
+                    year={topObj.total_order_sales_year}
+                    rate={topObj.compare_lastweek_sales} 
+                    monthRate={topObj.compare_lastmonth_sales}
+                    yearRate={topObj.compare_lastyear_sales}
+                    title={'sales'} />
               </Col>
               <Col span={8}>
-                {headCard(
-                  topObj.return_total,
-                  topObj.return_total_today,
-                  topObj.compare_lastweek_return,
-                  'return orders',
-                )}
+                <HeadCard 
+                    all={topObj.return_total} 
+                    day={topObj.return_total_today} 
+                    week={topObj.return_total_week}
+                    month={topObj.return_total_month}
+                    year={topObj.return_total_year}
+                    rate={topObj.compare_lastweek_return} 
+                    monthRate={topObj.compare_lastmonth_return}
+                    yearRate={topObj.compare_lastyear_return}
+                    title={'return orders'} />
               </Col>
             </Row>
-            <Row>
+            <Row style={{height: '100%'}}>
               <Col span={24} style={{ padding: '8px' }}>
-                <Card title="dimagram" size="small">
-                  <DemoLine data={topObj.lineData} />
+                <Card title="dimagram" size="small" style={{height: '61%',zIndex: 10}}>
+                  <DemoLine data={topObj.lineData} maxValue={topObj.maxValue} />
                 </Card>
               </Col>
             </Row>
@@ -153,9 +302,12 @@ export default () => {
           </Col>
         </Row>
       </Spin>
+      {/* <Dos /> */}
     </div>
   );
 };
+
+
 
 const PopSales = () => {
   const [dataObj, setDataObj] = useState<{
@@ -469,7 +621,7 @@ const OrderTable = () => {
       search: false,
       key: 'title',
       width: 500,
-      render: (text: string) => {
+      render: (text: any) => {
         return (<Text style={{ width: '500px' }} title={text} ellipsis>
         {text}
       </Text>)
@@ -527,18 +679,6 @@ const OrderTable = () => {
             xxl: 6,
           },
         }}
-        form={{
-          // 由于配置了 transform，提交的参与与定义的不同这里需要转化一下
-          syncToUrl: (values, type) => {
-            if (type === 'get') {
-              return {
-                ...values,
-                created_at: [values.startTime, values.endTime],
-              };
-            }
-            return values;
-          },
-        }}
         pagination={{
           pageSize: 10,
         }}
@@ -578,12 +718,109 @@ const DemoRose = (props: { data: any[] }) => {
       setCurrentTime(moment().format('YYYY-MM-DD HH:mm:ss')+ ' ' + currentWeek)
     }
   }, 1000)
-  return (<Card title="order status diagram" size="small" style={{ margin: '8px' }} extra={currentTime}>
-            <Pie {...config} />
-            </Card>);
+  return (<Card
+            title="order status diagram" 
+            size="small"
+            style={{ margin: '8px',height: '100%'}} 
+            extra={currentTime}>
+              <Pie {...config} />
+          </Card>);
 };
-const DemoLine = (props: { data: any[] }) => {
-  const { data } = props;
+
+const DemoLine = (props: { data: any[],maxValue: number }) => {
+  const { data,maxValue } = props;
+  G2.registerShape('point', 'breath-point', {
+    draw: function draw(cfg, container) {
+      var data = cfg.data;
+      var point = {
+        x: cfg.x,
+        y: cfg.y,
+      };
+      var group = container.addGroup();
+      if (data.gdp === maxValue) {
+        var decorator1 = group.addShape('circle', {
+          attrs: {
+            x: point.x,
+            y: point.y,
+            r: 10,
+            fill: cfg.color,
+            opacity: 0.5,
+          },
+        });
+        var decorator2 = group.addShape('circle', {
+          attrs: {
+            x: point.x,
+            y: point.y,
+            r: 10,
+            fill: cfg.color,
+            opacity: 0.5,
+          },
+        });
+        var decorator3 = group.addShape('circle', {
+          attrs: {
+            x: point.x,
+            y: point.y,
+            r: 10,
+            fill: cfg.color,
+            opacity: 0.5,
+          },
+        });
+        decorator1.animate(
+          {
+            r: 20,
+            opacity: 0,
+          },
+          {
+            duration: 1800,
+            easing: 'easeLinear',
+            repeat: true,
+          },
+        );
+        decorator2.animate(
+          {
+            r: 20,
+            opacity: 0,
+          },
+          {
+            duration: 1800,
+            easing: 'easeLinear',
+            repeat: true,
+            delay: 600,
+          },
+        );
+        decorator3.animate(
+          {
+            r: 20,
+            opacity: 0,
+          },
+          {
+            duration: 1800,
+            easing: 'easeLinear',
+            repeat: true,
+            delay: 1200,
+          },
+        );
+        group.addShape('circle', {
+          attrs: {
+            x: point.x,
+            y: point.y,
+            r: 6,
+            fill: cfg.color,
+            opacity: 0.7,
+          },
+        });
+        group.addShape('circle', {
+          attrs: {
+            x: point.x,
+            y: point.y,
+            r: 1.5,
+            fill: cfg.color,
+          },
+        });
+      }
+      return group;
+    },
+  });
   var config = {
     data: data || [],
     xField: 'year',
@@ -602,12 +839,13 @@ const DemoLine = (props: { data: any[] }) => {
       width: '100%',
       height: '226px',
     },
-    animation: {
-      appear: {
-        animation: 'path-in',
-        duration: 8000,
-      },
-    },
+    // slider: {
+    //   start: 0,
+    //   end: 1,
+    // },
+    tooltip: { showMarkers: false },
+    point: { shape: 'breath-point' },
   };
   return <Line {...config} />;
 };
+

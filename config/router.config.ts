@@ -142,6 +142,31 @@ export const routerConfigs = {
     name: 'Eldorado',
     component: './distributors/Eldorado',
   },
+  Zoro:{
+    path: '/distributors/Zoro',
+    name: 'Zoro',
+    component: './distributors/Zoro',
+  },
+  OutSourceManage:{
+    path: '/outsource/OutSourceManage',
+    name: 'OutSourceManage',
+    component: './outsource/OutSourceManage',
+  },
+  MarketManagement: {
+    path: '/setting/MarketManagement',
+    name: 'MarketManagement',
+    component: './setting/MarketManagement',
+  },
+  ShopifyListing: {
+    name: 'ShopifyListing',
+    component: './marketProduct/ShopifyListing',
+    path: '/marketProduct/ShopifyListing',
+  },
+  HomeRoots: {
+    name: 'HomeRoots',
+    path: '/order/HomeRoots',
+    component: './order/HomeRoots',
+  },
 };
 export const indexRouterMap = (routers: any) => {
   return [

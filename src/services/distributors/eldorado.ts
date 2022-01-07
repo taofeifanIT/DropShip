@@ -25,7 +25,7 @@ export async function deleteItem(id: number) {
   return request(`/api/vendor/eldorado/delete?id=${id}`);
 }
 export function downloadCsv() {
-  return `http://api-multi.itmars.net/vendor/eldorado/products`;
+  return `https://api-multi.itmars.net/vendor/eldorado/products`;
 }
 
 export async function show() {
@@ -45,6 +45,8 @@ export async function batchList(data: {
 export async function batchDelete(ids: number[]) {
   return request('/api/vendor/eldorado/batch_delete', {
     method: 'POST',
-    data: ids,
+    data: {
+      ids: ids
+    },
   });
 }

@@ -7,8 +7,8 @@ import {
   show,
   batchList,
   batchDelete
-} from '../../services/distributors/twHouseUs';
-import SupplierFunction from './supplierFunction';
+} from '@/services/distributors/twHouseUs';
+import SupplierFunction from '@/components/AsyncSupplierFunction';
 
 export default () => {
   const config = {
@@ -28,7 +28,7 @@ export default () => {
   return (
     <>
                  
-      <SupplierFunction {...config} />
+      <SupplierFunction key='TwhouseVendor' {...config} />
               
     </>
   );

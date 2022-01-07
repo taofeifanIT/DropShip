@@ -9,7 +9,27 @@ import { stores } from '../../services/publicKeys';
 import moment from 'moment';
 const { Text } = Typography;
 
-const columns = (): ProColumns<any>[] => [
+
+type NewEggReturnsItem = {
+  RMAStatus: string;
+  RMANumber: string;
+  RMAType: string;
+  RMADate: string;
+  RMAProcessedBy: string;
+  CustomerAddress: string;
+  CustomerName: string;
+  CustomerPhoneNumber: string;
+  InvoiceNumber: string;
+  OrderAmount: string;
+  OrderNumber: number;
+  add_time: number;
+  id: number;
+  store_id: number;
+  update_at: number;
+}
+
+
+const columns = (): ProColumns<NewEggReturnsItem>[] => [
   {
     dataIndex: 'index',
     valueType: 'indexBorder',
@@ -21,16 +41,7 @@ const columns = (): ProColumns<any>[] => [
     dataIndex: 'RMA',
     search: false,
     width: 190,
-    render: (
-      _,
-      record: {
-        RMAStatus: string;
-        RMANumber: string;
-        RMAType: string;
-        RMADate: string;
-        RMAProcessedBy: string;
-      },
-    ) => {
+    render: (_,record) => {
       return (
         <>
           <Space direction="vertical">
@@ -55,10 +66,53 @@ const columns = (): ProColumns<any>[] => [
     },
   },
   {
+    title: 'Order Info',
+    dataIndex: 'orderInfo',
+    width: 250,
+    render: (_,record) => {
+      return (
+        <>
+          <Space direction="vertical">
+            <Text type="secondary">
+            OrderNumber : <Text>{record.OrderNumber}</Text>
+            </Text>
+            <Text type="secondary">
+            InvoiceNumber : <Text>{record.InvoiceNumber}</Text>
+            </Text>
+            <Text type="secondary">
+            OrderAmount : <Text>{record.OrderAmount}</Text>
+            </Text>
+          </Space>
+        </>
+      );
+    },
+  },
+  {
+    title: 'Pii',
+    dataIndex: 'Pii',
+    width: 458,
+    render: (_,record) => {
+      return (
+        <>
+          <Space direction="vertical">
+            <Text type="secondary">
+            Name : <Text>{record.CustomerName}</Text>
+            </Text>
+            <Text type="secondary">
+            Address : <Text>{record.CustomerAddress}</Text>
+            </Text>
+            <Text type="secondary">
+            Phone : <Text>{record.CustomerPhoneNumber}</Text>
+            </Text>
+          </Space>
+        </>
+      );
+    },
+  },
+  {
     title: 'Store',
     dataIndex: 'store_id',
     valueType: 'select',
-    width: 158,
     request: async () => {
       return [
         ...getKesGroup('storeData').map((item: stores) => {
@@ -81,27 +135,9 @@ const columns = (): ProColumns<any>[] => [
     hideInTable: true,
   },
   {
-    title: 'OrderNumber',
-    dataIndex: 'OrderNumber',
-    width: 180,
-  },
-  {
-    title: 'InvoiceNumber',
-    dataIndex: 'InvoiceNumber',
-    search: false,
-    width: 180,
-  },
-  {
-    title: 'OrderAmount',
-    dataIndex: 'OrderAmount',
-    search: false,
-    width: 180,
-  },
-  {
     title: 'Quantity of goods',
     dataIndex: 'RMATransactionList',
     search: false,
-    width: 180,
     render: (text: any[]) => {
       return <>{text.length}</>;
     },

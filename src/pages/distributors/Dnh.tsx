@@ -7,8 +7,8 @@ import {
     show,
     batchList,
     batchDelete
-  } from '../../services/distributors/dnh';
-  import SupplierFunction from './supplierFunction';
+  } from '@/services/distributors/dnh';
+  import SupplierFunction from '@/components/AsyncSupplierFunction';
   export default () => {
     const config = {
       title: 'D&H',
@@ -27,7 +27,7 @@ import {
     return (
       <>
                    
-        <SupplierFunction {...config} />
+        <SupplierFunction key='DnhVendor' {...config} />
                 
       </>
     );

@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react';
-import { message } from 'antd';
+import { message} from 'antd';
 import moment from 'moment';
 import { useModel, history } from 'umi';
 import NoticeIcon from './NoticeIcon';
 import styles from './index.less';
-import { cancelOrderTotal } from '../../services/order/order';
+import { cancelOrderTotal} from '@/services/order/order';
 export type GlobalHeaderRightProps = {
   fetchingNotices?: boolean;
   onNoticeVisibleChange?: (visible: boolean) => void;
   onNoticeClear?: (tabName?: string) => void;
 };
 
+
 const NoticeIconView = () => {
   const { initialState, setInitialState } = useModel('@@initialState');
-
   const [notices, setNotices] = useState<any[]>([]);
   const [errorInfo, setError] = useState<any[]>([]);
   let tempNoticesInfo: any[] = [];
@@ -122,16 +122,9 @@ const NoticeIconView = () => {
     setNotices(tempNoticesInfo);
     setError(tempErrorInfo);
   };
-  //   const voiceAnnouncements = (str: string) => {
-  //     //百度
-  //     var url = "http://tts.baidu.com/text2audio?lan=zh&ie=UTF-8&text=" + encodeURI(str);        // baidu
-  //     var n = new Audio(url);
-  //     n.src = url;
-  //     n.play();
-  //  }
   const getOccupancyRate = () => {
     const tempSockek: any = new WebSocket(
-      'ws://47.89.195.194:2345?token=' + localStorage.getItem('token'),
+      'wss://api-multi.itmars.net:2345?token=' + localStorage.getItem('token'),
     );
     tempSockek.onopen = function (webSocket: any) {
       console.log('WebSocket opened!');
@@ -177,9 +170,6 @@ const NoticeIconView = () => {
           if (item.type === 'NewEggReturn') {
             history.push('/returns/NeweggReturns');
           }
-          // if(item.type === 'returns') {
-          //   history.push('/returns/Returns')
-          // }
         }}
         onClear={(title: string, key: string) => {
           changeReadState(key);

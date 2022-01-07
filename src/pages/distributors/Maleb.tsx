@@ -7,8 +7,8 @@ import {
     show,
     batchList,
     batchDelete
-  } from '../../services/distributors/maleb';
-  import SupplierFunction from './supplierFunction';
+  } from '@/services/distributors/maleb';
+  import SupplierFunction from '@/components/AsyncSupplierFunction';
   export default () => {
     const config = {
       title: 'Maleb',
@@ -27,7 +27,7 @@ import {
     return (
       <>
                    
-        <SupplierFunction {...config} />
+        <SupplierFunction key='MalebVendor'  {...config} />
                 
       </>
     );

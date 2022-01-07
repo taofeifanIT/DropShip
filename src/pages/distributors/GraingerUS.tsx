@@ -7,8 +7,8 @@ import {
   show,
   batchList,
   batchDelete
-} from '../../services/distributors/graingerUS';
-import SupplierFunction from './supplierFunction';
+} from '@/services/distributors/graingerUS';
+import SupplierFunction from '@/components/AsyncSupplierFunction';
 export default () => {
   const config = {
     title: 'Grainger',
@@ -27,7 +27,7 @@ export default () => {
   return (
     <>
                  
-      <SupplierFunction {...config} />
+      <SupplierFunction  key='GraingerVendor'  {...config} />
               
     </>
   );

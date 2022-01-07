@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { AmazonOutlined } from '@ant-design/icons';
 import { Typography, Space } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
@@ -78,7 +78,8 @@ const columns: ProColumns<GithubIssueItem>[] = [
     hideInTable: true,
     width: 250,
     valueEnum: {
-      '1': { text: 'InmarketplaceNotInDb', status: 'Error' },
+      '1': { text: 'In marketplace not in Db', status: 'Error' },
+      '2': { text: 'In Db not in marketplace', status: 'Error' },
     },
   },
   {

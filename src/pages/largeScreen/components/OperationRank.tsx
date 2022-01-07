@@ -53,7 +53,7 @@ const DemoColumn: React.FC = () => {
     seriesField: 'name',
     slider: {
       start: 0,
-      end: 0.5,
+      end: 1,
     },
     label: {
       position: 'middle',

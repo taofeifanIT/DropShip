@@ -7,8 +7,8 @@ import {
   show,
   batchList,
   batchDelete
-} from '../../services/distributors/ingramMicro';
-import SupplierFunction from './supplierFunction';
+} from '@/services/distributors/ingramMicro';
+import SupplierFunction from '@/components/AsyncSupplierFunction';
 export default () => {
   const config = {
     title: 'Ingram Micro',
@@ -27,7 +27,7 @@ export default () => {
   return (
     <>
                  
-      <SupplierFunction {...config} />
+      <SupplierFunction key='IngramMicroVendor'  {...config} />
               
     </>
   );

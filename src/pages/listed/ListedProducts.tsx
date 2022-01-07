@@ -4,7 +4,6 @@ import {
   AmazonOutlined,
   DeleteOutlined,
   ExclamationCircleOutlined,
-  BarChartOutlined,
   EditOutlined,
   EnterOutlined,
 } from '@ant-design/icons';
@@ -18,11 +17,12 @@ import {
   Form,
   InputNumber,
   Alert,
-  Spin,
   Input,
   Select,
   Cascader,
-  DatePicker
+  DatePicker,
+  Tooltip,
+  Switch
 } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
@@ -34,18 +34,18 @@ import {
   priceOffset,
   batchChangeQuantity,
   update,
-  batchRelisting
-} from '../../services/listedProduct';
-import { log_vendor_quantity_and_price_change } from '../../services/distributors/ingramMicro';
-import { getPageHeight } from '../../utils/utils';
+  batchRelisting,
+  realUnlisting
+} from '@/services/listedProduct';
+import { getPageHeight } from '@/utils/utils';
 import { useModel, history } from 'umi';
-import Notes, { Info } from '../../components/Notes';
-import { Column } from '@ant-design/charts';
+import Notes, { Info } from '@/components/Notes';
 import moment from 'moment';
-import type { marketplaces, priceAlgorithms, stores, tags, vendors, listing_sort_field } from '../../services/publicKeys';
-import { getKesGroup, getKesValue } from '../../utils/utils';
-import { getTargetHref, getAsonHref, getNewEggHref } from '../../utils/jumpUrl';
+import type { marketplaces, priceAlgorithms, stores, tags, vendors, listing_sort_field } from '@/services/publicKeys';
+import { getKesGroup, getKesValue } from '@/utils/utils';
+import { getTargetHref, getAsonHref, getNewEggHref } from '@/utils/jumpUrl';
 import ParagraphText from '@/components/ParagraphText';
+import HistoryChat from '@/components/HistoryChat';
 import { createDownload } from '@/utils/utils';
 import type { FormInstance } from 'antd';
 import Brand from './compoents/Brand'
@@ -81,6 +81,16 @@ type GithubIssueItem = {
   vendor_price: string;
   update_at: number;
   sales: number;
+  marketplace_and_db_diff: number; 
+  batch_id: number;
+  waiting_update_time: number;
+  unlisting_time: number;
+  notes: string;
+  buybox_info: {
+    ListingPrice: {
+      Amount: number | string
+    } 
+  } | string | any
 };
 
 
@@ -183,152 +193,6 @@ const BatchPriceModal = (props: {
   );
 };
 
-const ViewHistoryData = (props: { vendor_id: string; vendor_sku: string; style: any }) => {
-  const { vendor_id, vendor_sku, style } = props;
-  const [historyVisible, setHistoryVisible] = useState(false);
-  const [historyConfirmLoading, setHistoryConfirmLoading] = useState(false);
-  const [historyDataLoading, setHistoryDataLoading] = useState(false);
-  const [historyData, setHistoryData] = useState({
-    log_vendor_price_change: [],
-    log_vendor_quantity_change: [],
-  });
-  const handleOpenView = () => {
-    setHistoryVisible(true);
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    getHistoryData();
-  };
-  const handleOpenViewCancel = () => {
-    setHistoryVisible(false);
-  };
-  // eslint-disable-next-line @typescript-eslint/no-shadow
-  const DemoColumn = (props: {
-    data: { log_vendor_price_change: any[]; log_vendor_quantity_change: any[] };
-  }) => {
-    const config = {
-      data: props.data.log_vendor_price_change,
-      isGroup: true,
-      xField: 'time',
-      yField: 'price',
-      seriesField: 'name',
-      style: { height: '250px' },
-      titile: 'price history',
-      label: {
-        position: 'middle',
-        layout: [
-          { type: 'interval-adjust-position' },
-          { type: 'interval-hide-overlap' },
-          { type: 'adjust-color' },
-        ],
-      },
-    };
-    const quantityConfig = {
-      data: props.data.log_vendor_quantity_change,
-      isGroup: true,
-      style: { height: '250px' },
-      xField: 'time',
-      yField: 'price',
-      seriesField: 'name',
-      titile: 'quantiy history',
-      label: {
-        position: 'middle',
-        layout: [
-          { type: 'interval-adjust-position' },
-          { type: 'interval-hide-overlap' },
-          { type: 'adjust-color' },
-        ],
-      },
-    };
-    return (
-      <>
-        <h3>Price history data</h3>
-        <Column {...config} />
-        <h3>quantity history data</h3>
-        <Column {...quantityConfig} />
-      </>
-    );
-  };
-  const getHistoryData = () => {
-    const params: any = {
-      id: vendor_id,
-      vendor_sku,
-    };
-    setHistoryDataLoading(true);
-    log_vendor_quantity_and_price_change(params)
-      .then((res) => {
-        if (res.code) {
-          const priceHistoryData: any = [];
-          const quantityHistoryData: any = [];
-          res.data.log_vendor_price_change.forEach(
-            (item: { add_datetime: string; after: string; before: string }) => {
-              priceHistoryData.push({
-                name: 'after',
-                time: item.add_datetime,
-                price: parseFloat(item.after),
-              });
-              priceHistoryData.push({
-                name: 'before',
-                time: item.add_datetime,
-                price: parseFloat(item.before),
-              });
-            },
-          );
-          res.data.log_vendor_quantity_change.forEach(
-            (item: { add_datetime: string; after: string; before: string }) => {
-              quantityHistoryData.push({
-                name: 'after',
-                time: item.add_datetime,
-                price: parseFloat(item.after),
-              });
-              quantityHistoryData.push({
-                name: 'before',
-                time: item.add_datetime,
-                price: parseFloat(item.before),
-              });
-            },
-          );
-          setHistoryData({
-            log_vendor_price_change: priceHistoryData,
-            log_vendor_quantity_change: quantityHistoryData,
-          });
-        } else {
-          throw res.msg;
-        }
-      })
-      .catch((e: string) => {
-        message.error(e);
-      })
-      .finally(() => {
-        setHistoryConfirmLoading(false);
-        setHistoryDataLoading(false);
-      });
-  };
-  return (
-    <>
-      <Button
-        icon={<BarChartOutlined />}
-        style={{ ...style }}
-        onClick={() => {
-          handleOpenView();
-        }}
-      >
-        history data
-      </Button>
-      <Modal
-        title="price and quantity history data"
-        width={800}
-        bodyStyle={{ height: '600px' }}
-        confirmLoading={historyConfirmLoading}
-        visible={historyVisible}
-        onOk={handleOpenViewCancel}
-        onCancel={handleOpenViewCancel}
-      >
-        <Spin spinning={historyDataLoading}>
-          <DemoColumn data={historyData} />
-        </Spin>
-      </Modal>
-    </>
-  );
-};
 const EditLinKStr = (props: {
   record: {
     id: number;
@@ -426,7 +290,7 @@ const columns = (
             placeholder="Select a tag"
             optionFilterProp="children"
             filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              option?.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
             }
           >
             {getKesGroup('tagsData').map((item: tags) => {
@@ -501,17 +365,16 @@ const columns = (
     dataIndex: 'Price',
     search: false,
     width: 170,
-    render: (_, record: any) => {
+    render: (_, record) => {
       const getText = (pop: string) => {
         // 垃圾后台的数据不规范而写的无语判断
         if (record.buybox_info === '[]' || record.buybox_info === null) {
-          return <span style={{ color: '#c0c01e' }}>not yet</span>;
+          return <span>not yet</span>;
         }
         return `${JSON.parse(record.buybox_info)[pop].Amount  }$`;
       };
       const getMarketPlace = () => {
         // marketplace大于50时，marketplace超过(marketplace/buyBox)30%时，文本变红处理
-        let color = '';
         const marketplace = parseFloat(record.store_price_now);
         if (record.buybox_info !== '[]' && record.buybox_info !== null) {
           const bugBox = parseFloat(JSON.parse(record.buybox_info).ListingPrice.Amount);
@@ -519,11 +382,13 @@ const columns = (
             const adtrus = marketplace - bugBox;
             const adtrusRate = (adtrus / marketplace) * 100;
             if (adtrusRate > 30) {
-              color = 'red';
+              return (<Tooltip placement="top" title={'The market price is over $50 and over 30% (market price /buyBox)'}>
+                          <span style={{ color: 'red' }}>{marketplace}</span>
+                      </Tooltip>)
             }
           }
         }
-        return <span style={{ color }}>{marketplace}</span>;
+        return <span>{marketplace}</span>;
       };
       return (
         <>
@@ -578,7 +443,6 @@ const columns = (
     width: 200,
     render: (_, record: any) => {
       const getCountryImg = (countryName: string) => {
-        // eslint-disable-next-line default-case
         switch (countryName) {
           case 'UK':
             return (
@@ -598,6 +462,8 @@ const columns = (
                 }
               />
             );
+          default:
+            return null
         }
       };
       return (
@@ -624,15 +490,19 @@ const columns = (
     dataIndex: 'time',
     search: false,
     width: 360,
-    render: (_, record: {
-      task_update_at: number;
-      batch_id: number;
-      update_at: number;
-      price_and_quantity_change_time: number;
-      add_time: number;
-      waiting_update_time: number;
-      unlisting_time: number;
-    }) => {
+    render: (_, record) => {
+      const isBeyondTime = () => {
+        if(record.waiting_update_time){
+          var hours = Math.abs(moment(record.waiting_update_time * 1000).diff(moment(), 'hours'))
+          if(hours >=24){
+            return(<Tooltip placement="top" title={"It's been over 24 hours"}>
+                      <span style={{ color: 'red' }}>{moment(record.waiting_update_time * 1000).format('YYYY-MM-DD HH:mm:ss')}</span>
+                   </Tooltip>)
+          }
+          return <span>{record.listing_status}</span>
+        }
+        return <span>not yet</span>
+      }
       return (
         <>
           <Space direction="vertical">
@@ -678,16 +548,12 @@ const columns = (
             </Text>
             <Text type="secondary">
             waiting_update_time:
-              <Text>
-                {(record.waiting_update_time &&
-                  moment(parseInt(`${record.waiting_update_time  }000`)).format('YYYY-MM-DD HH:mm:ss')) ||
-                  'not yet'}
-              </Text>
+              <Text>{isBeyondTime()}</Text>
             </Text>
             <Text type="secondary">
             unlisting_time:
               <Text>
-                {(record.waiting_update_time &&
+                {(record.unlisting_time &&
                   moment(parseInt(`${record.unlisting_time  }000`)).format('YYYY-MM-DD HH:mm:ss')) ||
                   'not yet'}
               </Text>
@@ -702,7 +568,7 @@ const columns = (
     dataIndex: 'vendor',
     search: false,
     width: 150,
-    render: (_, record: any) => {
+    render: (_, record) => {
       return (
         <>
           <Space direction="vertical">
@@ -748,59 +614,11 @@ const columns = (
     },
   },
   {
-    title: 'Marketplace',
-    dataIndex: 'store_price_now',
-    search: false,
-    hideInTable: true,
-    align: 'center',
-    render: (store_price_now: string) => {
-      return (
-        <>
-          <Space direction="vertical">
-            <Text>{`$${store_price_now}`}</Text>
-          </Space>
-        </>
-      );
-    },
-  },
-  {
-    title: 'Adjusted',
-    dataIndex: 'after_algorithm_price',
-    search: false,
-    hideInTable: true,
-    align: 'center',
-    render: (after_algorithm_price: string) => {
-      return (
-        <>
-          <Space direction="vertical">
-            <Text>{`${after_algorithm_price}$`}</Text>
-          </Space>
-        </>
-      );
-    },
-  },
-  {
-    title: 'Marketplace Inventory',
-    dataIndex: 'listing_to_store_quantity',
-    search: false,
-    hideInTable: true,
-    align: 'center',
-    render: (listing_to_store_quantity: number) => {
-      return (
-        <>
-          <Space direction="vertical">
-            <Text>{listing_to_store_quantity}</Text>
-          </Space>
-        </>
-      );
-    },
-  },
-  {
     title: 'Sort',
     dataIndex: 'sort_field',
     valueType: 'select',
     hideInTable: true,
-    renderFormItem: (_, { type, defaultRender, formItemProps, fieldProps}, form) => {
+    renderFormItem: (_, { type, defaultRender}, form) => {
       const basicData = getKesGroup('listing_sort_field')
       const options = [...Object.keys(basicData).map((item: listing_sort_field)=>{
         return {
@@ -832,22 +650,6 @@ const columns = (
     }
   },
   {
-    title: 'Inventory Offset',
-    dataIndex: 'quantity_offset',
-    search: false,
-    hideInTable: true,
-    align: 'center',
-    render: (quantity_offset: number) => {
-      return (
-        <>
-          <Space direction="vertical">
-            <Text>{quantity_offset}</Text>
-          </Space>
-        </>
-      );
-    },
-  },
-  {
     title: 'Listing status',
     dataIndex: 'listing_status',
     valueType: 'select',
@@ -857,9 +659,11 @@ const columns = (
       '2': { text: 'Listed', status: 'Success' },
       '3': { text: 'UnListed', status: 'Error' },
     },
-    render: (_, record: { marketplace_and_db_diff: number; listing_status: string }) => {
+    render: (_, record) => {
       if (record.marketplace_and_db_diff === 2) {
-        return <span style={{ color: 'red' }}>{record.listing_status}</span>;
+        return (<Tooltip placement="top" title={'In Db not in marketplace'}>
+            <span style={{ color: 'red' }}>{record.listing_status}</span>
+        </Tooltip>)
       } 
         return record.listing_status;
       
@@ -871,8 +675,8 @@ const columns = (
     valueType: 'select',
     hideInTable: true,
     valueEnum: {
-      '2': { text: 'InDbnotInMarketPlace', status: 'Error' },
-      '3': { text: 'InDbAndInMarketplace', status: 'Error' },
+      '2': { text: 'InDbnotInMarketPlace'},
+      '3': { text: 'InDbAndInMarketplace'},
     },
   },
   {
@@ -986,9 +790,50 @@ const columns = (
     hideInTable: true,
   },
   {
+    title: 'available status',
+    dataIndex: 'quantity_offset',
+    request: async () => {
+      return [
+        {
+          label: 'unavailable',
+          value: -1,
+        },
+        {
+          label: 'available',
+          value: undefined,
+        },
+      ];
+    },
+    hideInTable: true,
+  },
+  {
     title: 'upc',
     dataIndex: 'upc',
     width: 200,
+  },
+  {
+    title: 'got_buybox',
+    dataIndex: 'got_buybox',
+    width: 200,
+    request: async () => {
+      return [
+        {
+          label: 'Buy box is equal to price',
+          value: 1,
+        },
+        {
+          label: 'no equal',
+          value: undefined,
+        },
+      ];
+    },
+    hideInTable: true,
+  },
+  {
+    title: 'no_update',
+    dataIndex: 'no_update',
+    hideInTable: true,
+    valueType: 'digit'
   },
   {
     title: 'action',
@@ -996,7 +841,8 @@ const columns = (
     fixed: 'right',
     align: 'center',
     width: 100,
-    render: (text,record) => {
+    render: (_,record) => {
+      const [unavailableLoading, setUnavailableLoading] = useState(false)
       return (
         <>
           <Button
@@ -1010,7 +856,35 @@ const columns = (
             <EditOutlined />
             Edit
           </Button>
-          <ViewHistoryData
+          <Button
+            style={{ width: '115px', marginTop: '8px' }}
+            size="small"
+            type="primary"
+            loading={unavailableLoading}
+            ghost
+            disabled={record.quantity_offset === -1 || record.listing_status !== "Listed"}
+            onClick={() => {
+              setUnavailableLoading(true)
+              batchChangeQuantity({
+                listing_ids: [record.id],
+                quantity_offset: -1
+              }).then(res => {
+                if (res && res.code){
+                  message.success("operation successful!")
+                  record.quantity_offset = -1
+                } else {
+                  throw res.msg
+                }
+              }).catch((e: string) => {
+                message.error(e)
+              }).finally(() => {
+                setUnavailableLoading(false)
+              })
+            }}
+          >
+            unavailable
+          </Button>
+          <HistoryChat
             style={{ width: '115px', marginTop: '8px' }}
             vendor_id={record.vendor_id}
             vendor_sku={record.vendor_sku}
@@ -1023,7 +897,7 @@ const columns = (
 type listingArugment = {
   initData: () => void;
   ids: number[];
-  setIds: (ids?: number[]) => void;
+  setIds: (ids: number[]) => void;
 }
 const RelistingFrame =React.forwardRef((props: listingArugment,ref)=>{
   const { initData, ids,setIds } = props
@@ -1042,7 +916,7 @@ const RelistingFrame =React.forwardRef((props: listingArugment,ref)=>{
     }
 }));
 const handleOk = () => {
-  from.validateFields().then(async (updatedValues: {tag_id?: number,unlisting_time_after?: any,unlisting_time_before?: any}) => {
+  from.validateFields().then(async (updatedValues: {tag_id?: number,unlisting_time_after?: any,unlisting_time_before?: any,unlisting_type?: boolean}) => {
     let batchApi = batchRelisting
     const params = {listing_ids: ids, ...updatedValues}
     if(apiType === "unlist"){
@@ -1050,6 +924,9 @@ const handleOk = () => {
     } else {
       params.unlisting_time_after = params.unlisting_time_after ? moment(params.unlisting_time_after).format('YYYY-MM-DD HH:mm:ss') : undefined
       params.unlisting_time_before = params.unlisting_time_before ? moment(params.unlisting_time_before).format('YYYY-MM-DD HH:mm:ss') : undefined
+    }
+    if (updatedValues.unlisting_type){
+      batchApi = realUnlisting
     }
     setLoading(true)
     batchApi(params).then((res) => {
@@ -1098,7 +975,9 @@ return <Modal title={title}  confirmLoading={loading} ref={inputRef} visible={is
             <Form.Item label="end time" name="unlisting_time_before">
              <DatePicker showTime/>
             </Form.Item>
-           </>) : null}
+           </>) :  <Form.Item label="unListing type" name="unlisting_type">
+              <Switch checkedChildren="real unlisting" unCheckedChildren="unlisting" />
+            </Form.Item>}
         </Form>
         <h3>Selected {ids.length} item</h3>
 </Modal>
@@ -1107,12 +986,20 @@ return <Modal title={title}  confirmLoading={loading} ref={inputRef} visible={is
 export default () => {
   const actionRef = useRef<ActionType>();
   const ref = useRef<FormInstance>();
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
   const [visible, setVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [record, setRecord] = useState();
+  const [record, setRecord] = useState<{
+    id: number,
+    content: string,
+    title: string,
+  }>({
+    id: 0,
+    content: '',
+    title: ''
+  });
   const [from] = Form.useForm();
   const [listId, setListId] = useState<number>(-1);
   const [currentItem, setCurrentItem] = useState(null);
@@ -1165,11 +1052,7 @@ export default () => {
   const handleOk = () => {
     from
       .validateFields()
-      .then(async (updatedValues: { quantity: number; quantity_offset: number }) => {
-        if (!updatedValues.quantity && !updatedValues.quantity_offset) {
-          message.warning('Please enter at least one of them!');
-          return;
-        }
+      .then(async (updatedValues: { vendor_quantity: number; quantity_offset: number, custom_quantity: number }) => {
         setConfirmLoading(true);
         batchChangeQuantity({
           listing_ids: selectedRowKeys,
@@ -1237,11 +1120,9 @@ export default () => {
         showIcon
         style={{ marginBottom: '10px' }}
         message={`Next Amazon Listing update time:${moment(
-          // eslint-disable-next-line radix
           parseInt(`${initialState?.listTimes?.getAmazonListingDeliverTime  }000`),
         ).format('YYYY-MM-DD HH:mm:ss')}/
                              Next Amazon Feed/update price/quantity update time:${moment(
-                               // eslint-disable-next-line radix
                                parseInt(
                                  `${initialState?.listTimes?.getAmazonNormalDeliverTime  }000`,
                                ),
@@ -1260,7 +1141,7 @@ export default () => {
           // 注释该行则默认不显示下拉选项
           selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
           selectedRowKeys,
-          onChange: (selectedRowKeys: number[]) => {
+          onChange: (selectedRowKeys: any[]) => {
             setSelectedRowKeys(selectedRowKeys);
           },
         }}
@@ -1335,6 +1216,7 @@ export default () => {
         }}
         pagination={{
           pageSize: 30,
+          showQuickJumper: true
         }}
         options={{
           search: false,
@@ -1346,7 +1228,7 @@ export default () => {
         dateFormatter="string"
         headerTitle="Listed product"
         // eslint-disable-next-line @typescript-eslint/no-shadow
-        onRow={(record: { id: number; notes: string; vendor_sku: string }) => {
+        onRow={(record) => {
           return {
             onDoubleClick: () => {
               setDrawerVisible(true);
@@ -1376,14 +1258,7 @@ export default () => {
         >
           Batch relisting
         </Button>,
-          <Button
-          key="BrandBtn"
-          onClick={() => {
-            brandModal.showModal()
-          }}
-        >
-          Brand manage
-        </Button>,
+          <Brand key='brandmanage' />,
           <Button
             key="ImportOutlined"
             icon={<DeleteOutlined />}
@@ -1420,11 +1295,11 @@ export default () => {
               let tempParams: string = '';
               Object.keys(valObj).forEach((key,index) => {
                 if (valObj[key]) {
-                      const paramsStr = `${key}=${valObj[key]}`;
+                      let paramsStr = `${key}=${valObj[key]}`;
                       tempParams += `${index ? '&' : ''}${paramsStr}`;
                 }
               })
-              tempParams = `${'http://api-multi.itmars.net/listing/index?'}${  tempParams  }&is_download=1`;
+              tempParams = `${'https://api-multi.itmars.net/listing/index?'}${  tempParams  }&is_download=1`;
               createDownload(`test.csv`, tempParams);
             }}
           >
@@ -1441,12 +1316,17 @@ export default () => {
         onCancel={handleCancel}
       >
         <Form form={from} labelCol={{ span: 8 }} wrapperCol={{ span: 14 }} layout="horizontal">
-          <Form.Item label="quantity">
-            <Form.Item name="quantity" noStyle>
+          <Form.Item label="Vendor quantity">
+            <Form.Item name="vendor_quantity" noStyle>
               <InputNumber style={{ width: '200px' }}></InputNumber>
             </Form.Item>
           </Form.Item>
-          <Form.Item label="quantity offset">
+          <Form.Item label="Custom quantity">
+            <Form.Item name="custom_quantity" noStyle>
+              <InputNumber style={{ width: '200px' }}></InputNumber>
+            </Form.Item>
+          </Form.Item>
+          <Form.Item label="Quantity offset">
             <Form.Item name="quantity_offset" noStyle>
               <InputNumber style={{ width: '200px' }}></InputNumber>
             </Form.Item>

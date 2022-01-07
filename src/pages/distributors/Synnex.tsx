@@ -7,8 +7,8 @@ import {
     show,
     batchList,
     batchDelete
-  } from '../../services/distributors/synnex';
-  import SupplierFunction from './supplierFunction';
+  } from '@/services/distributors/synnex';
+  import SupplierFunction from '@/components/AsyncSupplierFunction';
   
   export default () => {
     const config = {
@@ -28,7 +28,7 @@ import {
     return (
       <>
                    
-        <SupplierFunction {...config} />
+        <SupplierFunction  key='SynnexVendor' {...config} />
                 
       </>
     );

@@ -53,6 +53,15 @@
     component: './largeScreen/DataComparison',
   },
   {
+    layout: false,
+    name: 'EbayProductInfo',
+    path: '/distributors/EbayProductInfo',
+    headerRender: false,
+    target: '_blank', // 点击新窗口打开
+    menuRender: false,
+    component: './distributors/EbayProductInfo',
+  },
+  {
     path: '/distributors',
     redirect: '/distributors/IngramMicro',
   },
@@ -127,6 +136,11 @@
         name: 'Eldorado',
         component: './distributors/Eldorado',
       },
+      {
+        path: '/distributors/Zoro',
+        name: 'Zoro',
+        component: './distributors/Zoro',
+      }
     ],
   },
   {
@@ -140,19 +154,16 @@
       {
         path: '/log/AlarmLog',
         name: 'AlarmLog',
-        icon: 'smile',
         component: './log/AlarmLog',
       },
       {
         path: '/log/OperationLog',
         name: 'OperationLog',
-        icon: 'smile',
         component: './log/OperationLog',
       },
       {
         path: '/log/Feedsubmission',
         name: 'Feedsubmission',
-        icon: 'smile',
         component: './log/Feedsubmission',
       },
     ],
@@ -168,7 +179,6 @@
     routes: [
       {
         name: 'tagPrice',
-        icon: 'table',
         path: '/priceManage/TagPrice',
         component: './priceManage/TagPrice',
       },
@@ -176,7 +186,6 @@
   },
   {
     name: 'Listed Product',
-    icon: 'table',
     path: '/listed/ListedProducts',
     component: './listed/ListedProducts',
   },
@@ -185,19 +194,21 @@
     redirect: '/returns/AmazonReturns',
   },
   {
+    path: '/outsource/OutSourceManage',
+    name: 'OutSourceManage',
+    component: './outsource/OutSourceManage',
+  },
+  {
     name: 'Returns',
     path: '/Returns',
-    icon: 'table',
     routes: [
       {
         name: 'AmazonReturns',
-        icon: 'table',
         path: '/returns/AmazonReturns',
         component: './returns/AmazonReturns',
       },
       {
         name: 'NeweggReturns',
-        icon: 'table',
         path: '/returns/NeweggReturns',
         component: './returns/NeweggReturns',
       },
@@ -213,21 +224,23 @@
     routes: [
       {
         name: 'AmazonOrder',
-        icon: 'table',
         path: '/order/AmazonOrder',
         component: './order/AmazonOrder',
       },
       {
         name: 'NewEggOrder',
-        icon: 'table',
         path: '/order/NewEggOrder',
         component: './order/NewEggOrder',
       },
       {
         name: 'EbayOrder',
-        icon: 'table',
         path: '/order/EbayOrder',
         component: './order/EbayOrder',
+      },
+      {
+        name: 'HomeRoots',
+        path: '/order/HomeRoots',
+        component: './order/HomeRoots',
       },
     ],
   },
@@ -251,6 +264,11 @@
         component: './marketProduct/NewEggListing',
         path: '/marketProduct/NewEggListing',
       },
+      {
+        name: 'ShopifyListing',
+        component: './marketProduct/ShopifyListing',
+        path: '/marketProduct/ShopifyListing',
+      },
     ],
   },
   {
@@ -263,21 +281,23 @@
     icon: 'SettingOutlined',
     routes: [
       {
+        path: '/setting/MarketManagement',
+        name: 'MarketManagement',
+        component: './setting/MarketManagement',
+      },
+      {
         path: '/setting/role',
         name: 'role',
-        icon: 'smile',
         component: './setting/role',
       },
       {
         path: '/setting/userManagement',
         name: 'userManagement',
-        icon: 'smile',
         component: './setting/userManagement',
       },
       {
         path: '/setting/menuManagement',
         name: 'menuManagement',
-        icon: 'smile',
         component: './setting/menuManagement',
       },
     ],

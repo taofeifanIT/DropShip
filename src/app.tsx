@@ -15,7 +15,7 @@ import { getAllPop } from './services/publicKeys';
 
 /** 获取用户信息比较慢的时候会展示一个 loading */
 export const initialStateConfig = {
-  loading: <PageLoading />,
+  loading: <PageLoading tip="loading。。。" />,
 };
 
 /**
@@ -58,8 +58,9 @@ export async function getInitialState(): Promise<{
       );
       const historyPath = history.location.pathname;
       const checkUrl = historyPath === '/' ? '/dashboard/Anlysis' : historyPath;
-      if (!throwMenu(menuList, checkUrl)) {
-        history.location.pathname = findIndexPage(menuList);
+      if (!throwMenu(menuList, checkUrl) && historyPath !== '/largeScreen/DataComparison' && historyPath !== '/distributors/EbayProductInfo') {
+        let mainPage = findIndexPage(menuList);
+        history.location.pathname = mainPage
       }
       return {
         ...currentUser.data.adminuser,
@@ -217,11 +218,11 @@ const authHeaderInterceptor = (url: string, options: RequestOptionsInit) => {
   let lastUrl = url;
   // lastUrl = `http://api-multi.itmars.net${url.replace('/api', '')}`;
   if (process.env.NODE_ENV !== 'development') {
-    lastUrl = `http://api-multi.itmars.net${url.replace('/api', '')}`;
+    lastUrl = `https://api-multi.itmars.net${url.replace('/api', '')}`;
   }
   return {
     url: `${lastUrl}`,
-    options: { ...tempOption, interceptors: true, headers: authHeader },
+    options: { ...tempOption, interceptors: true, headers: authHeader,timeout: 15 * 1000 },
   };
 };
 // https://umijs.org/zh-CN/plugins/plugin-request

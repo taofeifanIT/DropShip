@@ -71,10 +71,6 @@ const AvatarDropdown: React.FC<GlobalHeaderRightProps> = () => {
     return loading;
   }
 
-  // if (!currentUser || !currentUser.name) {
-  //   return loading;
-  // }
-
   const menuHeaderDropdown = (
     <Menu className={styles.menu} selectedKeys={[]} onClick={onMenuClick}>
       <Menu.Item key="toUserInfo">

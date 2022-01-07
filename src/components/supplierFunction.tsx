@@ -3,12 +3,12 @@ import React, { useEffect, useState, useRef } from 'react';
 import {
   AmazonOutlined,
   ExclamationCircleOutlined,
-  BarChartOutlined,
   DeleteOutlined,
   InfoCircleOutlined,
   SmileFilled,
   UpOutlined,
   ProfileOutlined,
+  CheckSquareOutlined 
 } from '@ant-design/icons';
 import {
   Button,
@@ -33,24 +33,24 @@ import {
 } from 'antd';
 import type { FormInstance ,
   MessageArgsProps} from 'antd';
-import { log_vendor_quantity_and_price_change } from '../../services/distributors/ingramMicro';
-import { aspectRequired } from '../../services/distributors/ebay';
-import { matchAndListing } from '../../services/dashboard';
+import { aspectRequired } from '@/services/distributors/ebay';
+import { matchAndListing } from '@/services/dashboard';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
-import type { tags } from '../../services/publicKeys';
-import { getKesGroup, getKesValue } from '../../utils/utils';
-import { getTargetHref, getAsonHref, getNewEggHref } from '../../utils/jumpUrl';
-import { useModel } from 'umi';
+import type { tags } from '@/services/publicKeys';
+import { getKesGroup, getKesValue } from '@/utils/utils';
+import { getTargetHref, getAsonHref, getNewEggHref } from '@/utils/jumpUrl';
+import { useModel,history } from 'umi';
 import ProTable from '@ant-design/pro-table';
-import Notes from '../../components/Notes';
-import { Info } from '../../components/Notes';
-import { createDownload } from '../../utils/utils';
+import Notes from '@/components/Notes';
+import { Info } from '@/components/Notes';
+import { createDownload } from '@/utils/utils';
 import { Column } from '@ant-design/charts';
 import ParagraphText from '@/components/ParagraphText'
+// import HistoryChat from '@/components/HistoryChat'
+import HistoryChat from '@/components/HistoryChat'
 import moment from 'moment';
-import ComparisonFrame from './components/ComparisonFrame'
 
-const { Text } = Typography;
+const { Text,Paragraph } = Typography;
 
 // 映射ebay店铺上架字段， 本地数据库未有ebay映射字段时key值为unknownKey
 var DATA_BASE_TO_EBAY_FIELD  = [{
@@ -72,52 +72,17 @@ type apiItem = {
   batchDelete?:any;
 };
 
-const DemoColumn = (props: {
-  data: { log_vendor_price_change: []; log_vendor_quantity_change: [] };
-}) => {
-  const config: any = {
-    data: props.data.log_vendor_price_change,
-    isGroup: true,
-    xField: 'time',
-    yField: 'price',
-    seriesField: 'name',
-    style: { height: '250px' },
-    titile: 'price history',
-    label: {
-      position: 'middle',
-      layout: [
-        { type: 'interval-adjust-position' },
-        { type: 'interval-hide-overlap' },
-        { type: 'adjust-color' },
-      ],
-    },
-  };
-  const quantityConfig: any = {
-    data: props.data.log_vendor_quantity_change,
-    isGroup: true,
-    style: { height: '250px' },
-    xField: 'time',
-    yField: 'price',
-    seriesField: 'name',
-    titile: 'quantiy history',
-    label: {
-      position: 'middle',
-      layout: [
-        { type: 'interval-adjust-position' },
-        { type: 'interval-hide-overlap' },
-        { type: 'adjust-color' },
-      ],
-    },
-  };
-  return (
-    <>
-      <h3>Price history data</h3>
-      <Column {...config} />
-      <h3>quantity history data</h3>
-      <Column {...quantityConfig} />
-    </>
-  );
-};
+type requestForm = {
+  localizedAspectName: string;
+  aspectConstraint: {
+    aspectDataType: string;
+    aspectEnabledForVariations: boolean;
+    aspectMode: string;
+    aspectRequired: boolean;
+    aspectUsage: string;
+    itemToAspectCardinality: string;
+  }
+}
 
 const HistoryColumn = (props: { data: any }) => {
   const config: any = {
@@ -143,7 +108,7 @@ const HistoryColumn = (props: { data: any }) => {
   return <Column {...config} />;
 };
 const ButtonGroup = (props: {
-  refresh: () => void;
+  refresh: (isMatch?: boolean) => void;
   record: {
     id: number;
     listing_stores: {
@@ -170,32 +135,14 @@ const ButtonGroup = (props: {
   const [confirmMatchLoading, setConfirmMatchLoading] = useState(false);
   const [alreadyStoreId, setAlreadyStoreId] = useState({});
   const [matchlVisible, setMatchlVisible] = useState(false);
-  const [historyVisible, setHistoryVisible] = useState(false);
-  const [historyConfirmLoading, setHistoryConfirmLoading] = useState(false);
   const [configurationVisible,setConfigurationVisible] = useState(false);
   const [dynamicFormData,setDynamicFormData]= useState<{key: string}[]>([]);
   const [ebayParams,setEbayParams]=  useState<any>({});
-  const [configurationLoading,setConfigurationLoading] = useState(false);
-  const [historyDataLoading, setHistoryDataLoading] = useState(false);
   const [isDefaultStores, setIsDefaultStores] = useState(false);
-  const [historyData, setHistoryData] = useState({
-    log_vendor_price_change: [],
-    log_vendor_quantity_change: [],
-  });
+  const [configurationSpin, setConfigurationSpin] = useState(false);
   const [form] = Form.useForm();
   const [dynamicForm] = Form.useForm();
   const [matchForm] = Form.useForm();
-  type requestForm = {
-    localizedAspectName: string;
-    aspectConstraint: {
-      aspectDataType: string;
-      aspectEnabledForVariations: boolean;
-      aspectMode: string;
-      aspectRequired: boolean;
-      aspectUsage: string;
-      itemToAspectCardinality: string;
-    }
-  }
   const formItemLayout = {
     labelCol: { span: 6 },
     wrapperCol: { span: 14 },
@@ -241,7 +188,7 @@ const ButtonGroup = (props: {
     
     let successStr: string | undefined;
     if (obj.errors && obj.errors.length) {
-      successStr = obj.errors.toString();
+      successStr = JSON.stringify(obj.errors);
     }
     return {
       success: successInfo || '',
@@ -262,7 +209,10 @@ const ButtonGroup = (props: {
           .then((res: { code: number; msg: string }) => {
             if (res.code) {
               message.success('operation successful!');
-              refresh();
+              Object.keys(value).forEach(key => {
+                record[key] = value[key] 
+              })
+              refresh(true); 
             } else {
               throw res.msg;
             }
@@ -304,12 +254,8 @@ const ButtonGroup = (props: {
           .then((res: { code: number; data: any; msg: string }) => {
             if (res.code) {
               const { success, errorInfo } = getResponseInfo(res.data);
-              message.info(
-                <div>
-                  {success && <p>{`${success}'  Listed succssful!`}</p>}
-                  {errorInfo && <p style={{color: 'red'}}>{`${errorInfo}  Listed faild!`}</p>}
-                </div>,
-              );
+              success && message.success(<p>{`${success}'  Listed succssful!`}</p>)
+              errorInfo && message.error(<p style={{color: 'red'}}>{`${errorInfo}  Listed faild!`}</p>)
             } else {
               throw res.msg;
             }
@@ -485,15 +431,8 @@ const ButtonGroup = (props: {
   const marketPop = (storeId: number) => {
     return getKesGroup('storeData').find((item: { id: number }) => item.id === storeId);
   };
-  const handleOpenView = () => {
-    setHistoryVisible(true);
-    getHistoryData();
-  };
-  const handleOpenViewCancel = () => {
-    setHistoryVisible(false);
-  };
   const getDynamicFormData = (storeId: number) => {
-    setConfigurationLoading(true)
+    setConfigurationSpin(true)
     aspectRequired(storeId).then(res => {
       var formObj = res.data.aspectRequired.map((item: requestForm) => {
         return {
@@ -502,7 +441,7 @@ const ButtonGroup = (props: {
       })
       setDynamicFormData(formObj)
     }).finally(() => {
-      setConfigurationLoading(false)
+      setConfigurationSpin(false)
     })
   }
   useEffect(() => {
@@ -584,61 +523,6 @@ const ButtonGroup = (props: {
       });
     }
   }, [isModalVisible]);
-  const getHistoryData = () => {
-    const params: any = {
-      id: record.vendor_id,
-      vendor_sku: record.vendor_sku,
-    };
-    setHistoryDataLoading(true);
-    log_vendor_quantity_and_price_change(params)
-      .then((res) => {
-        if (res.code) {
-          const priceHistoryData: any = [];
-          const quantityHistoryData: any = [];
-          res.data.log_vendor_price_change.forEach(
-            (item: { add_datetime: string; after: string; before: string }) => {
-              priceHistoryData.push({
-                name: 'after',
-                time: item.add_datetime,
-                price: parseFloat(item.after),
-              });
-              priceHistoryData.push({
-                name: 'before',
-                time: item.add_datetime,
-                price: parseFloat(item.before),
-              });
-            },
-          );
-          res.data.log_vendor_quantity_change.forEach(
-            (item: { add_datetime: string; after: string; before: string }) => {
-              quantityHistoryData.push({
-                name: 'after',
-                time: item.add_datetime,
-                price: parseFloat(item.after),
-              });
-              quantityHistoryData.push({
-                name: 'before',
-                time: item.add_datetime,
-                price: parseFloat(item.before),
-              });
-            },
-          );
-          setHistoryData({
-            log_vendor_price_change: priceHistoryData,
-            log_vendor_quantity_change: quantityHistoryData,
-          });
-        } else {
-          throw res.msg;
-        }
-      })
-      .catch((e: string) => {
-        message.error(e);
-      })
-      .finally(() => {
-        setHistoryConfirmLoading(false);
-        setHistoryDataLoading(false);
-      });
-  };
   useEffect(() => {
     if (matchlVisible) {
       matchForm.setFieldsValue({
@@ -657,29 +541,9 @@ const ButtonGroup = (props: {
       {getMatchButton()}
       <DeleteComponent id={record.id} initData={refresh} />
       {isAuth && getAuthButton()}
-      <Button
-        style={{ width: '110px', marginTop: '10px' }}
-        size="small"
-        onClick={() => {
-          handleOpenView();
-        }}
-      >
-        <BarChartOutlined />
-        history data
-      </Button>
-      <Modal
-        title="price and quantity history data"
-        width={800}
-        bodyStyle={{ height: '600px' }}
-        confirmLoading={historyConfirmLoading}
-        visible={historyVisible}
-        onOk={handleOpenViewCancel}
-        onCancel={handleOpenViewCancel}
-      >
-        <Spin spinning={historyDataLoading}>
-          <DemoColumn data={historyData} />
-        </Spin>
-      </Modal>
+      <HistoryChat  style={{marginTop: '8px' }}
+            vendor_id={record.vendor_id}
+            vendor_sku={record.vendor_sku}/>
       <Modal
         title="Match Modal"
         width={300}
@@ -731,7 +595,7 @@ const ButtonGroup = (props: {
           setConfigurationVisible(false)
           checkEbayParams()
          }}>
-          <Spin spinning={configurationLoading}>
+          <Spin spinning={configurationSpin}>
           <Form
               name="dynamicForm"
               form={dynamicForm}
@@ -771,9 +635,6 @@ const ButtonGroup = (props: {
                               getDynamicFormData(e.target.value)
                             }
                           }
-                          // if(e.target.value === 7 && !e.target.checked){
-                          //   setEbayParams({})
-                          // }
                         }}
                       >
                         {item.name}
@@ -849,10 +710,10 @@ type showPopType =  {imageNames: string[],otherPop: {key: string,value: string}[
 
 export const columns = (
   api: apiItem,
-  refresh: () => void,
-  isAuth?: boolean | undefined,
-  selfShow?: boolean | undefined,
-  showPop?: showPopType, 
+  refresh: (match?:boolean) => void,
+  isAuth: boolean | undefined,
+  selfShow: boolean | undefined,
+  hasDescription: boolean | undefined,
 ): ProColumns<any>[] => {
   const { updateApi, listingApi, deleteApi } = api;
   return [
@@ -957,28 +818,20 @@ export const columns = (
               );
           }
         };
-        const getRecoredImages = () => {
-          const recoredImages: string[] = []
-          showPop?.imageNames.forEach(showItem => {
-            recoredImages.push(record[showItem])
-          });
-          return recoredImages
-        }
+
         const countryName = getKesValue('countryData', record.country_id).country;
-        const comparisonRef = useRef();
         return (
           <>
             <Space direction="vertical">
               <Text type="secondary">
-              {selfShow ? <ComparisonFrame ref={comparisonRef} leftURL={`${getAsonHref(record.country_id)}${record.asin}`} showPop={{imageNames: getRecoredImages(),title: record.title, otherPop: record}} /> : null}
-              ID：{!selfShow ? (<>
-                <a
+              ID： <a
                   target="_blank"
                   rel="noreferrer"
+                  id={record.vendor_sku}
                   href={`${getTargetHref(record.vendor_id,record.vendor_sku)}`}
                 >
                   {record.vendor_sku}
-                </a></>) : (<><a onClick={() => comparisonRef.current.showModal()}>{record.vendor_sku}</a></>)}
+                </a>
                 {record.notes && <Info content={record.notes} />}
               </Text>
               {record.asin && (
@@ -999,6 +852,12 @@ export const columns = (
                   <a target="_Blank" href={`${getNewEggHref(record.newegg_id)}`}>
                     {record.newegg_id}
                   </a>
+                </Text>
+              )}
+              {record.vpn && (
+                <Text type="secondary">
+                  <span>Vpn</span>：
+                  {record.vpn}
                 </Text>
               )}
               <Text type="secondary">
@@ -1026,8 +885,68 @@ export const columns = (
                 />
               </Text>
               <Text type="secondary">
-                Description：<ParagraphText content={record.title} width={selfShow ? 250 : 190} />
+                Title：
+                <Paragraph
+                style={{width: selfShow ? 270 : 280, display: "inherit"}}
+                ellipsis
+                editable={{
+                  onChange: (e) => {
+                      const params = {
+                        id: record.id,
+                        title: e,
+                      };
+                      if (e === record.title  || !e) return
+                      updateApi(params)
+                        .then((res: { code: number; msg: string }) => {
+                          if (res.code) {
+                            message.success('operation successful!');
+                            record.title = e
+                            refresh(true)
+                          } else {
+                            throw res.msg;
+                          }
+                        })
+                        .catch((e: string) => {
+                          message.error(e);
+                        })
+                  },
+                }}
+              >
+                {/* PDX Plus Perfect 10 Booty - Tan */}
+                {record.title}
+              </Paragraph>
               </Text>
+              {hasDescription && (<Text type="secondary">
+               Description:
+                <Paragraph
+                style={{width: selfShow ? 270 : 280, display: "inherit"}}
+                ellipsis
+                editable={{
+                  onChange: (e) => {
+                      const params = {
+                        id: record.id,
+                        products_description: e,
+                      };
+                      if (e === record.products_description || !e) return
+                      updateApi(params)
+                        .then((res: { code: number; msg: string }) => {
+                          if (res.code) {
+                            message.success('operation successful!');
+                            record.products_description = e
+                            refresh(true)
+                          } else {
+                            throw res.msg;
+                          }
+                        })
+                        .catch((e: string) => {
+                          message.error(e);
+                        })
+                  },
+                }}
+              >
+                {record.products_description}
+              </Paragraph>
+              </Text>)}
             </Space>
           </>
         );
@@ -1081,15 +1000,15 @@ export const columns = (
       hideInTable: true,
     },
     {
+      title: 'Vpn',
+      dataIndex: 'vpn',
+      hideInTable: true,
+    },
+    {
       title: 'availability',
       dataIndex: 'availability',
       hideInTable: true,
       valueType: 'digit',
-    },
-    {
-      title: 'title',
-      dataIndex: 'title',
-      hideInTable: true,
     },
     {
       title: 'Amazon match',
@@ -1288,6 +1207,7 @@ export const columns = (
       title: 'quantity and venderPrice',
       dataIndex: 'venderPrice',
       valueType: 'money',
+      search: false,
       width: 200,
       render: (
         _,
@@ -1307,6 +1227,11 @@ export const columns = (
           </Space>
         );
       },
+    },
+    {
+      title: 'availability',
+      dataIndex: 'availability',
+      hideInTable: true
     },
     {
       title: 'listing_filter',
@@ -1537,8 +1462,9 @@ const Head: FC<{ show: any }> = (props) => {
     </>
   );
 };
-const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean | undefined, selfShow?: boolean | undefined, showPop?: showPopType}) => {
-  const { title, api, isAuth, selfShow,showPop } = props;
+
+const SupplierFunction = (props: { title: string; api: apiItem; isAuth: boolean, selfShow: boolean, hasDescription: boolean}) => {
+  const { title, api, isAuth, selfShow,hasDescription } = props;
   const actionRef = useRef<ActionType>();
   const ref = useRef<FormInstance>();
   const { initialState } = useModel('@@initialState');
@@ -1546,33 +1472,56 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [record, setRecord] = useState<any>();
   const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
-  const shopEl = (<>
-    <Form
-      name="control-ref"
-      form={shopFrom}
-    >
-      <Form.Item name="store_id" label="store" rules={[{ required: true, message: 'Please select store!' }]}>
-        <Select
-          size="small"
-          style={{ width: '150px' }}
-          placeholder="Select store"
-          allowClear
-        >
-          {getKesGroup('storeData')?.map((item: { id: number; name: string }) => {
-            return (
-              <Select.Option key={`company${  item.id}`} value={item.id}>
-                {item.name}
-              </Select.Option>
-            );
-          })}
-        </Select>
-      </Form.Item>
-    </Form>
-  </>)
-  const refresh = (): void => {
-    actionRef.current?.reload();
+  const [checkedRow,setCheckedRow] = useState([])
+  const [configurationVisible,setConfigurationVisible] = useState(false);
+  const [daynamicModalLoading, setDaynamicModalLoading] = useState(false)
+  const [currentStore, setCurrentStore] = useState(0)
+  const [selectNum, setSelectNum] = useState(3)
+  const [tempData, setTempData] = useState<any[]>([])
+  const [time, setTime] = useState(moment().unix())
+  const refresh = (isMatch?: boolean): void => {
+    if(isMatch){
+      setTime(moment().unix())
+      console.log('update',time)
+    } else {
+      actionRef.current?.reload();
+    }
   };
-  function deleteListItem() {
+  const batchFromSubmit = () => {
+    shopFrom.validateFields().then(values => {
+      setDaynamicModalLoading(true)
+      api.batchListApi({...values, ids: selectedRowKeys}).then((res: {
+        code: number;
+        msg: string
+        data: {
+          errors: string[];
+          errors_products: {ts_sku: string;}[][];
+          success_products: {ts_sku: string;}[][]
+        }
+      }) => {
+         if(res.code){
+           let info = `successful operation!`
+           if(res.data.errors.length){
+            info = `${JSON.stringify(res.data.errors) }\n`
+           }
+           message.info(info, 10)
+           setSelectedRowKeys([])
+           actionRef.current?.reload()
+         } else {
+            throw res.msg
+         }
+      }).catch((e: string) => {
+        message.error(e)
+      }).finally(() => {
+        setDaynamicModalLoading(false)
+        setConfigurationVisible(false)
+        shopFrom.resetFields()
+      })
+    }).catch((log) => {
+      message.error(log)
+    })
+  }
+  const deleteListItem = () => {
     Modal.confirm({
       title: 'Do you want to delete these products?',
       icon: <ExclamationCircleOutlined />,
@@ -1590,7 +1539,6 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
               }
             })
             .catch((e: boolean | React.ReactChild | React.ReactFragment | React.ReactPortal | MessageArgsProps | null | undefined) => {
-              // eslint-disable-next-line no-console
               console.error(e);
               message.error(e);
             })
@@ -1621,27 +1569,18 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
         rowSelection={{
           selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],
           selectedRowKeys,
-          onChange: (rowKeys: any[]) => {
+          onChange: (rowKeys: any[],row: any) => {
             setSelectedRowKeys(rowKeys);
+            setCheckedRow(row)
           },
         }}
         size="small"
         bordered
-        columns={columns(api, refresh, isAuth,selfShow,showPop)}
+        columns={columns(api, refresh, isAuth,selfShow,hasDescription)}
         actionRef={actionRef}
         formRef={ref}
         request={async (params = {}) =>
           new Promise((resolve) => {
-            // let sortParams: {
-            //   sort_by?: string;
-            //   sort_field?: string;
-            // } = {};
-            // if (sort) {
-            //   for (let key in sort) {
-            //     sortParams.sort_by = sort[key] === 'descend' ? 'desc' : 'asc';
-            //     sortParams.sort_field = key;
-            //   }
-            // }
             const tempParams = {
               ...params,
               // ...sortParams,
@@ -1656,6 +1595,7 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
                 };
                 code: number;
               }) => {
+                setTempData(res.data.list)
                 resolve({
                   data: res.data.list,
                   // success 请返回 true，
@@ -1685,16 +1625,14 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
         }}
         pagination={{
           pageSize: 30,
-          pageSizeOptions:['10', '20','30','50','100','200'],
+          pageSizeOptions:['10', '20','30','50','100','200', '300', '400', '500'],
           showQuickJumper: true
         }}
         options={{
           search: false,
         }}
-        // eslint-disable-next-line @typescript-eslint/no-shadow
         onRow={(record: { id: number; notes: string; vendor_sku: string; ts_sku: string }) => {
           return {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             onDoubleClick: (event): void => {
               setDrawerVisible(true);
               setRecord({
@@ -1717,62 +1655,22 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
         dateFormatter="string"
         headerTitle={<span style={{ fontFamily: 'fantasy' }}>{title}</span>}
         toolBarRender={() => [
+          <Input key='tempselect' style={{width: '80px'}} onChange={e => {
+            setSelectNum(parseInt(e.target.value))
+          }} addonAfter={<CheckSquareOutlined onClick={(e) => {
+             let tempSelectData:{id:number, vendor_sku: string}[] = JSON.parse(JSON.stringify(tempData))
+              tempSelectData.length = selectNum
+              let ids = tempSelectData.map(itemIds => {
+                return itemIds.id
+              })
+              setSelectedRowKeys(ids)
+          }}  />} defaultValue={selectNum} />,
           <Button
             key="uploadAndDown"
             disabled={!selectedRowKeys.length}
             style={{display:  initialState?.currentUser?.auth_group?.title !== 'Outsourcer' ? 'inline-block' : 'none'}}
             onClick={() => {
-              Modal.confirm({
-                title: 'Shop selection',
-                icon: <ExclamationCircleOutlined />,
-                content: shopEl,
-                okText: 'submit',
-                cancelText: 'cancel',
-                onOk: ()=>{
-                  return new Promise((resolve) => {
-                    shopFrom.validateFields().then(values => {
-                      api.batchListApi({...values, ids: selectedRowKeys}).then((res: {
-                        code: number;
-                        msg: string
-                        data: {
-                          errors: string[];
-                          errors_products: {ts_sku: string;}[][];
-                          success_products: {ts_sku: string;}[][]
-                        }
-                      }) => {
-                         if(res.code){
-                           let info = `${res.data.errors.toString()  }\n`
-                           if(res.data.errors_products.length > 0){
-                            info += `\nFailure data:${  [res.data.errors_products.map((item: any) => 
-                              { 
-                                return item.ts_sku
-                             })].toString()  }\n`
-                           }
-                           if(res.data.success_products.length > 0){
-                            info += `\nSuccess data:${  [res.data.success_products.map((item: any) => 
-                              { 
-                                return item.ts_sku
-                             })].toString()  }\n`
-                           }
-                           message.info(info, 3)
-                           setSelectedRowKeys([])
-                           actionRef.current?.reload()
-                           resolve(null)
-                         } else {
-                            throw res.msg
-                         }
-                      }).catch((e: string) => {
-                        message.error(e)
-                      }).finally(() => {
-                        shopFrom.resetFields()
-                        resolve(true)
-                      })
-                    }).catch((log) => {
-                      message.error(log)
-                    })
-                  })
-                }
-              });
+              setConfigurationVisible(true)
             }}
             icon={<ProfileOutlined />}
           >
@@ -1800,7 +1698,6 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
                 tempParams = `${api.downloadApi()  }?is_download=1`;
               }
               createDownload(`test.csv`, tempParams);
-              // console.log(tempParams)
             }}
           >
             Download
@@ -1830,6 +1727,37 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth?: boolean
           <UpOutlined />
         </div>
       </BackTop>
+      <Modal title="Batch listing" confirmLoading={daynamicModalLoading} visible={configurationVisible} onOk={batchFromSubmit} onCancel={() => {setConfigurationVisible(false)}}>
+      <Form
+          name="control-ref"
+          labelCol={{ span: 6 }}
+          wrapperCol={{ span: 12 }}
+          form={shopFrom}
+        >
+          <Form.Item name="store_id" label="store" rules={[{ required: true, message: 'Please select store!' }]}>
+            <Select
+              style={{ width: '100%' }}
+              placeholder="Select store"
+              allowClear
+              onChange={(e:number) => {
+                setCurrentStore(e)
+              }}
+            >
+              {getKesGroup('storeData')?.map((item: { id: number; name: string }) => {
+                return (
+                  <Select.Option key={`company${  item.id}`} value={item.id}>
+                    {item.name}
+                  </Select.Option>
+                );
+
+              })}
+            </Select>
+          </Form.Item>
+          {(currentStore === 7 ? (checkedRow.map((Row:any) => {
+                return (<Tag>{Row.brand}</Tag>)
+            })): null)}
+        </Form>
+      </Modal>
     </div>
   );
 };

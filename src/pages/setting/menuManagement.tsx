@@ -270,7 +270,7 @@ function DeleteComponent(props: { id: number; initData: () => void }) {
 
   return (
     <Popconfirm
-      title="你确定要删除吗？"
+      title="are you sure delete it?"
       visible={visible}
       onConfirm={handleOk}
       okButtonProps={{
@@ -294,7 +294,7 @@ function AddModal(props: {
 }) {
   return (
     <>
-      <Modal {...props} okText="确认" cancelText="取消">
+      <Modal {...props} okText="ok" cancelText="cancel">
         {props.content}
       </Modal>
     </>
@@ -320,8 +320,8 @@ function TreeData(props: any) {
     },
     {
       title: 'Display or not',
-      dataIndex: 'status',
-      key: 'status',
+      dataIndex: 'is_show',
+      key: 'is_show',
       render: (text: boolean) =>
         !text ? <Tag color="magenta">hide</Tag> : <Tag color="green">display</Tag>,
     },

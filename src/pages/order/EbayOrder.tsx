@@ -1,6 +1,6 @@
 /* eslint-disable radix */
 import { useRef, useState } from 'react';
-import { Typography, Space, message} from 'antd';
+import { Typography, Space, message,Tooltip} from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import { ebayOrders } from '../../services/order/ebay';
@@ -67,6 +67,10 @@ type GithubIssueItem = {
         update_at: string;
         store_id: number;
     };
+    vendor_id?: number;
+    tag_id?: number;
+    isRepeatFirst: number;
+    isRepeatLaster: number;
 }
 
 
@@ -107,7 +111,21 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
               </Text>
             </Text>
             <Text type="secondary">
-                orderId : <Text copyable>{record.orderId}</Text>
+                orderId : <Text copyable>
+
+                <Tooltip
+                placement="top"
+                title={record.isRepeatFirst === 1 || record.isRepeatLaster ? 'Repeat order!' : undefined}
+              >
+                <Text
+                  copyable
+                  style={record.isRepeatFirst === 1 || record.isRepeatLaster ? { color: 'red', width: '160px' } : undefined}
+                >
+                  {record.orderId}
+                </Text>
+              </Tooltip>
+
+                </Text>
             </Text>
             <Text type="secondary">
               lineItemId : <Text copyable>{record.lineItemId}</Text>
@@ -115,13 +133,13 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
             <Text type="secondary">
                 legacyItemId : <Text copyable>{record.legacyItemId}</Text>
             </Text>
-            <Text type="secondary">
-              Tag Name:
-                {record && (<ParagraphText
-                content={getKesValue('tagsData', record.listing.tag_id || "")?.tag_name}
-                width={280}
-              />)}
-            </Text>
+              {record.tag_id && (<Text type="secondary">
+                Tag Name:
+                  {record && (<ParagraphText
+                  content={getKesValue('tagsData', record.tag_id || "")?.tag_name}
+                  width={280}
+                />)}
+            </Text>)}
             <Text type="secondary">Title : <ParagraphText
                 content={record.title}
                 width={280}
@@ -242,6 +260,11 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
     }
   },
   {
+    title: 'ItemPrice amount',
+    dataIndex: 'ItemPriceAmount',
+    width: 120,
+  },
+  {
     title: 'Store',
     dataIndex: 'store_id',
     valueType: 'select',
@@ -292,13 +315,17 @@ export default () => {
             ebayOrders(tempParams).then((res) => {
               var tempData = []
               if (res.code){
-                tempData = res.data.list.map((item: GithubIssueItem) => {
+                tempData = res.data.list.map((item: GithubIssueItem, index: number) => {
                     return {
                         ...item,
                         order_ebay: {
                           ...item.order_ebay,
                           buyer: JSON.parse((item.order_ebay as any).buyer)
-                        }
+                        },
+                        vendor_id: item.listing?.vendor_id,
+                        tag_id: item.listing?.tag_id,
+                        isRepeatFirst: res.data.list[index + 1] ? res.data.list[index + 1].orderId === item.orderId ? 1 : 0 : 0,
+                        isRepeatLaster: res.data.list[index - 1] ? res.data.list[index - 1].orderId === item.orderId ? 1 : 0 : 0
                     }
                 })
               } else {

@@ -23,8 +23,11 @@ export async function getCountryList() {
   return request('/api/country/lists');
 }
 
-export async function getTagList() {
-  return request('/api/tag/lists');
+export async function getTagList(params?:any) {
+  return request('/api/tag/lists',{
+    method: 'GET',
+    params: params
+  });
 }
 
 export async function getAllKeysValue() {
@@ -62,6 +65,7 @@ export type tags = {
   id: number;
   tag_name: string;
   is_assigned: boolean;
+  vendor_id: number
 };
 export type marketplaces = {
   id: number;

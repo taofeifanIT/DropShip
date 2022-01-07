@@ -1,0 +1,60 @@
+.window { 
+    border:6px #ccc outset; 
+    width:680px; 
+    height:442px; 
+    background-color:#000; 
+    overflow:hidden
+    .title { 
+        background-color:#08246B; 
+        padding:2px;} 
+        .text { 
+        background-color:#000; 
+        border-top:#ccc outset 2px; 
+        height:420px; 
+        padding: 4px;
+        overflow-y:scroll;} 
+        .ul { 
+        margin:0px; 
+        padding:0px; 
+        list-style:none;
+        font-family: monospace;
+        } 
+} 
+.editSpan{
+        background-color:#000; 
+        border:0; 
+        color:#fff; 
+        outline:none; 
+        font-family: monospace;
+        min-width: 7px;
+}
+.cursor {
+    -webkit-animation: Blink 1s ease-in 0s infinite;
+    animation: Blink 1s ease-in 0s infinite;
+    font-weight: bold;
+    color: white;
+}
+
+.closeBtn{
+    width: 20px;
+    height: 20px;
+    line-height: 15px;
+    float: right;
+    background: gray;
+}
+@-webkit-keyframes Blink {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+@keyframes Blink {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}

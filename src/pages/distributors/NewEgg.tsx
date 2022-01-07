@@ -8,7 +8,7 @@ import {
     batchList,
     batchDelete
   } from '../../services/distributors/newEgg';
-  import SupplierFunction from './supplierFunction';
+  import SupplierFunction from '@/components/AsyncSupplierFunction';
 
   export default () => {
     const config = {
@@ -34,7 +34,7 @@ import {
     return (
         <>
                  
-        <SupplierFunction {...config} />
+        <SupplierFunction key='NewEggVendor' {...config} />
                 
       </>
     );

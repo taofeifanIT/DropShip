@@ -31,19 +31,19 @@ const TagData = () => {
   }, []);
   return (
     <>
-      <div className={styles.tagTitle}>Tag Info</div>
+      {/* <div className={styles.tagTitle}>Tag Info</div> */}
       <Spin spinning={loading}>
-        <div style={{ overflow: 'auto', height: '388px' }}>
+        <div style={{ overflow: 'auto', height: '396px' }}>
           <table width="100%">
             <thead>
               <tr className={styles.ocd}>
                 <th style={{ width: '60px', textAlign: 'center' }}>ID</th>
                 <th>Tag name</th>
-                <th>Total sales</th>
-                <th>Total order</th>
-                <th>Total listing</th>
-                <th>Match Rate</th>
-                <th>Add time</th>
+                <th style={{width: 80}}>Total sales</th>
+                {/* <th>Total order</th> */}
+                <th style={{width: 92}}>Total listing</th>
+                <th style={{width: 92}}>Match Rate</th>
+                {/* <th>Add time</th> */}
               </tr>
             </thead>
             <tbody>
@@ -52,13 +52,13 @@ const TagData = () => {
                   <tr className={index % 2 === 0 ? styles.odd : styles.ocd}>
                     <th style={{ width: '60px', textAlign: 'center' }}>{index + 1}</th>
                     <th>
-                      <ParagraphText content={item.tag_name} width={200} style={{color: '#fff'}} />
+                      <ParagraphText content={item.tag_name} width={160} style={{color: '#fff'}} />
                     </th>
                     <th>{item.total_sales}</th>
-                    <th>{item.total_order}</th>
+                    {/* <th>{item.total_order}</th> */}
                     <th>{item.total_listing}</th>
                     <th>{item.matchRate}</th>
-                    <th>{moment(parseInt(item.add_time + '000')).format('YYYY-MM-DD HH:mm:ss')}</th>
+                    {/* <th>{moment(parseInt(item.add_time + '000')).format('YYYY-MM-DD HH:mm:ss')}</th> */}
                   </tr>
                 );
               })}

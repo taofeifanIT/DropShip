@@ -1,5 +1,5 @@
 import { Row, Col, Statistic, Spin } from 'antd';
-import { total } from '../../../services/dashboard';
+import { total } from '@/services/dashboard';
 import { useState, useEffect } from 'react';
 import WorldMap from './Map';
 const Tatal = () => {
@@ -44,6 +44,7 @@ const Tatal = () => {
         <div style={{ ...style }}>
           <div style={{ textAlign: 'center' }}>
             <Statistic
+            groupSeparator={""}
               title={<span style={{ color: fontColor }}>{one_level_title}</span>}
               value={(one_level_number as number).toFixed(0)}
               valueStyle={{ ...valueStyle, color: fontColor }}

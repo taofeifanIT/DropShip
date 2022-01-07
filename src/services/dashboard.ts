@@ -57,3 +57,11 @@ export async function marketplaceRanking() {
 export async function countryRanking() {
   return request('/api/dashboard/country_ranking');
 }
+
+export async function buyboxHistory() {
+  return request('/api/listing/buybox_history');
+}
+
+export async function mqDataStatus() {
+  return request('/api/notice/mq_data_status');
+}

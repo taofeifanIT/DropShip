@@ -47,5 +47,5 @@ export function setPublicKeys(value) {
   localStorage.setItem('publicKeys', JSON.stringify(value));
 }
 export function getPublicKey() {
-  return localStorage.getItem('publicKeys');
+  return localStorage.getItem('publicKeys') || "";
 }

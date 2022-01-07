@@ -7,8 +7,8 @@ import {
     show,
     batchList,
     batchDelete
-  } from '../../services/distributors/eldorado';
-  import SupplierFunction from './supplierFunction';
+  } from '@/services/distributors/eldorado';
+  import SupplierFunction from '@/components/AsyncSupplierFunction';
   
   export default () => {
     const config = {
@@ -24,11 +24,12 @@ import {
         batchDelete
       },
       isAuth: false,
+      hasDescription: true,
     };
     return (
       <>
                    
-        <SupplierFunction {...config} />
+        <SupplierFunction key='eldoradoVendor' {...config} />
                 
       </>
     );

@@ -7,8 +7,8 @@ import {
   show,
   batchList,
   batchDelete
-} from '../../services/distributors/Intracom';
-import SupplierFunction from './supplierFunction';
+} from '@/services/distributors/Intracom';
+import SupplierFunction from '@/components/AsyncSupplierFunction';
 export default () => {
   const config = {
     title: 'Intracom',
@@ -27,7 +27,7 @@ export default () => {
   return (
     <>
                  
-      <SupplierFunction {...config} />
+      <SupplierFunction key='IntracomVendor'  {...config} />
               
     </>
   );

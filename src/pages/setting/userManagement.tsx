@@ -266,7 +266,8 @@ export default () => {
       ) => {
         if (record.open_tag_permission) {
           return hasTags.map((item, index) => {
-            return <p key={item.id}>{`${index + 1}.${item.tag_name}`}</p>;
+            return <p>{`${index + 1}.${item?.tag_name}`}</p>;
+            // return ''
           });
         }
         return 'All tags';
@@ -327,6 +328,7 @@ export default () => {
     <div style={{ height: `${(initialState as any).pageHeight}px` }}>
       <ProTable<GithubIssueItem>
         actionRef={ref}
+        size={'small'}
         columns={columns}
         request={async (params = {}) =>
           new Promise((resolve) => {
@@ -345,6 +347,7 @@ export default () => {
                     : [],
                 };
               });
+              // console.log(resultData)
               resolve({
                 data: resultData,
                 // success 请返回 true，

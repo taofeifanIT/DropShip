@@ -8,6 +8,7 @@ import Total from './components/Total';
 import DemoColumn from './components/OperationRank';
 import DemoLine from './components/HistoryData';
 import TagData from './components/TagTable';
+import HistoryBuyBox from './components/HistoryBuyBox'
 const DataComparison = () => {
   enterF11();
   return (
@@ -22,19 +23,27 @@ const DataComparison = () => {
             </div>
           </div>
           <div className={styles.operation}>
-            <div className={styles.post}>
-              <DemoColumn />
+          <div className={styles.post}>
+            <TagData />
             </div>
           </div>
         </Col>
         <Col span={12} style={{ padding: '0 20px' }}>
           <div className={styles.centerBox}>
-            {/* <WorldMap/> */}
             <Total />
           </div>
-          <div className={styles.tableBox}>
-            <TagData />
-          </div>
+          <Row>
+             <Col span={12} style={{paddingRight: '5px'}}>
+             <div className={styles.tableBox}>
+              <DemoLine />
+            </div>
+             </Col>
+             <Col span={12} style={{paddingLeft: '5px'}}>
+             <div className={styles.tableBox}>
+              <HistoryBuyBox />
+            </div>
+             </Col>
+          </Row>
         </Col>
         <Col span={6}>
           <div className={styles.box}>
@@ -46,8 +55,8 @@ const DataComparison = () => {
             </div>
           </div>
           <div className={styles.operation}>
-            <div className={styles.post}>
-              <DemoLine />
+            <div className={styles.post} style={{padding: 20}}>
+              <DemoColumn />
             </div>
           </div>
         </Col>

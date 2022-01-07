@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Row, Col, Card, Typography, Input, List, Spin, Tabs, DatePicker, Select } from 'antd';
-import { Rose, Line, Column } from '@ant-design/charts';
+import { Row, Col, Card, Typography, Input, List, Spin, Tabs, DatePicker, Select,Badge } from 'antd';
+import { Rose, Line, Column,G2,Liquid } from '@ant-design/charts';
 import ProTable from '@ant-design/pro-table';
+import type { ProColumns } from '@ant-design/pro-table';
 import {
   matchAndListing,
   total,
@@ -9,6 +10,7 @@ import {
   saleRanking,
   tagRanking,
   marketplaceRanking,
+  mqDataStatus
 } from '../../services/dashboard';
 import moment from 'moment';
 import {
@@ -18,7 +20,7 @@ import {
   TagOutlined,
   DollarOutlined,
 } from '@ant-design/icons';
-import { getKesGroup } from '../../utils/utils';
+import { getKesGroup } from '@/utils/utils';
 const { RangePicker } = DatePicker;
 
 const { Text } = Typography;
@@ -98,7 +100,7 @@ const DemoColumn: React.FC = () => {
       <Spin spinning={loading}>
         <Select
           showSearch
-          style={{ width: 200, position: 'absolute', top: '-11px', right: 400, zIndex: 100 }}
+          style={{ width: 200, position: 'absolute', top: '-11px', right: 420, zIndex: 100 }}
           onChange={(e: number) => {
             setParams({
               ...params,
@@ -161,14 +163,15 @@ const TagMatchData = () => {
       return type.running;
     }
     if (val < 50 && val > 0) {
-      return type.error;
+      return type.running;
     }
     if (val <= 0) {
-      return type.close;
+      return type.running;
     }
+    return  type.running;
   };
 
-  const columns: any = [
+  const columns: ProColumns[] = [
     {
       dataIndex: 'index',
       valueType: 'indexBorder',
@@ -217,6 +220,7 @@ const TagMatchData = () => {
     {
       title: 'add_time',
       dataIndex: 'add_time',
+      sorter: true,
       render: (text: number) => {
         return moment(parseInt(text + '000')).format('YYYY-MM-DD HH:mm:ss');
       },
@@ -303,7 +307,101 @@ const DemoLine: React.FC = () => {
   const [obj, setobj] = useState<{
     totalData: any[];
     salaryData: any[];
-  }>({ totalData: [], salaryData: [] });
+    maxValue: number;
+    maxTotal: number;
+  }>({ totalData: [], salaryData: [],maxValue: 0,maxTotal:0 });
+  G2.registerShape('point', 'breath-point', {
+    draw: function draw(cfg, container) {
+      var data: any = cfg.data;
+      var point = {
+        x: cfg.x,
+        y: cfg.y,
+      };
+      var group = container.addGroup();
+      if (data.gdp === obj.maxValue || data.gdp === obj.maxTotal) {
+        var decorator1 = group.addShape('circle', {
+          attrs: {
+            x: point.x,
+            y: point.y,
+            r: 10,
+            fill: cfg.color,
+            opacity: 0.5,
+          },
+        });
+        var decorator2 = group.addShape('circle', {
+          attrs: {
+            x: point.x,
+            y: point.y,
+            r: 10,
+            fill: cfg.color,
+            opacity: 0.5,
+          },
+        });
+        var decorator3 = group.addShape('circle', {
+          attrs: {
+            x: point.x,
+            y: point.y,
+            r: 10,
+            fill: cfg.color,
+            opacity: 0.5,
+          },
+        });
+        decorator1.animate(
+          {
+            r: 20,
+            opacity: 0,
+          },
+          {
+            duration: 1800,
+            easing: 'easeLinear',
+            repeat: true,
+          },
+        );
+        decorator2.animate(
+          {
+            r: 20,
+            opacity: 0,
+          },
+          {
+            duration: 1800,
+            easing: 'easeLinear',
+            repeat: true,
+            delay: 600,
+          },
+        );
+        decorator3.animate(
+          {
+            r: 20,
+            opacity: 0,
+          },
+          {
+            duration: 1800,
+            easing: 'easeLinear',
+            repeat: true,
+            delay: 1200,
+          },
+        );
+        group.addShape('circle', {
+          attrs: {
+            x: point.x,
+            y: point.y,
+            r: 6,
+            fill: cfg.color,
+            opacity: 0.7,
+          },
+        });
+        group.addShape('circle', {
+          attrs: {
+            x: point.x,
+            y: point.y,
+            r: 1.5,
+            fill: cfg.color,
+          },
+        });
+      }
+      return group;
+    },
+  });
   useEffect(() => {
     init();
   }, []);
@@ -337,7 +435,9 @@ const DemoLine: React.FC = () => {
             ];
           },
         );
-        setobj({ totalData: tempTotalData, salaryData: tempSalaryData });
+        var maxValue = Math.max.apply(Math,tempSalaryData.map(item => { return item.gdp }))
+        var maxTotal = Math.max.apply(Math,tempTotalData.map(item => { return item.gdp }))
+        setobj({ totalData: tempTotalData, salaryData: tempSalaryData,maxValue: maxValue,maxTotal: maxTotal });
       })
       .finally(() => {
         setLoading(false);
@@ -358,6 +458,8 @@ const DemoLine: React.FC = () => {
         },
       },
     },
+    tooltip: { showMarkers: false },
+    point: { shape: 'breath-point' },
   };
   var salaryConfig = {
     data: obj.salaryData,
@@ -377,6 +479,8 @@ const DemoLine: React.FC = () => {
       // min: 0,
       // max: 1000
     },
+    tooltip: { showMarkers: false },
+    point: { shape: 'breath-point' },
   };
   return (
     <>
@@ -510,6 +614,63 @@ const RankingList = () => {
     </>
   );
 };
+
+
+const DemoLiquid: React.FC = () => {
+  const [obj, setObj] = useState<{
+    waiting_update_count: number;
+    mq_count: number;
+  }>({
+    waiting_update_count: 0,
+    mq_count: 0
+  })
+  var config = {
+    percent: obj.waiting_update_count / 100,
+    style: { height: '200px' },
+    outline: {
+      border: 4,
+      distance: 8,
+    },
+    wave: { length: 128 },
+  };
+  const [loading,setLoading] = useState(false)
+  const getRate = () => {
+    setLoading(true);
+    mqDataStatus()
+      .then((res) => {
+        setObj(res.data);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+  useEffect(() => {
+    getRate();
+    setInterval(() => {
+      getRate();
+    }, 1000 * 60 * 10);
+  }, []);
+  return (<Spin spinning={loading}>
+    <Card title='Task queue execution status' size='small' bordered={false} style={{marginTop: '5px'}}>
+                  <Row>
+                      <Col span={14}>
+                        <Liquid {...config} />
+                      </Col>
+                      <Col span={10}>
+                      <br />
+                      <Badge color="#2db7f5" text={`Number of queue tasks ${obj.mq_count}`} />
+                      <br />
+                      <br />
+                      <Badge color="#ff0000" text={`Number of tasks to be performed ${obj.waiting_update_count}`} />
+                      <br />
+                      <br />
+                      <Badge color="yellow" text="not yet" />
+                      </Col>
+                  </Row>
+                </Card>
+  </Spin>);
+};
+
 export default () => {
   const [totalObj, setTotalObj] = useState<{
     order_total: number;
@@ -661,7 +822,10 @@ export default () => {
         <Col className="gutter-row" span={24}>
           <Card bodyStyle={{ paddingTop: '10px' }}>
             <Row gutter={16}>
-              <Col className="gutter-row" span={18}>
+              <Col className="gutter-row" span={6}>
+              <DemoLiquid />
+              </Col>
+              <Col className="gutter-row" span={12}>
                 <div>
                   <DemoLine />
                 </div>

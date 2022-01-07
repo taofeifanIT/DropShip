@@ -1,14 +1,23 @@
-import { Tag, Space, Popover, Form, Select, Button } from 'antd';
-import { ControlOutlined } from '@ant-design/icons';
+import { Tag, Space, Popover, Form, Select, Button,notification} from 'antd';
+import { ControlOutlined,BellOutlined } from '@ant-design/icons';
 import React from 'react';
 import { useModel } from 'umi';
 import Avatar from './AvatarDropdown';
-import NoticeIconView from '../../components/NoticeIcon/index';
+import NoticeIconView from '@/components/NoticeIcon/index';
 import styles from './index.less';
-import { getPublicParams, setPublicParams } from '../../utils/cookes';
-import { getKesGroup } from '../../utils/utils';
+import { getPublicParams, setPublicParams } from '@/utils/cookes';
+import { getKesGroup } from '@/utils/utils';
+import { checkIssueOrder,updateIssueTrack} from '@/services/order/order';
+// import Dos from '@/components/Dos'
 // const TestContext= createContext();
 export type SiderTheme = 'light' | 'dark';
+
+type OrderMessage = {
+  order_id: number,
+  amazon_order_id: string,
+  vendor_sku: string,
+  vendor_quantity: number
+}
 
 const ENVTagColor = {
   dev: 'orange',
@@ -50,8 +59,68 @@ const GlobalHeaderRight: React.FC = () => {
       ...initialState,
       conText: fieldsValue,
     });
-    // console.log(count)
   };
+
+  const openNotification = (item:OrderMessage) => {
+    const key = `open${item.order_id}`;
+    const btn = (
+      <Button type="primary" size="small" onClick={() => {
+        updateIssueTrack({
+          id: item.order_id,
+          issue_tracking: 0
+        }).then(res => {
+          if(res.code){
+            notification.close(key)
+          }
+        }).finally(() => {
+          notification.close(key)
+        })
+      }}>
+        Confirm
+      </Button>
+    );
+    notification.open({
+      message: 'The order in question is in stock',
+      description: (<>
+       <div>sku: {item.vendor_sku}</div>
+       <div>quantity: {item.vendor_quantity}</div>
+       <div>order Id: {item.amazon_order_id}</div>
+      </>),
+      btn,
+      key,
+      duration: null,
+      icon: <BellOutlined  style={{ color: '#108ee9' }} />,
+      onClose: close,
+    });
+  };
+  const getCheckIssueOrder = () => {
+    checkIssueOrder().then(res => {
+      if(res.data.length > 0){
+        res.data.forEach((item:OrderMessage) => {
+          openNotification(item)
+        })
+      }
+    })
+  }
+
+  var loopTask: any = null
+  const loopGetOrder = () => {
+    var currentUser = initialState?.currentUser
+    if(currentUser){
+      if(currentUser.auth_group?.title == 'Super Admin'){
+        console.log(currentUser.auth_group?.title)
+         if(!loopTask){
+          getCheckIssueOrder();
+          loopTask = setInterval(() => {
+            getCheckIssueOrder();
+          }, 1000 * 60 * 3);
+        } 
+      } else {
+        window.clearInterval(loopTask)
+      }
+    }
+    
+  }
   React.useEffect(() => {
     let publicParms = getPublicParams();
     if (publicParms && visible) {
@@ -62,8 +131,12 @@ const GlobalHeaderRight: React.FC = () => {
       // form.setFields(JSON.parse(getPublicParams() || ""))
     }
   }, [visible]);
+  React.useEffect(() => {
+    loopGetOrder()
+  }, []);
   return (
     <Space className={className}>
+      {/* <Dos /> */}
       <Tag color="#108ee9">{initialState?.currentUser?.auth_group?.title}</Tag>
       {initialState?.currentUser?.auth_group?.title !== 'Outsourcer' ? (
         <span style={{ margin: '0 12px' }}>

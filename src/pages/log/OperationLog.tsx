@@ -24,10 +24,7 @@ type GithubIssueItem = {
   closed_at?: string;
 };
 
-const columns = (
-  refresh: () => void,
-  getMarkey: (id: number, key: string) => any,
-): ProColumns<GithubIssueItem>[] => [
+const columns: ProColumns<GithubIssueItem>[] = [
   {
     dataIndex: 'index',
     valueType: 'indexBorder',
@@ -75,22 +72,15 @@ const columns = (
 export default () => {
   const actionRef = useRef<ActionType>();
 
-  const getMarkey = usePopInfo();
-
-  const [batchId, setBatchId] = useState(getQueryVariable('batch_id') || undefined);
-  // 生成 intl 对象
-  // const enUSIntl = createIntl('en_US', enUS);
-  const refresh = (): void => {
-    actionRef.current?.reload();
-  };
-
+  const batchId = getQueryVariable('batch_id') || undefined
   return (
     <>
       <ProTable<GithubIssueItem>
         size="small"
-        columns={columns(refresh, getMarkey)}
+        columns={columns}
         actionRef={actionRef}
         bordered
+        scroll={{ x: columns.reduce((sum, e) => sum + Number(e.width || 0), 0) }}
         request={async (params = {}, sort) =>
           new Promise((resolve) => {
             let sortParams: {

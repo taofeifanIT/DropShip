@@ -9,6 +9,13 @@ type requestItem = {
   NeweggItemNumber?: string;
   SellerPartNumber?: string;
 };
+
+
+type updateReturnStatusItem = {
+  id: number;
+  status: number;
+}
+
 export async function listIndex(params: requestItem) {
   return request('/api/amazon/returns', {
     method: 'get',
@@ -22,3 +29,11 @@ export async function newEggReturns(params: requestItem) {
     params: params,
   });
 }
+
+export async function updateReturnStatus(params: updateReturnStatusItem) {
+  return request('/api/amazon/updateReturnStatus', {
+    method: 'post',
+    data: params,
+  });
+}
+

@@ -44,6 +44,8 @@ export async function batchList(data: {
 export async function batchDelete(ids: number[]) {
   return request('/api/vendor/Petra/batch_delete', {
     method: 'POST',
-    data: ids,
+    data: {
+      ids: ids
+    },
   });
 }
