@@ -242,6 +242,11 @@
         path: '/order/HomeRoots',
         component: './order/HomeRoots',
       },
+      {
+        name: 'ShopifyOrder',
+        path: '/order/ShopifyOrder',
+        component: './order/ShopifyOrder',
+      },
     ],
   },
   {

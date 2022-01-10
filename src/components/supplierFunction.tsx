@@ -1463,6 +1463,11 @@ const Head: FC<{ show: any }> = (props) => {
   );
 };
 
+let marketMappingStatus = {}
+getKesGroup("storeData").forEach((item:any) => {
+  marketMappingStatus[item.id] = 'match_'+item.marketplace.marketplace.toLocaleLowerCase()  
+})
+
 const SupplierFunction = (props: { title: string; api: apiItem; isAuth: boolean, selfShow: boolean, hasDescription: boolean}) => {
   const { title, api, isAuth, selfShow,hasDescription } = props;
   const actionRef = useRef<ActionType>();
@@ -1489,8 +1494,15 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth: boolean,
   };
   const batchFromSubmit = () => {
     shopFrom.validateFields().then(values => {
+      const storeId = values.store_id
+      // 产品映射市场匹配字段 amazon =>  match_amazon
+      let checkMatchKey = marketMappingStatus[storeId]
+      // 滤除 not match的数据
+      let matchIds = checkedRow.filter(essence => essence[checkMatchKey] !== 0).map((item:any) => {
+        return item.id
+      })
       setDaynamicModalLoading(true)
-      api.batchListApi({...values, ids: selectedRowKeys}).then((res: {
+      api.batchListApi({...values, ids: matchIds}).then((res: {
         code: number;
         msg: string
         data: {

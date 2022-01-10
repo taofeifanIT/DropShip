@@ -7,8 +7,10 @@ import { listIndex,updateReturnStatus } from '@/services/returns';
 import { getKesGroup } from '@/utils/utils';
 import { stores } from '@/services/publicKeys';
 import ParagraphText from '@/components/ParagraphText'
+import { getTargetHref } from '@/utils/jumpUrl';
+
 import moment from 'moment';
-const { Text } = Typography;
+const { Text,Paragraph } = Typography;
 
 type AmazonReturnsItem = {
   ASIN: string;
@@ -39,6 +41,8 @@ type AmazonReturnsItem = {
   AddressLine1: string;
   AddressLine2: string;
   status: number;
+  vendor_sku:  string;
+  vendor_id: number
 }
 
 
@@ -72,6 +76,26 @@ const columns = (): ProColumns<AmazonReturnsItem>[] => [
             <Text type="secondary">
               <AmazonOutlined />
               Asin: <Text>{record.ASIN}</Text>
+            </Text>
+            <Text type="secondary">
+              Sku :
+              <Text>
+                {record?.listing && (
+                  <>
+                    <a
+                      target="_blank"
+                      rel="noreferrer"
+                      href={`${getTargetHref(record?.vendor_id, record.vendor_sku)}`}
+                    >
+                      {record.vendor_sku}
+                    </a>
+                    <Paragraph
+                      style={{ display: 'inline' }}
+                      copyable={{ text: record.vendor_sku }}
+                    ></Paragraph>
+                  </>
+                )}
+              </Text>
             </Text>
             <Text type="secondary">
               AmazonOrderId : <Text>{record.AmazonOrderId}</Text>
@@ -196,6 +220,22 @@ const columns = (): ProColumns<AmazonReturnsItem>[] => [
         ...getKesGroup('storeData').map((item: stores) => {
           return {
             label: item.name,
+            value: item.id,
+          };
+        }),
+      ];
+    },
+  },
+  {
+    title: 'Vendor',
+    dataIndex: 'vendor_id',
+    width: 150,
+    valueType: 'select',
+    request: async () => {
+      return [
+        ...getKesGroup('vendorData').map((item: any) => {
+          return {
+            label: item.vendor_name,
             value: item.id,
           };
         }),

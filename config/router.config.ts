@@ -167,6 +167,11 @@ export const routerConfigs = {
     path: '/order/HomeRoots',
     component: './order/HomeRoots',
   },
+  ShopifyOrder: {
+    name: 'ShopifyOrder',
+    path: '/order/ShopifyOrder',
+    component: './order/ShopifyOrder',
+  },
 };
 export const indexRouterMap = (routers: any) => {
   return [
