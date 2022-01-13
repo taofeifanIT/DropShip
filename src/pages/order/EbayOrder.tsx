@@ -111,7 +111,7 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
               </Text>
             </Text>
             <Text type="secondary">
-                orderId : <Text copyable>
+                orderId : <Text>
 
                 <Tooltip
                 placement="top"

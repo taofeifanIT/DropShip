@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Button, Select, Form, Modal, message, InputNumber } from 'antd';
+import { Button, Select, Form, Modal, message, InputNumber,Typography } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import { getTagList } from '../../services/publicKeys';
@@ -7,6 +7,8 @@ import { edit } from '../../services/priceManage/tagPrice';
 import { getKesGroup, getKesValue, } from '../../utils/utils';
 import type { priceAlgorithms,vendors } from '../../services/publicKeys';
 import {WarningOutlined} from '@ant-design/icons';
+import ParagraphText from '@/components/ParagraphText'
+const { Text } = Typography;
 
 const { Option } = Select;
 type GithubIssueItem = {
@@ -38,15 +40,17 @@ const columns = (editFn: (visible: boolean, id: number) => void): ProColumns<Git
     valueType: 'indexBorder',
     width: 48,
   },
-  // {
-  //   title: 'ID',
-  //   dataIndex: 'id',
-  //   search: false,
-  // },
   {
     title: 'Tag name',
     dataIndex: 'tag_name',
     search: false,
+    width: 300,
+    render: (text) => (<Text type="secondary">
+    <ParagraphText
+      content={text?.toString() || ""}
+      width={290}
+    />
+  </Text>)
   },
   {
     title: 'vendor',
@@ -82,7 +86,7 @@ const columns = (editFn: (visible: boolean, id: number) => void): ProColumns<Git
     title: 'Amazon price algorithm',
     dataIndex: 'amazon_price_algorithm_id',
     search: false,
-    width: 230,
+    width: 240,
     render: (_,record) => {
       return getKesValue('priceAlgorithmsData', record.amazon_price_algorithm_id).name;
     },
@@ -91,7 +95,7 @@ const columns = (editFn: (visible: boolean, id: number) => void): ProColumns<Git
     title: 'Newegg price algorithm',
     dataIndex: 'newegg_price_algorithm_id',
     search: false,
-    width: 230,
+    width: 240,
     render: (_,record) => {
       return getKesValue('priceAlgorithmsData', record.newegg_price_algorithm_id).name;
     },
@@ -100,7 +104,7 @@ const columns = (editFn: (visible: boolean, id: number) => void): ProColumns<Git
     title: 'Walmart price algorithm',
     dataIndex: 'walmart_price_algorithm_id',
     search: false,
-    width: 230,
+    width: 240,
     render: (_,record) => {
       return getKesValue('priceAlgorithmsData', record.walmart_price_algorithm_id).name;
     },
@@ -109,7 +113,7 @@ const columns = (editFn: (visible: boolean, id: number) => void): ProColumns<Git
     title: 'Ebay price algorithm',
     dataIndex: 'ebay_price_algorithm_id',
     search: false,
-    width: 230,
+    width: 240,
     render: (_,record) => {
       return getKesValue('priceAlgorithmsData', record.ebay_price_algorithm_id).name;
     },
@@ -118,7 +122,7 @@ const columns = (editFn: (visible: boolean, id: number) => void): ProColumns<Git
     title: 'shopify price algorithm',
     dataIndex: 'shopify_price_algorithm_id',
     search: false,
-    width: 230,
+    width: 240,
     render: (_,record) => {
       return getKesValue('priceAlgorithmsData', record.shopify_price_algorithm_id).name;
     },
@@ -126,7 +130,19 @@ const columns = (editFn: (visible: boolean, id: number) => void): ProColumns<Git
   {
     title: 'quantity_offset',
     dataIndex: 'quantity_offset',
+    width: 110,
     search: false,
+  },
+  {
+    title: 'Filter',
+    dataIndex: 'minimum',
+    hideInTable: true,
+    valueEnum: {
+      '0': { text: 'Filtering the total 0', status: 'Success' },
+      '1': { text: 'Filtering the total listing 0', status: 'Success' },
+      '2': { text: 'Total minimum', status: 'Success' },
+      '3': { text: 'Total listing minimum', status: 'Success' },
+    }
   },
   {
     title: 'Action',
@@ -293,6 +309,7 @@ const BatchPriceModal = (props: {
     </Modal>
   );
 };
+let priceAlgorithmData: any[] = []
 export default () => {
   const actionRef = useRef<ActionType>();
   const [visible, setVisible] = useState(false);
@@ -315,28 +332,56 @@ export default () => {
         actionRef={actionRef}
         request={async (params = {}, sort) =>
           new Promise((resolve) => {
-            getTagList(params).then((res:{
-              data: {
-                list:GithubIssueItem[],
-                total: number
-              },
-              code: number,
-            }) => { 
-               let tempData = res.data.list
-               if (sort){
-                  let sortPop =  Object.keys(sort)[0]
-                  if (sort[sortPop] === 'descend'){
-                    tempData = res.data.list.sort((a, b) => a[sortPop] - b[sortPop])
-                  } else {
-                    tempData = res.data.list.sort((a, b) => b[sortPop] - a[sortPop])
-                  }
-               }
-              resolve({
-                data: tempData,
-                success: !!res.code,
-                total: res.data.total,
+            if(!priceAlgorithmData.length){
+              getTagList(params).then((res:{
+                data: {
+                  list:GithubIssueItem[],
+                  total: number
+                },
+                code: number,
+              }) => { 
+                 let tempData = res.data.list
+                 priceAlgorithmData = tempData
+                resolve({
+                  data: tempData,
+                  success: !!res.code,
+                  total: res.data.total,
+                });
               });
-            });
+            } else {
+                 let tempData: any[] = JSON.parse(JSON.stringify(priceAlgorithmData))
+                 if (sort){
+                    let sortPop =  Object.keys(sort)[0]
+                    if (sort[sortPop] === 'descend'){
+                      tempData = tempData.sort((a, b) => a[sortPop] - b[sortPop])
+                    } else {
+                      tempData = tempData.sort((a, b) => b[sortPop] - a[sortPop])
+                    }
+                 }
+                 if(params.vendor_id){
+                  tempData = tempData.filter(item => item.vendor_id === params.vendor_id)
+                 }
+                 if(params.minimum){
+                   if (params.minimum == 0){
+                    tempData = tempData.filter(item => item.total_num !== 0)
+                   }
+                   if (params.minimum == 1){
+                    tempData = tempData.filter(item => item.listing_num !== 0)
+                   }
+                   if (params.minimum == 2){
+                    tempData = tempData.filter(item => item.total_num === 0)
+                   }
+                   if (params.minimum == 3){
+                    tempData = tempData.filter(item => item.listing_num === 0)
+                   }
+                 }
+                resolve({
+                  data: tempData,
+                  success: true,
+                  total:tempData.length,
+                });
+            }
+            
           })
         }
         scroll={{x: columns(editFn).reduce((sum, e) => sum + Number(e.width || 0), 0),}}

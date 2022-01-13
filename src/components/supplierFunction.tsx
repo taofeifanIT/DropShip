@@ -706,7 +706,7 @@ const ButtonGroup = (props: {
 };
 
 
-type showPopType =  {imageNames: string[],otherPop: {key: string,value: string}[]} | undefined
+// type showPopType =  {imageNames: string[],otherPop: {key: string,value: string}[]} | undefined
 
 export const columns = (
   api: apiItem,

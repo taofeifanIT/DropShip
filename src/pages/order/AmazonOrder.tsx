@@ -247,17 +247,26 @@ const columns: ProColumns<GithubIssueItem>[] = [
     },
   },
   {
-    title: 'Quantity ordered',
-    dataIndex: 'QuantityOrdered',
-    align: 'center',
-    width: 150,
+    title: 'AmazonOrderId',
+    dataIndex: 'AmazonOrderId',
+    hideInTable: true,
+  },
+  {
+    title: 'ASIN',
+    dataIndex: 'ASIN',
+    hideInTable: true,
+  },
+  {
+    title: 'SKU',
+    dataIndex: 'SellerSKU',
+    hideInTable: true,
   },
   {
     title: 'Store',
     dataIndex: 'store_id',
     valueType: 'select',
     width: 200,
-    request: async (): Promise<any> => {
+    request: () => {
       const tempData = getKesGroup('storeData').map((item: { id: number; name: string }) => {
         return {
           label: item.name,
@@ -316,6 +325,12 @@ const columns: ProColumns<GithubIssueItem>[] = [
     },
   },
   {
+    title: 'Quantity ordered',
+    dataIndex: 'QuantityOrdered',
+    align: 'center',
+    width: 150,
+  },
+  {
     title: 'Vendor price',
     dataIndex: 'vendor_price',
     width: 100,
@@ -340,11 +355,6 @@ const columns: ProColumns<GithubIssueItem>[] = [
     },
   },
   {
-    title: 'SKU',
-    dataIndex: 'SellerSKU',
-    hideInTable: true,
-  },
-  {
     title: 'Auto order',
     dataIndex: 'auto_order',
     hideInTable: true,
@@ -365,16 +375,6 @@ const columns: ProColumns<GithubIssueItem>[] = [
     title: 'ItemPrice amount',
     dataIndex: 'ItemPriceAmount',
     width: 150,
-  },
-  {
-    title: 'ASIN',
-    dataIndex: 'ASIN',
-    hideInTable: true,
-  },
-  {
-    title: 'AmazonOrderId',
-    dataIndex: 'AmazonOrderId',
-    hideInTable: true,
   },
   {
     title: 'action',

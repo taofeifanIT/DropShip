@@ -36,7 +36,8 @@ export const getTargetHref = (venderId: number | string, sku: string) => {
     10: `https://vl-multi.itmars.net/distributors/EbayProductInfo?vendor_sku=${sku}`,
     11: `https://www.scansource.com/product?sku=${sku}`,
     12: `https://ec.synnex.com/ecx/part/techNote.html?skuNo=${sku}`,
-    13: `https://www.zoro.com/search?q=${sku.replace("-zoro","")}`
+    13: `https://www.zoro.com/search?q=${sku.replace("-zoro","")}`,
+    14: `https://www.homeroots.co/inventory/${sku}`
   };
   return srcObj[venderId];
 };

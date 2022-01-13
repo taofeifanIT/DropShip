@@ -15,7 +15,7 @@ import styles from './style.less';
 const { Text,Paragraph } = Typography;
 type GithubIssueItem = {
     id: number;
-    orderId: string;
+    order_id: string;
     sku: string;
     title: string;
     lineItemFulfillmentStatus: string;
@@ -39,6 +39,7 @@ type GithubIssueItem = {
     };
     order_shopify:{
         shipping_address: string;
+        current_total_price: string;
     },
     userInfo: {
         zip?: string;
@@ -110,10 +111,11 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
               <Paragraph style={{ display: 'inline' }} copyable={{ text: record.listing.asin }}></Paragraph>
             </Text>
             <Text type="secondary">
-            Order item Id : <Text copyable>{record.order_item_id}</Text>
+            order ID : <Text><a href={`https://i-t-mars.myshopify.com/admin/orders/${record.order_id}`} target="_blank">{record.order_id}</a></Text>
+            <Paragraph style={{ display: 'inline' }} copyable={{ text: record.order_id }}></Paragraph>
             </Text>
             <Text type="secondary">
-            Variant Id : <Text copyable>{record.variant_id}</Text>
+            Order item ID : <Text copyable>{record.order_item_id}</Text>
             </Text>
               {record.tag_id && (<Text type="secondary">
                 Tag Name:
@@ -206,7 +208,7 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
     title: 'Date',
     dataIndex: 'time',
     valueType: 'date',
-    width: 250,
+    width: 220,
     search: false,
     render: (_,record) => {
       return (
@@ -256,21 +258,37 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
     width: 120,
   },
   {
-    title: 'Vendor price',
+    title: 'Price',
     dataIndex: 'vendor_price',
-    width: 100,
-    align: 'center',
+    width: 170,
     search: false,
     render: (_, record) => {
-        return `${record.listing?.vendor_price || ""}`
-    }
-  },
-  {
-    title: 'ItemPrice amount',
-    dataIndex: 'ItemPriceAmount',
-    width: 120,
-    render: (_, record) => {
-        return `${record.listing?.store_price_now || ""}`
+        return (<Space direction="vertical">
+        <Text type="secondary">
+        Vendor price:
+          <Text>
+          {record.listing?.vendor_price || ""}
+          </Text>
+        </Text>
+        <Text type="secondary">
+        Subtotal:
+          <Text>
+          {record.listing?.store_price_now || ""}
+          </Text>
+        </Text>
+        <Text type="secondary">
+        Shipping:
+          <Text>
+          {(parseFloat(record.order_shopify.current_total_price) - parseFloat(record.listing?.store_price_now)).toFixed(2) || ""}
+          </Text>
+        </Text>
+        <Text type="secondary">
+        Total:
+          <Text>
+          {record.order_shopify.current_total_price || ""}
+          </Text>
+        </Text>
+      </Space>)
     }
   },
   {
