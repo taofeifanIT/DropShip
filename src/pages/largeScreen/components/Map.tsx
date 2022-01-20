@@ -1,10 +1,5 @@
-import { countryRanking } from '../../../services/dashboard';
-import {
-  LineLayer,
-  MapboxScene,
-  PointLayer as PointLayerTemp,
-  PolygonLayer,
-} from '@antv/l7-react';
+import { stateRanking } from '../../../services/dashboard';
+import { LineLayer, MapboxScene, PointLayer as PointLayerTemp, PolygonLayer } from '@antv/l7-react';
 import React from 'react';
 
 function joinData(geodata: any, ncovData: any) {
@@ -66,27 +61,21 @@ const WorldMap = () => {
   const [data, setData] = React.useState();
   const [filldata, setfillData] = React.useState();
   const getData = () => {
-    countryRanking().then((res) => {
-      let tempDate = res.data.countrys.map(
-        (item: {
-          country: string;
-          location: { longitude: string; latitude: string };
-          total_sales: number;
-        }) => {
-          return {
-            centroid: [parseFloat(item.location.longitude), parseFloat(item.location.latitude)],
-            code: '',
-            confirmedCount: item.total_sales,
-            countryEnglishName: '',
-            countryName: '',
-            currentConfirmedCount: item.total_sales,
-            deadCount: 1,
-            name: item.country,
-            name_en: item.country,
-            suspectedCount: item.total_sales,
-          };
-        },
-      );
+    stateRanking().then((res) => {
+      let tempDate: any = Object.keys(res.data).map((key: string) => {
+        return {
+          centroid: [parseFloat(res.data[key].lon), parseFloat(res.data[key].lat)],
+          code: '',
+          confirmedCount: res.data[key].total.toFixed(2),
+          countryEnglishName: '',
+          countryName: '',
+          currentConfirmedCount: res.data[key].total.toFixed(2),
+          deadCount: 1,
+          name: key,
+          name_en: key,
+          suspectedCount: res.data[key].total.toFixed(2),
+        };
+      });
       setData(tempDate);
     });
   };

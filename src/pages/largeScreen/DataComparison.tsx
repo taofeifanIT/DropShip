@@ -1,6 +1,6 @@
 import { Row, Col } from 'antd';
 import styles from './style.less';
-import { enterF11 } from '../../utils/utils';
+import { enterF11 } from '@/utils/utils';
 // import WorldMap from './components/Map'
 import DemoPie from './components/Commodities';
 import RankingList from './components/RankingList';
@@ -8,7 +8,7 @@ import Total from './components/Total';
 import DemoColumn from './components/OperationRank';
 import DemoLine from './components/HistoryData';
 import TagData from './components/TagTable';
-import HistoryBuyBox from './components/HistoryBuyBox'
+import HistoryBuyBox from './components/HistoryBuyBox';
 const DataComparison = () => {
   enterF11();
   return (
@@ -23,8 +23,8 @@ const DataComparison = () => {
             </div>
           </div>
           <div className={styles.operation}>
-          <div className={styles.post}>
-            <TagData />
+            <div className={styles.post}>
+              <TagData />
             </div>
           </div>
         </Col>
@@ -33,16 +33,16 @@ const DataComparison = () => {
             <Total />
           </div>
           <Row>
-             <Col span={12} style={{paddingRight: '5px'}}>
-             <div className={styles.tableBox}>
-              <DemoLine />
-            </div>
-             </Col>
-             <Col span={12} style={{paddingLeft: '5px'}}>
-             <div className={styles.tableBox}>
-              <HistoryBuyBox />
-            </div>
-             </Col>
+            <Col span={12} style={{ paddingRight: '5px' }}>
+              <div className={styles.tableBox}>
+                <DemoLine />
+              </div>
+            </Col>
+            <Col span={12} style={{ paddingLeft: '5px' }}>
+              <div className={styles.tableBox}>
+                <HistoryBuyBox />
+              </div>
+            </Col>
           </Row>
         </Col>
         <Col span={6}>
@@ -55,7 +55,7 @@ const DataComparison = () => {
             </div>
           </div>
           <div className={styles.operation}>
-            <div className={styles.post} style={{padding: 20}}>
+            <div className={styles.post} style={{ padding: 20 }}>
               <DemoColumn />
             </div>
           </div>

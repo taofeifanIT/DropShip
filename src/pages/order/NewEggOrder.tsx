@@ -1,23 +1,25 @@
 /* eslint-disable radix */
 import { useEffect, useRef, useState } from 'react';
-import { Button, Typography, Space, Form, Modal, InputNumber, message,Input } from 'antd';
+import { Button, Typography, Space, Form, Modal, InputNumber, message, Input } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { newEggListing,shipOrder } from '../../services/order/newEggOrder';
+import { newEggListing, shipOrder } from '../../services/order/newEggOrder';
 import { getNewEggHref } from '../../utils/jumpUrl';
 import { getKesGroup, getKesValue } from '../../utils/utils';
 import type { vendors } from '../../services/publicKeys';
 import { getPageHeight } from '../../utils/utils';
 import { getTargetHref } from '../../utils/jumpUrl';
-import ParagraphText from '@/components/ParagraphText'
+import ParagraphText from '@/components/ParagraphText';
 import moment from 'moment';
+import { exportReport } from '@/utils/utils';
 import styles from './style.less';
 
-const { Text,Paragraph } = Typography;
+const { Text, Paragraph } = Typography;
 type GithubIssueItem = {
+  id: number;
   NeweggItemNumber: string;
   SellerPartNumber: string;
-  OrderNumber: string,
+  OrderNumber: string;
   CustomerName: string;
   CustomerPhoneNumber: string;
   CustomerEmailAddress: string;
@@ -40,7 +42,7 @@ type GithubIssueItem = {
   Status: string;
   Description: string;
   OrderItemId: number;
-}
+};
 
 const ActionModal = (props: {
   record: GithubIssueItem | any;
@@ -48,59 +50,95 @@ const ActionModal = (props: {
   onCancel: (params: any) => void;
   init: () => void;
 }) => {
-  const { record, visible, onCancel,init } = props
+  const { record, visible, onCancel, init } = props;
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
   const layout = {
     labelCol: { span: 8 },
     wrapperCol: { span: 16 },
   };
   const onOk = () => {
-    form.validateFields().then(values => {
-      setLoading(true)
-      shipOrder(values).then(res => {
-        if(res.code){
-          message.success('operation succcesful!')
-          setTimeout(() => {
-            onCancel(false)
-            init()
-          }, 1000)
-        } else {
-          throw res.msg
-        }
-      }).catch(e => {
-        message.error(e) 
-      }).finally(() => {
-        setLoading(false)
-      })
-    })
-  }
+    form.validateFields().then((values) => {
+      setLoading(true);
+      shipOrder(values)
+        .then((res) => {
+          if (res.code) {
+            message.success('operation succcesful!');
+            setTimeout(() => {
+              onCancel(false);
+              init();
+            }, 1000);
+          } else {
+            throw res.msg;
+          }
+        })
+        .catch((e) => {
+          message.error(e);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    });
+  };
   useEffect(() => {
-    if(visible){
-      form.setFieldsValue(record)
+    if (visible) {
+      form.setFieldsValue(record);
     }
-  }, [visible])
-  return (<>
-    <Modal confirmLoading={loading} title="fulfill" visible={visible} onOk={onOk} onCancel={() => {
-      onCancel(false)
-    }}>
-    <Form form={form} {...layout} name="nest-messages">
-    <Form.Item style={{display: 'none'}} name={'id'} label="id" rules={[{ required: true,message: 'Please input your id!' }]}>
-        <Input />
-      </Form.Item>
-      <Form.Item name={'ShipCarrier'} label="ShipCarrier" rules={[{ required: true,message: 'Please input your ShipCarrier!' }]}>
-        <Input />
-      </Form.Item>
-      <Form.Item name={'TrackingNumber'} label="TrackingNumber" rules={[{ required: true,message: 'Please input your TrackingNumber!'}]}>
-        <Input />
-      </Form.Item>
-      <Form.Item name={'ShippedQty'} label="ShippedQty" rules={[{required: true, type: 'number', min: 0, max: 19999,message: 'Please input your ShippedQty!' }]}>
-        <InputNumber />
-      </Form.Item>
-    </Form>
+  }, [visible]);
+  return (
+    <>
+      <Modal
+        confirmLoading={loading}
+        title="fulfill"
+        visible={visible}
+        onOk={onOk}
+        onCancel={() => {
+          onCancel(false);
+        }}
+      >
+        <Form form={form} {...layout} name="nest-messages">
+          <Form.Item
+            style={{ display: 'none' }}
+            name={'id'}
+            label="id"
+            rules={[{ required: true, message: 'Please input your id!' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name={'ShipCarrier'}
+            label="ShipCarrier"
+            rules={[{ required: true, message: 'Please input your ShipCarrier!' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name={'TrackingNumber'}
+            label="TrackingNumber"
+            rules={[{ required: true, message: 'Please input your TrackingNumber!' }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name={'ShippedQty'}
+            label="ShippedQty"
+            rules={[
+              {
+                required: true,
+                type: 'number',
+                min: 0,
+                max: 19999,
+                message: 'Please input your ShippedQty!',
+              },
+            ]}
+          >
+            <InputNumber />
+          </Form.Item>
+        </Form>
       </Modal>
-  </>)
-}
+    </>
+  );
+};
 
 const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
   {
@@ -131,7 +169,7 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
                     <a
                       target="_blank"
                       rel="noreferrer"
-                      href={`${getTargetHref(record?.vendor_id,record.vendor_sku)}`}
+                      href={`${getTargetHref(record?.vendor_id, record.vendor_sku)}`}
                     >
                       {record.vendor_sku}
                     </a>
@@ -147,19 +185,20 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
               OrderNumber : <Text copyable>{record.OrderNumber}</Text>
             </Text>
             <Text type="secondary">
-            OrderItemId : <Text copyable>{record.OrderItemId}</Text>
+              OrderItemId : <Text copyable>{record.OrderItemId}</Text>
             </Text>
             <Text type="secondary">
               Tag Name:
-                {record.tag_id && (<ParagraphText
-                content={getKesValue('tagsData', record.tag_id)?.tag_name}
-                width={280}
-              />)}
+              {record.tag_id && (
+                <ParagraphText
+                  content={getKesValue('tagsData', record.tag_id)?.tag_name}
+                  width={280}
+                />
+              )}
             </Text>
-            <Text type="secondary">Description : <ParagraphText
-                content={record.Description}
-                width={280}
-              /></Text>
+            <Text type="secondary">
+              Description : <ParagraphText content={record.Description} width={280} />
+            </Text>
           </Space>
         </>
       );
@@ -170,15 +209,13 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
     dataIndex: 'Pii',
     search: false,
     width: 345,
-    render: (
-      _,
-      record
-    ) => {
+    render: (_, record) => {
       return (
         <>
           <Space direction="vertical">
             <Text type="secondary">
-              ShipName : <Text copyable>{`${record.ShipToFirstName} ${record.ShipToLastName}`}</Text>
+              ShipName :{' '}
+              <Text copyable>{`${record.ShipToFirstName} ${record.ShipToLastName}`}</Text>
             </Text>
             <Text type="secondary">
               ShipToAddress1 : <Text copyable>{record.ShipToAddress1}</Text>
@@ -234,7 +271,7 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
             <Text type="secondary">
               Order Date :{' '}
               <Text>
-                {moment(parseInt(`${record.order_newegg.OrderDate  }000`)).format(
+                {moment(parseInt(`${record.order_newegg.OrderDate}000`)).format(
                   'YYYY-MM-DD HH:mm:ss',
                 )}
               </Text>
@@ -242,7 +279,7 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
             <Text type="secondary">
               update_at :{' '}
               <Text>
-                {moment(parseInt(`${record.update_at  }000`)).format('YYYY-MM-DD HH:mm:ss')}
+                {moment(parseInt(`${record.update_at}000`)).format('YYYY-MM-DD HH:mm:ss')}
               </Text>
             </Text>
           </Space>
@@ -269,7 +306,7 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
   {
     title: 'Order Number',
     dataIndex: 'OrderNumber',
-    hideInTable: true
+    hideInTable: true,
   },
   {
     title: 'Vendor price',
@@ -323,29 +360,76 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
     width: 200,
     fixed: 'right',
     render: (_, record) => {
-      const [visible, setVisible] = useState(false)
-      return (<>
-      <ActionModal record={record} visible={visible} onCancel={setVisible} init={init} />
-      <Button onClick={()=>{
-        setVisible(true)
-      }}>Fulfill</Button>
-      </>)
-    }
+      const [visible, setVisible] = useState(false);
+      return (
+        <>
+          <ActionModal record={record} visible={visible} onCancel={setVisible} init={init} />
+          <Button
+            onClick={() => {
+              setVisible(true);
+            }}
+          >
+            Fulfill
+          </Button>
+        </>
+      );
+    },
   },
 ];
+
+const excelStore = {
+  10: '[Tels] Newegg',
+  5: '[Tels] TWHouse',
+  7: '[Tels] Petra Industries',
+  8: '[Tels] MA Labs',
+  6: '[Tels] Eldorado',
+  2: '[Tels] Grainger',
+  9: '[Tels] D&H Distributing',
+  11: '[Tels] Scansource',
+  13: '[Tels] Zoro',
+  1: '[Tels] Ingram Micro USA',
+};
 
 export default () => {
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState(-1);
+  const [tableRows, setTableRows] = useState<number[]>([]);
+  function clickDown() {
+    const tableData = tableRows.map((item: any) => {
+      var tagName = getKesValue('tagsData', item.listing.tag_id).tag_name;
+      return {
+        OrderID: item.AmazonOrderId.replace(/(^\s*)|(\s*$)/g, ''),
+        Date: moment().format('M/D/YYYY'),
+        Marketplace: item.storeName.replace(/(^\s*)|(\s*$)/g, ''),
+        SKU: item.SellerSKU.replace(/(^\s*)|(\s*$)/g, ''),
+        PricePerUnit: parseFloat(item.ItemPriceAmount) / parseInt(item.QuantityOrdered),
+        QTY: item.QuantityOrdered.toString().replace(/(^\s*)|(\s*$)/g, ''),
+        TotalRevenue: '',
+        AmazonFee: '',
+        PurchasePrice: '',
+        Profit: '',
+        PurchasedFrom: excelStore[item.listing.vendor_id],
+        Notes: '',
+        tagName: tagName,
+      };
+    });
+    exportReport(tableData);
+  }
   return (
     <>
       <ProTable<GithubIssueItem>
         size="small"
         columns={columns(() => {
-          actionRef.current?.reload()
+          actionRef.current?.reload();
         })}
         headerTitle="NewEgg orders"
         actionRef={actionRef}
+        rowSelection={{
+          onChange: (RowKeys: any[] | number[], selectRows: any[]) => {
+            setTableRows(selectRows);
+            // console.log('selectedRowKeys changed: ', RowKeys);
+          },
+        }}
         className={styles.tableStyle}
         request={async (params = {}, sort) =>
           new Promise((resolve) => {
@@ -366,33 +450,31 @@ export default () => {
               limit: params.pageSize,
             };
             newEggListing(tempParams).then((res) => {
-              const tempData: GithubIssueItem[] = res.data.list.map(
-                (item: any) => {
-                  return {
-                    ...item,
-                    CustomerName: item.order_newegg.CustomerName,
-                    CustomerPhoneNumber: item.order_newegg.CustomerPhoneNumber,
-                    CustomerEmailAddress: item.order_newegg.CustomerEmailAddress,
-                    ShipToAddress1: item.order_newegg.ShipToAddress1,
-                    ShipToAddress2: item.order_newegg.ShipToAddress2,
-                    ShipToCityName: item.order_newegg.ShipToCityName,
-                    ShipToStateCode: item.order_newegg.ShipToStateCode,
-                    ShipToZipCode: item.order_newegg.ShipToZipCode,
-                    ShipToCountryCode: item.order_newegg.ShipToCountryCode,
-                    ShipService: item.order_newegg.ShipService,
-                    ShipToFirstName: item.order_newegg.ShipToFirstName,
-                    ShipToLastName: item.order_newegg.ShipToLastName,
-                    QuantityOrdered: item.order_newegg.OrderQty,
-                    OrderNumber: item.order_newegg.OrderNumber,
-                    after_algorithm_price: item.listing.after_algorithm_price,
-                    store_id: item.listing.store_id,
-                    tag_id: item.listing.tag_id,
-                    vendor_id: item.listing.vendor_id,
-                    vendor_price: item.listing.vendor_price,
-                    vendor_sku: item.listing.vendor_sku,
-                  };
-                },
-              );
+              const tempData: GithubIssueItem[] = res.data.list.map((item: any) => {
+                return {
+                  ...item,
+                  CustomerName: item.order_newegg.CustomerName,
+                  CustomerPhoneNumber: item.order_newegg.CustomerPhoneNumber,
+                  CustomerEmailAddress: item.order_newegg.CustomerEmailAddress,
+                  ShipToAddress1: item.order_newegg.ShipToAddress1,
+                  ShipToAddress2: item.order_newegg.ShipToAddress2,
+                  ShipToCityName: item.order_newegg.ShipToCityName,
+                  ShipToStateCode: item.order_newegg.ShipToStateCode,
+                  ShipToZipCode: item.order_newegg.ShipToZipCode,
+                  ShipToCountryCode: item.order_newegg.ShipToCountryCode,
+                  ShipService: item.order_newegg.ShipService,
+                  ShipToFirstName: item.order_newegg.ShipToFirstName,
+                  ShipToLastName: item.order_newegg.ShipToLastName,
+                  QuantityOrdered: item.order_newegg.OrderQty,
+                  OrderNumber: item.order_newegg.OrderNumber,
+                  after_algorithm_price: item.listing.after_algorithm_price,
+                  store_id: item.listing.store_id,
+                  tag_id: item.listing.tag_id,
+                  vendor_id: item.listing.vendor_id,
+                  vendor_price: item.listing.vendor_price,
+                  vendor_sku: item.listing.vendor_sku,
+                };
+              });
               resolve({
                 data: tempData,
                 // success 请返回 true，
@@ -404,7 +486,7 @@ export default () => {
             });
           })
         }
-        onRow={(record: { id: number }) => {
+        onRow={(record) => {
           return {
             onClick: () => {
               setCurrentRow(record.id);

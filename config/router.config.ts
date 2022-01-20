@@ -107,12 +107,12 @@ export const routerConfigs = {
     path: '/datacalculation/Calculation',
     component: './datacalculation/Calculation',
   },
-  Maleb:{
+  Maleb: {
     path: '/distributors/Maleb',
     name: 'Maleb',
     component: './distributors/Maleb',
   },
-  Dnh:  {
+  Dnh: {
     path: '/distributors/Dnh',
     name: 'Dnh',
     component: './distributors/Dnh',
@@ -128,9 +128,9 @@ export const routerConfigs = {
     component: './distributors/Scansource',
   },
   Synnex: {
-        path: '/distributors/Synnex',
-        name: 'Synnex',
-        component: './distributors/Synnex',
+    path: '/distributors/Synnex',
+    name: 'Synnex',
+    component: './distributors/Synnex',
   },
   Ebay: {
     path: '/distributors/Ebay',
@@ -142,12 +142,12 @@ export const routerConfigs = {
     name: 'Eldorado',
     component: './distributors/Eldorado',
   },
-  Zoro:{
+  Zoro: {
     path: '/distributors/Zoro',
     name: 'Zoro',
     component: './distributors/Zoro',
   },
-  OutSourceManage:{
+  OutSourceManage: {
     path: '/outsource/OutSourceManage',
     name: 'OutSourceManage',
     component: './outsource/OutSourceManage',
@@ -171,6 +171,11 @@ export const routerConfigs = {
     name: 'ShopifyOrder',
     path: '/order/ShopifyOrder',
     component: './order/ShopifyOrder',
+  },
+  Inventory: {
+    name: 'Inventory',
+    path: '/returns/Inventory',
+    component: './returns/Inventory',
   },
 };
 export const indexRouterMap = (routers: any) => {

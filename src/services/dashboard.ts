@@ -65,3 +65,11 @@ export async function buyboxHistory() {
 export async function mqDataStatus() {
   return request('/api/notice/mq_data_status');
 }
+
+export async function stateRanking() {
+  return request('/api/dashboard/us_state_ranking');
+}
+
+export async function newMarketplaceRanking() {
+  return request('/api/dashboard/new_marketplace_ranking');
+}

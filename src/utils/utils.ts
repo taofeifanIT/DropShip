@@ -2,6 +2,8 @@ import { routerConfigs } from '../../config/router.config';
 import * as Icon from '@ant-design/icons';
 import React from 'react';
 import { getPublicKey } from './cookes';
+import { exportExcel } from '@/utils/excelHelper';
+import moment from 'moment';
 /* eslint no-useless-escape:0 import/prefer-default-export:0 */
 const reg = /(((^https?:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+(?::\d+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)$/;
 
@@ -76,12 +78,35 @@ export function getQueryVariable(variable: string) {
   return false;
 }
 
-export function getKesGroup(parentKey: 'companyData' | 'countryData' | 'marketPlaceData' | 'vendorData' | 'storeData' | 'tagsData' | 'configsData' | 'priceAlgorithmsData' | 'listing_sort_field') {
+export function getKesGroup(
+  parentKey:
+    | 'companyData'
+    | 'countryData'
+    | 'marketPlaceData'
+    | 'vendorData'
+    | 'storeData'
+    | 'tagsData'
+    | 'configsData'
+    | 'priceAlgorithmsData'
+    | 'listing_sort_field',
+) {
   const allKeys = JSON.parse(getPublicKey());
   return allKeys[parentKey];
 }
 
-export function getKesValue(parentKey: 'companyData' | 'countryData' | 'marketPlaceData' | 'vendorData' | 'storeData' | 'tagsData' | 'configsData' | 'priceAlgorithmsData' | 'listing_sort_field', key: string | number) {
+export function getKesValue(
+  parentKey:
+    | 'companyData'
+    | 'countryData'
+    | 'marketPlaceData'
+    | 'vendorData'
+    | 'storeData'
+    | 'tagsData'
+    | 'configsData'
+    | 'priceAlgorithmsData'
+    | 'listing_sort_field',
+  key: string | number,
+) {
   const allKeys = JSON.parse(getPublicKey());
   const group = allKeys[parentKey];
   if (group instanceof Array) {
@@ -117,7 +142,6 @@ export function enterF11() {
   }
 }
 
-
 export function findIndexPage(arr: any[]) {
   let path = '';
   arr.forEach((item) => {
@@ -128,4 +152,41 @@ export function findIndexPage(arr: any[]) {
     }
   });
   return path;
+}
+
+export function exportReport(data: any) {
+  const tableData = [
+    {
+      OrderID: 'OrderID',
+      Date: 'Date',
+      Marketplace: 'Marketplace',
+      SKU: 'SKU',
+      PricePerUnit: 'PricePerUnit',
+      QTY: 'QTY',
+      TotalRevenue: 'TotalRevenue',
+      AmazonFee: 'AmazonFee',
+      PurchasePrice: 'PurchasePrice',
+      Profit: 'Profit',
+      PurchasedFrom: 'PurchasedFrom',
+      Notes: 'Notes',
+      tagName: 'tagName',
+    },
+    ...data,
+  ];
+  const header = [
+    { title: 'OrderID', dataIndex: 'OrderID', key: 'OrderID' },
+    { title: 'Date', dataIndex: 'Date', key: 'Date' },
+    { title: 'Marketplace', dataIndex: 'Marketplace', key: 'Marketplace' },
+    { title: 'SKU', dataIndex: 'SKU', key: 'SKU' },
+    { title: 'PricePerUnit', dataIndex: 'PricePerUnit', key: 'PricePerUnit' },
+    { title: 'QTY', dataIndex: 'QTY', key: 'QTY' },
+    { title: 'TotalRevenue', dataIndex: 'TotalRevenue', key: 'TotalRevenue' },
+    { title: 'AmazonFee', dataIndex: 'AmazonFee', key: 'AmazonFee' },
+    { title: 'PurchasePrice', dataIndex: 'PurchasePrice', key: 'PurchasePrice', type: 'number' },
+    { title: 'Profit', dataIndex: 'Profit', key: 'Profit' },
+    { title: 'PurchasedFrom', dataIndex: 'PurchasedFrom', key: 'PurchasedFrom' },
+    { title: 'Notes', dataIndex: 'Notes', key: 'Notes' },
+    { title: 'tagName', dataIndex: 'tagName', key: 'tagName' },
+  ];
+  exportExcel(header, tableData, `Orders ${moment().format('MMDD')}.csv`);
 }

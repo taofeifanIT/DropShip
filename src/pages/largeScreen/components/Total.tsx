@@ -1,18 +1,124 @@
 import { Row, Col, Statistic, Spin } from 'antd';
 import { total } from '@/services/dashboard';
+import { Pie, measureTextWidth } from '@ant-design/charts';
 import { useState, useEffect } from 'react';
+import { getKesValue } from '@/utils/utils';
 import WorldMap from './Map';
+
+type PieItem = Array<{ type: string; value: number }>;
+
+const DemoPie = (props: { data: PieItem }) => {
+  const { data } = props;
+  function renderStatistic(containerWidth: any, text: any, style: any) {
+    const { width: textWidth, height: textHeight } = measureTextWidth(text, style);
+    const R = containerWidth / 2; // r^2 = (w / 2)^2 + (h - offsetY)^2
+
+    let scale = 1;
+
+    if (containerWidth < textWidth) {
+      scale = Math.min(
+        Math.sqrt(
+          Math.abs(Math.pow(R, 2) / (Math.pow(textWidth / 2, 2) + Math.pow(textHeight, 2))),
+        ),
+        1,
+      );
+    }
+
+    const textStyleStr = `width:${containerWidth}px;`;
+    return `<div style="${textStyleStr};font-size:8px;line-height:${
+      scale < 1 ? 1 : 'inherit'
+    };">${text}</div>`;
+  }
+  const config = {
+    appendPadding: 10,
+    data,
+    angleField: 'value',
+    colorField: 'type',
+    radius: 1,
+    innerRadius: 0.64,
+    style: {
+      with: 200,
+      height: 130,
+      paddingRight: 12,
+    },
+    meta: {
+      value: {
+        formatter: (v: any) => `${v} ¥`,
+      },
+    },
+    label: {
+      type: 'inner',
+      offset: '-50%',
+      style: {
+        textAlign: 'center',
+      },
+      autoRotate: false,
+      content: '{value}',
+    },
+    statistic: {
+      title: {
+        offsetY: -4,
+        customHtml: (container: any, view: any, datum: any) => {
+          const { width, height } = container.getBoundingClientRect();
+          const d = Math.sqrt(Math.pow(width / 2, 2) + Math.pow(height / 2, 2));
+          const text = datum ? datum.type : 'total';
+          return renderStatistic(d, text, {
+            fontSize: '5px',
+            color: '#9fa8b3',
+          });
+        },
+      },
+      content: {
+        offsetY: 4,
+        style: {
+          fontSize: '18px',
+          textAlign: 'center',
+          color: 'white',
+        },
+        customHtml: (container: any, view: any, datum: any, data: any) => {
+          const { width } = container.getBoundingClientRect();
+          const text = datum
+            ? `${datum.value}`
+            : `${data.reduce((r: any, d: any) => r + d.value, 0)}`;
+          return renderStatistic(width, text, {
+            fontSize: 12,
+          });
+        },
+      },
+    },
+    interactions: [
+      {
+        type: 'element-selected',
+      },
+      {
+        type: 'element-active',
+      },
+      {
+        type: 'pie-statistic-active',
+      },
+    ],
+  };
+  return <Pie {...config} />;
+};
+
+type TotalItem = {
+  order_total: number;
+  order_total_sales: number;
+  total_store: number;
+  total_listing: number;
+  total_vendor: number;
+  total_listing_today: number;
+  order_total_sales_today: number;
+  total_listing_active: number;
+  total_listing_active_market: {
+    marketplace_id: number;
+    num: number;
+  }[];
+  marketplace_data: PieItem; // 前端自己生成的属性
+};
+
 const Tatal = () => {
-  const [totalObj, setTotalObj] = useState<{
-    order_total: number;
-    order_total_sales: number;
-    total_store: number;
-    total_listing: number;
-    total_vendor: number;
-    total_listing_today: number;
-    order_total_sales_today: number;
-    total_listing_active: number;
-  }>({
+  const [totalObj, setTotalObj] = useState<TotalItem>({
     order_total: 0,
     order_total_sales: 0,
     total_store: 0,
@@ -20,20 +126,23 @@ const Tatal = () => {
     total_vendor: 0,
     total_listing_today: 0,
     order_total_sales_today: 0,
-    total_listing_active: 0
+    total_listing_active: 0,
+    total_listing_active_market: [],
+    marketplace_data: [],
   });
   const [loading, setLoading] = useState(false);
   const GetCard = (props: {
-    one_level_title: string;
-    one_level_number: number | string;
-    color: string;
+    one_level_title?: string;
+    one_level_number?: number | string;
+    color?: string;
     info?: boolean | string;
     fontColor?: string;
+    child?: any;
   }) => {
-    const { one_level_title, one_level_number, info, fontColor } = props;
+    const { one_level_title, one_level_number, info, fontColor, child } = props;
     const style: any = {
       height: '130px',
-      padding: '20px 24px 8px',
+      padding: !child ? '20px 24px 8px' : '8 10px 8px',
       margin: '10px',
       boxSizing: 'border-box',
       boxShadow: '#c3bcbc 1px 0px 10px',
@@ -43,12 +152,15 @@ const Tatal = () => {
       <>
         <div style={{ ...style }}>
           <div style={{ textAlign: 'center' }}>
-            <Statistic
-            groupSeparator={""}
-              title={<span style={{ color: fontColor }}>{one_level_title}</span>}
-              value={(one_level_number as number).toFixed(0)}
-              valueStyle={{ ...valueStyle, color: fontColor }}
-            />
+            {child && child}
+            {one_level_title ? (
+              <Statistic
+                groupSeparator={''}
+                title={<span style={{ color: fontColor }}>{one_level_title}</span>}
+                value={(one_level_number as number).toFixed(0)}
+                valueStyle={{ ...valueStyle, color: fontColor }}
+              />
+            ) : null}
             {info && (
               <span
                 style={{
@@ -71,7 +183,16 @@ const Tatal = () => {
     setLoading(true);
     total()
       .then((res) => {
-        setTotalObj(res.data);
+        let tempData: TotalItem = res.data;
+        setTotalObj({
+          ...tempData,
+          marketplace_data: tempData.total_listing_active_market.map((item) => {
+            return {
+              type: getKesValue('marketPlaceData', item.marketplace_id).marketplace,
+              value: item.num,
+            };
+          }),
+        });
       })
       .finally(() => {
         setLoading(false);
@@ -105,10 +226,11 @@ const Tatal = () => {
             <Row>
               <Col span={24}>
                 <GetCard
-                  one_level_number={totalObj.total_listing_today}
-                  one_level_title={'Total listing today'}
+                  one_level_number={totalObj.total_listing}
+                  one_level_title={'Total listing'}
                   color={'red'}
                   fontColor={'white'}
+                  info={`Total listing today:${totalObj.total_listing_today}`}
                 />
               </Col>
             </Row>
@@ -141,13 +263,7 @@ const Tatal = () => {
               />
             </Col>
             <Col span={6}>
-              <GetCard
-                one_level_number={totalObj.total_listing}
-                one_level_title={'Total listing'}
-                color={'red'}
-                fontColor={'white'}
-                info={`total listing active:${totalObj.total_listing_active}`}
-              />
+              <GetCard child={<DemoPie data={totalObj.marketplace_data} />} />
             </Col>
           </Row>
         </Spin>

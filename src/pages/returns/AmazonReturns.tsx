@@ -1,16 +1,16 @@
 import { useRef, useEffect, useState } from 'react';
 import { AmazonOutlined, WarningOutlined } from '@ant-design/icons';
-import { Typography, Space,Tag, Radio,message,Spin } from 'antd';
+import { Typography, Space, Tag, Radio, message, Spin } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { listIndex,updateReturnStatus } from '@/services/returns';
+import { listIndex, updateReturnStatus } from '@/services/returns';
 import { getKesGroup } from '@/utils/utils';
 import { stores } from '@/services/publicKeys';
-import ParagraphText from '@/components/ParagraphText'
+import ParagraphText from '@/components/ParagraphText';
 import { getTargetHref } from '@/utils/jumpUrl';
 
 import moment from 'moment';
-const { Text,Paragraph } = Typography;
+const { Text, Paragraph } = Typography;
 
 type AmazonReturnsItem = {
   ASIN: string;
@@ -25,9 +25,9 @@ type AmazonReturnsItem = {
   ReturnRequestStatus: string;
   ShipperTrackingNumber: string | null;
   ShippingAddress: string;
-  add_time: number
-  amazon_response: string
-  id: number
+  add_time: number;
+  amazon_response: string;
+  id: number;
   listing: string;
   store_id: number;
   update_at: number;
@@ -41,10 +41,9 @@ type AmazonReturnsItem = {
   AddressLine1: string;
   AddressLine2: string;
   status: number;
-  vendor_sku:  string;
-  vendor_id: number
-}
-
+  vendor_sku: string;
+  vendor_id: number;
+};
 
 type Pii = {
   City: string;
@@ -56,7 +55,7 @@ type Pii = {
   CountryCode: string;
   AddressLine1: string;
   AddressLine2: string;
-}
+};
 
 const columns = (): ProColumns<AmazonReturnsItem>[] => [
   {
@@ -69,7 +68,7 @@ const columns = (): ProColumns<AmazonReturnsItem>[] => [
     dataIndex: 'Marketplace',
     search: false,
     width: 235,
-    render: (_,record) => {
+    render: (_, record) => {
       return (
         <>
           <Space direction="vertical">
@@ -80,12 +79,12 @@ const columns = (): ProColumns<AmazonReturnsItem>[] => [
             <Text type="secondary">
               Sku :
               <Text>
-                {record?.listing && (
+                {record?.vendor_id && (
                   <>
                     <a
                       target="_blank"
                       rel="noreferrer"
-                      href={`${getTargetHref(record?.vendor_id, record.vendor_sku)}`}
+                      href={`${getTargetHref(record?.vendor_id, record?.vendor_sku)}`}
                     >
                       {record.vendor_sku}
                     </a>
@@ -122,7 +121,7 @@ const columns = (): ProColumns<AmazonReturnsItem>[] => [
     dataIndex: 'Pii',
     search: false,
     width: 180,
-    render: (_,record) => {
+    render: (_, record) => {
       return (
         <>
           <Space direction="vertical">
@@ -133,7 +132,8 @@ const columns = (): ProColumns<AmazonReturnsItem>[] => [
               AddressLine1 : <Text copyable>{record.AddressLine1}</Text>
             </Text>
             <Text type="secondary">
-              PostalCode : <Text copyable={{ text: record.PostalCode.split('-')[0] }}>{record.PostalCode}</Text>
+              PostalCode :{' '}
+              <Text copyable={{ text: record.PostalCode.split('-')[0] }}>{record.PostalCode}</Text>
             </Text>
             <Text type="secondary">
               City : <Text copyable>{record.City}</Text>
@@ -172,7 +172,7 @@ const columns = (): ProColumns<AmazonReturnsItem>[] => [
     dataIndex: 'Marketplace',
     search: false,
     width: 180,
-    render: (_,record) => {
+    render: (_, record) => {
       return (
         <>
           <Space direction="vertical">
@@ -183,7 +183,7 @@ const columns = (): ProColumns<AmazonReturnsItem>[] => [
               Reason : <Text>{record.ReturnReason}</Text>
             </Text>
             <Text type="secondary">
-            Resolution : <Text>{record.Resolution}</Text>
+              Resolution : <Text>{record.Resolution}</Text>
             </Text>
           </Space>
         </>
@@ -195,7 +195,7 @@ const columns = (): ProColumns<AmazonReturnsItem>[] => [
     dataIndex: 'Marketplace',
     search: false,
     width: 140,
-    render: (_,record) => {
+    render: (_, record) => {
       return (
         <>
           <Space direction="vertical">
@@ -247,26 +247,28 @@ const columns = (): ProColumns<AmazonReturnsItem>[] => [
     dataIndex: 'add_time',
     width: 160,
     search: false,
-    render: (_,record) => {
-      return (<><Text type="secondary">
-      update_at:
-      <Text>
-          {(record.update_at &&
-            moment(parseInt(`${record.update_at  }000`)).format('YYYY-MM-DD HH:mm:ss')) ||
-            'not yet'}
-      </Text>
-    </Text>
-    <br/>
-    <Text type="secondary">
-    add_time:
-      <Text>
-        {(record.add_time &&
-          moment(parseInt(`${record.add_time  }000`)).format(
-            'YYYY-MM-DD HH:mm:ss',
-          )) ||
-          'not yet'}
-      </Text>
-    </Text></>)
+    render: (_, record) => {
+      return (
+        <>
+          <Text type="secondary">
+            update_at:
+            <Text>
+              {(record.update_at &&
+                moment(parseInt(`${record.update_at}000`)).format('YYYY-MM-DD HH:mm:ss')) ||
+                'not yet'}
+            </Text>
+          </Text>
+          <br />
+          <Text type="secondary">
+            add_time:
+            <Text>
+              {(record.add_time &&
+                moment(parseInt(`${record.add_time}000`)).format('YYYY-MM-DD HH:mm:ss')) ||
+                'not yet'}
+            </Text>
+          </Text>
+        </>
+      );
     },
   },
   {
@@ -276,42 +278,62 @@ const columns = (): ProColumns<AmazonReturnsItem>[] => [
     align: 'center',
     width: 200,
     render: (text, record) => {
-      return <IssueSwitch record={record}  />
-    }
-  }
+      return <IssueSwitch record={record} />;
+    },
+  },
 ];
 
 const IssueSwitch = (props: { record: AmazonReturnsItem }) => {
-  const { record } = props
-  const [issueStatus, setIssueStatus] = useState<any>(!!record.status)
-  const [switchLoading, setSwaitchLoading] = useState(false)
+  const { record } = props;
+  const [issueStatus, setIssueStatus] = useState<any>(!!record.status);
+  const [switchLoading, setSwaitchLoading] = useState(false);
   const changeIssueType = (val: number) => {
-    setSwaitchLoading(true)
+    setSwaitchLoading(true);
     updateReturnStatus({
       id: record.id,
-      status: val
-    }).then(res => {
-      if (res.code) {
-        message.success('operation successful!')
-        setIssueStatus(val)
-      }
-    }).catch(e => {
-      message.error(e)
-    }).finally(() => {
-      setSwaitchLoading(false)
+      status: val,
     })
-  }
+      .then((res) => {
+        if (res.code) {
+          message.success('operation successful!');
+          setIssueStatus(val);
+        }
+      })
+      .catch((e) => {
+        message.error(e);
+      })
+      .finally(() => {
+        setSwaitchLoading(false);
+      });
+  };
   useEffect(() => {
-    setIssueStatus(record.status)
-  }, [record.status])
-  return (<Spin spinning={switchLoading}><Radio.Group size='small' value={issueStatus} onChange={(val: any) => {
-    changeIssueType(val.target.value)
-  }}>
-    <Radio.Button value={1}  style={issueStatus == 1 ? {"backgroundColor":"#87d068", "color": "white"}: {}}>Compelete</Radio.Button>
-    <Radio.Button value={2} style={issueStatus == 2 ? {"backgroundColor":"red", "color": "white"}: {}}>Reject</Radio.Button>
-  </Radio.Group></Spin>)
-}
-
+    setIssueStatus(record.status);
+  }, [record.status]);
+  return (
+    <Spin spinning={switchLoading}>
+      <Radio.Group
+        size="small"
+        value={issueStatus}
+        onChange={(val: any) => {
+          changeIssueType(val.target.value);
+        }}
+      >
+        <Radio.Button
+          value={1}
+          style={issueStatus == 1 ? { backgroundColor: '#87d068', color: 'white' } : {}}
+        >
+          Compelete
+        </Radio.Button>
+        <Radio.Button
+          value={2}
+          style={issueStatus == 2 ? { backgroundColor: 'red', color: 'white' } : {}}
+        >
+          Reject
+        </Radio.Button>
+      </Radio.Group>
+    </Spin>
+  );
+};
 
 export default () => {
   const actionRef = useRef<ActionType>();
@@ -340,21 +362,21 @@ export default () => {
               limit: params.pageSize,
             };
             listIndex(tempParams).then((res) => {
-              let tempData = []
+              let tempData = [];
               tempData = res.data.list.map((item: AmazonReturnsItem) => {
-                let address: Pii = JSON.parse(item.ShippingAddress)
+                let address: Pii = JSON.parse(item.ShippingAddress);
                 return {
                   ...item,
                   City: address?.City || '',
-                  AddressType:address?.AddressType || '',
+                  AddressType: address?.AddressType || '',
                   PostalCode: address?.PostalCode || '',
-                  StateOrRegion:address?.StateOrRegion || '',
-                  CountryCode:address?.CountryCode || '',
+                  StateOrRegion: address?.StateOrRegion || '',
+                  CountryCode: address?.CountryCode || '',
                   Phone: address?.Phone || '-',
                   Name: address?.Name || '',
-                  AddressLine1:(address?.AddressLine1 || '') + ' ' + (address?.AddressLine2 || ''),
-                }
-              })
+                  AddressLine1: (address?.AddressLine1 || '') + ' ' + (address?.AddressLine2 || ''),
+                };
+              });
               resolve({
                 data: tempData,
                 // success 请返回 true，

@@ -1,17 +1,50 @@
 import { useEffect, useRef, useState, createRef, useImperativeHandle } from 'react';
-import { AmazonOutlined, LockOutlined, BellOutlined, CloudDownloadOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { Button, Typography, Space, Form, Modal, InputNumber, message, Tag, Tooltip, Table, Empty, Switch, Spin, Tabs, Row, Col, Dropdown, Menu } from 'antd';
+import {
+  AmazonOutlined,
+  LockOutlined,
+  BellOutlined,
+  CloudDownloadOutlined,
+  InfoCircleOutlined,
+} from '@ant-design/icons';
+import {
+  Button,
+  Typography,
+  Space,
+  Form,
+  Modal,
+  InputNumber,
+  message,
+  Tag,
+  Tooltip,
+  Table,
+  Empty,
+  Switch,
+  Spin,
+  Tabs,
+  Row,
+  Col,
+  Dropdown,
+  Menu,
+} from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { list, saleLimit, updateIssueTrack, getList, getAmazonOrders, updateTrial,autoOrder } from '@/services/order/order';
+import {
+  list,
+  saleLimit,
+  updateIssueTrack,
+  getList,
+  getAmazonOrders,
+  updateTrial,
+  autoOrder,
+} from '@/services/order/order';
 import { getPageHeight } from '@/utils/utils';
 import { getTargetHref, getAsonHref } from '@/utils/jumpUrl';
 import { getKesGroup, getKesValue } from '@/utils/utils';
 import { vendors, configs } from '@/services/publicKeys';
 import moment from 'moment';
 import styles from './style.less';
-import ParagraphText from '@/components/ParagraphText'
-import { exportExcel } from '@/utils/excelHelper'
+import ParagraphText from '@/components/ParagraphText';
+import { exportReport } from '@/utils/utils';
 const { Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
 
@@ -49,12 +82,13 @@ type GithubIssueItem = {
   AddressLine1: string;
   phone: string;
   vendor: number;
+  auto_order: number;
+  is_return: number;
   order_amazon: {
     PurchaseDate: string;
     issue_tracking: number;
     OrderStatus: number;
     id: number;
-    auto_order: number;
   };
   update_at: number;
   vendor_change_time: number;
@@ -75,10 +109,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
     dataIndex: 'Marketplace',
     search: false,
     width: 385,
-    render: (
-      _,
-      record: GithubIssueItem,
-    ) => {
+    render: (_, record: GithubIssueItem) => {
       return (
         <>
           <Space direction="vertical">
@@ -126,35 +157,48 @@ const columns: ProColumns<GithubIssueItem>[] = [
             </Text>
             <Text type="secondary">
               OrderItemId:
-              <Text copyable>{record.OrderItemId}</Text>{record.order_amazon.auto_order === 0 ? <Tooltip placement="top" title={"No automatic ordering"}>
-                <InfoCircleOutlined style={{"color": "red"}} />
-              </Tooltip> : null}
+              <Text copyable>{record.OrderItemId}</Text>
+              {record.auto_order === 0 ? (
+                <Tooltip placement="top" title={'No automatic ordering'}>
+                  <InfoCircleOutlined style={{ color: 'red' }} />
+                </Tooltip>
+              ) : null}
             </Text>
             <Text type="secondary">
-              {record.sku_num ? (<>Number of sold:
-                <a
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{ marginRight: 10 }}
-                  href={`/order/AmazonOrder?SellerSKU=${record.SellerSKU}`}
-                >
-                  {record.sku_num}
-                </a></>) : null}
-              {record.vpn && (<>vpn:
-                <a
-                  target="_blank"
-                  rel="noreferrer"
-                  href={`https://www.google.com.hk/search?q=${record.vpn}+${record.brand}`}
-                >
-                  {record.vpn}
-                </a></>)}
+              {record.sku_num ? (
+                <>
+                  Number of sold:
+                  <a
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ marginRight: 10 }}
+                    href={`/order/AmazonOrder?SellerSKU=${record.SellerSKU}`}
+                  >
+                    {record.sku_num}
+                  </a>
+                </>
+              ) : null}
+              {record.vpn && (
+                <>
+                  vpn:
+                  <a
+                    target="_blank"
+                    rel="noreferrer"
+                    href={`https://www.google.com.hk/search?q=${record.vpn}+${record.brand}`}
+                  >
+                    {record.vpn}
+                  </a>
+                </>
+              )}
             </Text>
             <Text type="secondary">
               Tag Name:
-              {record.listing && (<ParagraphText
-                content={getKesValue('tagsData', record.listing.tag_id)?.tag_name}
-                width={280}
-              />)}
+              {record.listing && (
+                <ParagraphText
+                  content={getKesValue('tagsData', record.listing.tag_id)?.tag_name}
+                  width={280}
+                />
+              )}
             </Text>
             <Text type="secondary">
               title : <ParagraphText content={record.Title} width={300} />
@@ -170,10 +214,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
     dataIndex: 'Pii',
     search: false,
     width: 305,
-    render: (
-      _,
-      record: GithubIssueItem,
-    ) => {
+    render: (_, record: GithubIssueItem) => {
       return (
         <>
           <Space direction="vertical">
@@ -184,7 +225,8 @@ const columns: ProColumns<GithubIssueItem>[] = [
               AddressLine1 : <Text copyable>{record.AddressLine1}</Text>
             </Text>
             <Text type="secondary">
-              PostalCode : <Text copyable={{ text: record.PostalCode.split('-')[0] }}>{record.PostalCode}</Text>
+              PostalCode :{' '}
+              <Text copyable={{ text: record.PostalCode.split('-')[0] }}>{record.PostalCode}</Text>
             </Text>
             <Text type="secondary">
               City : <Text copyable>{record.City}</Text>
@@ -202,6 +244,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
               ) : (
                 <Tag color="#87d068">{record.AddressType}</Tag>
               )}
+              {record.is_return ? <Tag color="#f50">Is return</Tag> : null}
             </Text>
           </Space>
         </>
@@ -214,10 +257,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
     valueType: 'date',
     width: 250,
     search: false,
-    render: (
-      _,
-      record: GithubIssueItem,
-    ) => {
+    render: (_, record: GithubIssueItem) => {
       return (
         <>
           <Space direction="vertical">
@@ -231,15 +271,11 @@ const columns: ProColumns<GithubIssueItem>[] = [
             </Text>
             <Text type="secondary">
               update_at :
-              <Text>
-                {moment(record.update_at * 1000).format('YYYY-MM-DD HH:mm:ss')}
-              </Text>
+              <Text>{moment(record.update_at * 1000).format('YYYY-MM-DD HH:mm:ss')}</Text>
             </Text>
             <Text type="secondary">
               vendor_change_time :
-              <Text>
-                {moment(record.vendor_change_time * 1000).format('YYYY-MM-DD HH:mm:ss')}
-              </Text>
+              <Text>{moment(record.vendor_change_time * 1000).format('YYYY-MM-DD HH:mm:ss')}</Text>
             </Text>
           </Space>
         </>
@@ -291,31 +327,18 @@ const columns: ProColumns<GithubIssueItem>[] = [
         }),
       ];
     },
-    render: (
-      text,
-      record: GithubIssueItem,
-    ) => {
+    render: (text, record: GithubIssueItem) => {
       const str =
-        `${'Order 1:\n' +
-        '\n' +
-        'Ship to:\n' +
-        ''}${record.Name
-        }\n` +
-        `${record.AddressLine1
-        }\n` +
-        `${record.City
-        }, ${record.StateOrRegion
-        } ${record.PostalCode
-        }\n` +
+        `${'Order 1:\n' + '\n' + 'Ship to:\n' + ''}${record.Name}\n` +
+        `${record.AddressLine1}\n` +
+        `${record.City}, ${record.StateOrRegion} ${record.PostalCode}\n` +
         `\n` +
-        `SKU: ${record.SellerSKU
-        }\n` +
-        `QTY: ${record.QuantityOrdered
-        }\n` +
-        `Price: $${record.vendor_price
-        }\n` +
+        `SKU: ${record.SellerSKU}\n` +
+        `QTY: ${record.QuantityOrdered}\n` +
+        `Price: $${record.vendor_price}\n` +
         `\n` +
-        `Reference Number: ${record.AmazonOrderId.split('-')[record.AmazonOrderId.split('-').length - 1]
+        `Reference Number: ${
+          record.AmazonOrderId.split('-')[record.AmazonOrderId.split('-').length - 1]
         }\n`;
       return record.vendor === 5 ? (
         <Paragraph copyable={{ text: str }}>{text}</Paragraph>
@@ -361,7 +384,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
     valueEnum: {
       '0': { text: 'No automatic ordering', status: 'Error' },
       '1': { text: 'Automatic order has been placed', status: 'Success' },
-    }
+    },
   },
   {
     title: 'OrderStatus',
@@ -383,133 +406,169 @@ const columns: ProColumns<GithubIssueItem>[] = [
     align: 'center',
     width: 140,
     render: (text, record) => {
-      return (<>
-         Issue tracking:
-        <IssueSwitch record={record} />
-        <br />
-         Trial to sell:
-        <SoldSwitch record={record} />
-         Automatic order:
-        <AuToOrderSwitch record={record} />
-      </>)
-    }
-  }
+      return (
+        <>
+          Issue tracking:
+          <IssueSwitch record={record} />
+          <br />
+          Trial to sell:
+          <SoldSwitch record={record} />
+          Automatic order:
+          <AuToOrderSwitch record={record} />
+        </>
+      );
+    },
+  },
 ];
 
 const IssueSwitch = (props: { record: GithubIssueItem }) => {
-  const { record } = props
-  const [issueStatus, setIssueStatus] = useState<any>(!!record.order_amazon.issue_tracking)
-  const [switchLoading, setSwaitchLoading] = useState(false)
+  const { record } = props;
+  const [issueStatus, setIssueStatus] = useState<any>(!!record.order_amazon.issue_tracking);
+  const [switchLoading, setSwaitchLoading] = useState(false);
   const changeIssueType = (val: number) => {
-    setSwaitchLoading(true)
+    setSwaitchLoading(true);
     updateIssueTrack({
       id: record.order_amazon.id,
-      issue_tracking: val
-    }).then(res => {
-      if (res.code) {
-        message.success('operation successful!')
-        setIssueStatus(val)
-      }
-    }).finally(() => {
-      setSwaitchLoading(false)
+      issue_tracking: val,
     })
-  }
+      .then((res) => {
+        if (res.code) {
+          message.success('operation successful!');
+          setIssueStatus(val);
+        }
+      })
+      .finally(() => {
+        setSwaitchLoading(false);
+      });
+  };
   useEffect(() => {
-    setIssueStatus(!!record.order_amazon.issue_tracking)
-  }, [record.order_amazon.issue_tracking])
-  return <Switch
-    checkedChildren="tracking"
-    unCheckedChildren="No trace"
-    loading={switchLoading}
-    checked={issueStatus}
-    style={{ "width": 90 }}
-    onChange={(val: any) => {
-      changeIssueType(val + 0)
-    }} />
-}
+    setIssueStatus(!!record.order_amazon.issue_tracking);
+  }, [record.order_amazon.issue_tracking]);
+  return (
+    <Switch
+      checkedChildren="tracking"
+      unCheckedChildren="No trace"
+      loading={switchLoading}
+      checked={issueStatus}
+      style={{ width: 90 }}
+      onChange={(val: any) => {
+        changeIssueType(val + 0);
+      }}
+    />
+  );
+};
 
 const SoldSwitch = (props: { record: GithubIssueItem }) => {
-  const { record } = props
-  const [issueStatus, setIssueStatus] = useState<any>(!!record.is_trial)
-  const [switchLoading, setSwaitchLoading] = useState(false)
+  const { record } = props;
+  const [issueStatus, setIssueStatus] = useState<any>(!!record.is_trial);
+  const [switchLoading, setSwaitchLoading] = useState(false);
   const changeIssueType = (status: boolean) => {
     updateTrial({
       vendor_id: record.listing.vendor_id,
       vendor_sku: record.listing.vendor_sku,
-      is_trial: +status
-    }).then(res => {
-      if (res.code) {
-        message.success(`Sku ${record.listing.vendor_sku} will now be sold normally`)
-        setIssueStatus(+status)
-      } else {
-        throw res.msg
-      }
-    }).catch(e => {
-      message.error(e)
-    }).finally(() => {
-      setSwaitchLoading(false)
+      is_trial: +status,
     })
-  }
+      .then((res) => {
+        if (res.code) {
+          message.success(`Sku ${record.listing.vendor_sku} will now be sold normally`);
+          setIssueStatus(+status);
+        } else {
+          throw res.msg;
+        }
+      })
+      .catch((e) => {
+        message.error(e);
+      })
+      .finally(() => {
+        setSwaitchLoading(false);
+      });
+  };
   useEffect(() => {
-    setIssueStatus(!!record.is_trial)
-  }, [record.is_trial])
-  return <div> <Switch checkedChildren="Trial to sell" unCheckedChildren="normal sales" disabled={!issueStatus} loading={switchLoading} checked={issueStatus} onChange={(val) => {
-    !val && changeIssueType(val)
-  }} /></div>
-}
+    setIssueStatus(!!record.is_trial);
+  }, [record.is_trial]);
+  return (
+    <div>
+      {' '}
+      <Switch
+        checkedChildren="Trial to sell"
+        unCheckedChildren="normal sales"
+        disabled={!issueStatus}
+        loading={switchLoading}
+        checked={issueStatus}
+        onChange={(val) => {
+          !val && changeIssueType(val);
+        }}
+      />
+    </div>
+  );
+};
 
 const AuToOrderSwitch = (props: { record: GithubIssueItem }) => {
-  const { record } = props
-  const [issueStatus, setIssueStatus] = useState<any>(!!record.order_amazon.auto_order)
-  const [switchLoading, setSwaitchLoading] = useState(false)
+  const { record } = props;
+  const [issueStatus, setIssueStatus] = useState<any>(!!record.auto_order);
+  const [switchLoading, setSwaitchLoading] = useState(false);
   const changeIssueType = (status: boolean) => {
-    setSwaitchLoading(true)
+    setSwaitchLoading(true);
     autoOrder({
       amazonOrderId: record.AmazonOrderId,
-    }).then(res => {
-      if (res.code) {
-        message.success(`Operation is successful`)
-        setIssueStatus(+status)
-      } else {
-        throw res.msg
-      }
-    }).catch(e => {
-      message.error(e)
-    }).finally(() => {
-      setSwaitchLoading(false)
     })
-  }
+      .then((res) => {
+        if (res.code) {
+          message.success(`Operation is successful`);
+          setIssueStatus(+status);
+        } else {
+          throw res.msg;
+        }
+      })
+      .catch((e) => {
+        message.error(e);
+      })
+      .finally(() => {
+        setSwaitchLoading(false);
+      });
+  };
   useEffect(() => {
-    setIssueStatus(!!record.order_amazon.auto_order)
-  }, [record.order_amazon.auto_order])
-  return <div> <Switch checkedChildren="Have order" unCheckedChildren="Place the order" disabled={issueStatus} loading={switchLoading} checked={issueStatus} onChange={(val) => {
-    val && changeIssueType(val)
-  }} /></div>
-}
+    setIssueStatus(!!record.auto_order);
+  }, [record.auto_order]);
+  return (
+    <div>
+      {' '}
+      <Switch
+        checkedChildren="Have order"
+        unCheckedChildren="Place the order"
+        disabled={issueStatus}
+        loading={switchLoading}
+        checked={issueStatus}
+        onChange={(val) => {
+          val && changeIssueType(val);
+        }}
+      />
+    </div>
+  );
+};
 
 type feedbackDataType = {
-  key: string,
+  key: string;
   items: {
-    AmazonOrderId: string,
-    po: string,
-    reason: string,
-    status: string
-  }[]
-}
-
+    AmazonOrderId: string;
+    po: string;
+    reason: string;
+    status: string;
+  }[];
+};
 
 const FeedbackModel = (props: { onRef: any }) => {
   const [visible, setVisible] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [designType, setDesignType] = useState(false);
-  const [width, setWidth] = useState(800)
-  const [data, setData] = useState<feedbackDataType[]>([])
+  const [width, setWidth] = useState(800);
+  const [data, setData] = useState<feedbackDataType[]>([]);
   const columns = [
     {
       title: 'AmazonOrderId',
       dataIndex: 'AmazonOrderId',
       key: 'AmazonOrderId',
-      width: '160px'
+      width: '160px',
     },
     {
       title: 'po',
@@ -540,30 +599,39 @@ const FeedbackModel = (props: { onRef: any }) => {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-    }
+    },
   ];
 
   const init = () => {
-    setConfirmLoading(true)
-    getList().then(res => {
-      let tpData = Object.keys(res.data).map((key) => {
-        return {
-          key,
-          items: res.data[key]
-        }
+    setConfirmLoading(true);
+    getList()
+      .then((res) => {
+        let tpData = Object.keys(res.data).map((key) => {
+          return {
+            key,
+            items: res.data[key],
+          };
+        });
+        setData(tpData);
       })
-      setData(tpData)
-    }).catch(e => {
-      message.error(e)
-    }).finally(() => {
-      setConfirmLoading(false)
-    })
-  }
+      .catch((e) => {
+        message.error(e);
+      })
+      .finally(() => {
+        setConfirmLoading(false);
+      });
+  };
   const menu = (
     <Menu>
-      <Menu.Item key="1" onClick={init}>Refresh</Menu.Item>
-      <Menu.Item key="2" onClick={() => setDesignType(false)}>Tabs display</Menu.Item>
-      <Menu.Item key="3" onClick={() => setDesignType(true)}>Tiled display</Menu.Item>
+      <Menu.Item key="1" onClick={init}>
+        Refresh
+      </Menu.Item>
+      <Menu.Item key="2" onClick={() => setDesignType(false)}>
+        Tabs display
+      </Menu.Item>
+      <Menu.Item key="3" onClick={() => setDesignType(true)}>
+        Tiled display
+      </Menu.Item>
     </Menu>
   );
   useImperativeHandle(props.onRef, () => {
@@ -579,64 +647,103 @@ const FeedbackModel = (props: { onRef: any }) => {
   };
   const tabsType = () => {
     return data.map((item, index) => {
-      return (<TabPane tab={item.key} key={index}>
-        <Table
-          dataSource={item.items}
-          size='small'
-          key={'table' + item.key}
-          columns={columns} />
-      </TabPane>)
-    })
-  }
+      return (
+        <TabPane tab={item.key} key={index + 'tab'}>
+          <Table
+            dataSource={item.items}
+            size="small"
+            key={'table' + item.key}
+            pagination={{
+              pageSize: 300,
+              pageSizeOptions: ['10', '20', '30', '50', '100', '200', '300', '400', '500'],
+              showQuickJumper: true,
+            }}
+            columns={columns}
+          />
+        </TabPane>
+      );
+    });
+  };
   const tiledType = () => {
-    return (<Row gutter={24}>
-      {data.map((item, index) => {
-        return (<Col span={8}><Table
-          title={() => (<h4>{item.key}</h4>)}
-          dataSource={item.items}
-          bordered
-          size='small'
-          key={'table' + item.key}
-          pagination={{
-            size: "small"
-          }}
-          columns={columns} /></Col>)
-      })}
-    </Row>)
-  }
+    return (
+      <Row gutter={24}>
+        {data.map((item, index) => {
+          return (
+            <Col span={8} key={index + 'col'}>
+              <Table
+                title={() => <h4>{item.key}</h4>}
+                dataSource={item.items}
+                bordered
+                size="small"
+                key={'table' + item.key}
+                pagination={{
+                  size: 'small',
+                }}
+                columns={columns}
+              />
+            </Col>
+          );
+        })}
+      </Row>
+    );
+  };
   useEffect(() => {
     if (visible && !data.length) {
-      init()
+      init();
     } else {
-      return
+      return;
     }
-  }, [visible])
+  }, [visible]);
   useEffect(() => {
     if (designType) {
-      setWidth(2150)
+      setWidth(2150);
     } else {
-      setWidth(800)
+      setWidth(800);
     }
-  }, [designType])
-  return (<>
-    <Modal
-      title="Order Processing feedback"
-      width={width}
-      visible={visible}
-      onOk={handleCancel}
-      confirmLoading={confirmLoading}
-      onCancel={handleCancel}
-    >
-      <Dropdown overlay={menu} trigger={['contextMenu']}>
-        <Spin spinning={confirmLoading}>
-          <Tabs tabBarExtraContent={<Switch checkedChildren="tiled" unCheckedChildren="tabs" checked={designType} onChange={setDesignType} />}>
-            {designType ? tiledType() : tabsType()}
-          </Tabs>
-        </Spin>
-      </Dropdown>
-    </Modal>
-  </>)
-}
+  }, [designType]);
+  return (
+    <>
+      <Modal
+        title="Order Processing feedback"
+        width={width}
+        visible={visible}
+        onOk={handleCancel}
+        confirmLoading={confirmLoading}
+        onCancel={handleCancel}
+      >
+        <Dropdown overlay={menu} trigger={['contextMenu']}>
+          <Spin spinning={confirmLoading}>
+            <Tabs
+              tabBarExtraContent={
+                <Switch
+                  checkedChildren="tiled"
+                  unCheckedChildren="tabs"
+                  checked={designType}
+                  onChange={setDesignType}
+                />
+              }
+            >
+              {designType ? tiledType() : tabsType()}
+            </Tabs>
+          </Spin>
+        </Dropdown>
+      </Modal>
+    </>
+  );
+};
+
+const excelStore = {
+  10: '[Tels] Newegg',
+  5: '[Tels] TWHouse',
+  7: '[Tels] Petra Industries',
+  8: '[Tels] MA Labs',
+  6: '[Tels] Eldorado',
+  2: '[Tels] Grainger',
+  9: '[Tels] D&H Distributing',
+  11: '[Tels] Scansource',
+  13: '[Tels] Zoro',
+  1: '[Tels] Ingram Micro USA',
+};
 
 export default () => {
   const actionRef = useRef<ActionType>();
@@ -648,8 +755,8 @@ export default () => {
   const [limit, setLimit] = useState<configs>(getKesValue('configsData', 'order_quantity_limit'));
   const [scrollX, setScrollX] = useState(columns.reduce((sum, e) => sum + Number(e.width || 0), 0));
   const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
-  const [tableRows, setTableRows] = useState<number[]>([])
-  const [pullOrderLoading, setPullOrderLoading] = useState(false)
+  const [tableRows, setTableRows] = useState<number[]>([]);
+  const [pullOrderLoading, setPullOrderLoading] = useState(false);
   let feedbackModelRef: React.ReactNode = createRef<HTMLElement>();
   const showModal = () => {
     setIsModalVisible(true);
@@ -679,87 +786,85 @@ export default () => {
     const tableData = tableRows.map((item: any) => {
       var tagName = getKesValue('tagsData', item.listing.tag_id).tag_name;
       return {
-        Date: moment().format('YYYY/MM/DD'),
-        Marketplace: item.storeName.replace(/(^\s*)|(\s*$)/g, ""),
-        OrderID: item.AmazonOrderId.replace(/(^\s*)|(\s*$)/g, ""),
-        SKU: item.SellerSKU.replace(/(^\s*)|(\s*$)/g, ""),
+        OrderID: item.AmazonOrderId.replace(/(^\s*)|(\s*$)/g, ''),
+        Date: moment().format('M/D/YYYY'),
+        Marketplace: item.storeName.replace(/(^\s*)|(\s*$)/g, ''),
+        SKU: item.SellerSKU.replace(/(^\s*)|(\s*$)/g, ''),
         PricePerUnit: parseFloat(item.ItemPriceAmount) / parseInt(item.QuantityOrdered),
-        QTY: item.QuantityOrdered.toString().replace(/(^\s*)|(\s*$)/g, ""),
+        QTY: item.QuantityOrdered.toString().replace(/(^\s*)|(\s*$)/g, ''),
         TotalRevenue: '',
         AmazonFee: '',
         PurchasePrice: '',
         Profit: '',
-        PurchasedFrom: item.vendorName.replace(/(^\s*)|(\s*$)/g, ""),
+        PurchasedFrom: excelStore[item.listing.vendor_id],
         Notes: '',
-        tagName: tagName
-      }
-    })
-    const header = [
-      { title: 'Date', dataIndex: 'Date', key: 'Date' },
-      { title: 'Marketplace', dataIndex: 'Marketplace', key: 'Marketplace' },
-      { title: 'OrderID', dataIndex: 'OrderID', key: 'OrderID' },
-      { title: 'SKU', dataIndex: 'SKU', key: 'SKU' },
-      { title: 'PricePerUnit', dataIndex: 'PricePerUnit', key: 'PricePerUnit' },
-      { title: 'QTY', dataIndex: 'QTY', key: 'QTY' },
-      { title: 'TotalRevenue', dataIndex: 'TotalRevenue', key: 'TotalRevenue' },
-      { title: 'AmazonFee', dataIndex: 'AmazonFee', key: 'AmazonFee' },
-      { title: 'PurchasePrice', dataIndex: 'PurchasePrice', key: 'PurchasePrice', type: 'number' },
-      { title: 'Profit', dataIndex: 'Profit', key: 'Profit' },
-      { title: 'PurchasedFrom', dataIndex: 'PurchasedFrom', key: 'PurchasedFrom' },
-      { title: 'Notes', dataIndex: 'Notes', key: 'Notes' },
-      { title: 'tagName', dataIndex: 'tagName', key: 'tagName' }
-    ]
-    exportExcel(header, tableData, `Orders ${moment().format('MMDD')}.xlsx`)
+        tagName: tagName,
+      };
+    });
+    exportReport(tableData);
   }
   const returnTwhouseOrders = () => {
-    const orders = tableRows.filter((row: any) => row.vendor === 5).map((item: any, index) => {
-      return <div key={'ordersDom' + index}>
-        <b style={{ marginBottom: 0 }}>Order {index + 1}:</b><span>{'\n\n\n' + parseFloat(item.weight) * item.QuantityOrdered}</span>
-        <p style={{ marginBottom: 0 }}>Ship to: </p>
-        <p style={{ marginBottom: 0 }}>{item.Name}</p>
-        <p style={{ marginBottom: 0 }}>{item.AddressLine1}</p>
-        <p style={{ marginBottom: 0 }}>{item.City + ', ' + item.StateOrRegion + ' ' + item.PostalCode}</p>
-        <br />
-        <p style={{ marginBottom: 0 }}>SKU: {item.SellerSKU}</p>
-        <p style={{ marginBottom: 0 }}>QTY: {item.QuantityOrdered}</p>
-        <p style={{ marginBottom: 0 }}>Price: {item.vendor_price}</p>
-        <br />
-        <p style={{ marginBottom: 0 }}>Reference Number: {item.AmazonOrderId.split('-')[item.AmazonOrderId.split('-').length - 1]}</p>
-        <br />
-        <br />
-      </div>
-    })
+    const orders = tableRows
+      .filter((row: any) => row.vendor === 5)
+      .map((item: any, index) => {
+        return (
+          <div key={'ordersDom' + index}>
+            <b style={{ marginBottom: 0 }}>Order {index + 1}:</b>
+            <span>{'\n\n\n' + parseFloat(item.weight) * item.QuantityOrdered}</span>
+            <p style={{ marginBottom: 0 }}>Ship to: </p>
+            <p style={{ marginBottom: 0 }}>{item.Name}</p>
+            <p style={{ marginBottom: 0 }}>{item.AddressLine1}</p>
+            <p style={{ marginBottom: 0 }}>
+              {item.City + ', ' + item.StateOrRegion + ' ' + item.PostalCode}
+            </p>
+            <br />
+            <p style={{ marginBottom: 0 }}>SKU: {item.SellerSKU}</p>
+            <p style={{ marginBottom: 0 }}>QTY: {item.QuantityOrdered}</p>
+            <p style={{ marginBottom: 0 }}>Price: {item.vendor_price}</p>
+            <br />
+            <p style={{ marginBottom: 0 }}>
+              Reference Number:{' '}
+              {item.AmazonOrderId.split('-')[item.AmazonOrderId.split('-').length - 1]}
+            </p>
+            <br />
+            <br />
+          </div>
+        );
+      });
     if (orders.length) {
-      orders.unshift(<p key='titleOrder' style={{ fontSize: '11pt', color: '#494949' }}>Please ship below orders with attached labels.</p>)
-      return orders
+      orders.unshift(
+        <p key="titleOrder" style={{ fontSize: '11pt', color: '#494949' }}>
+          Please ship below orders with attached labels.
+        </p>,
+      );
+      return orders;
     }
-    return null
-  }
+    return null;
+  };
 
   function handleMenuClick(e: any) {
-    setPullOrderLoading(true)
-    getAmazonOrders({ day: e.key }).then(res => {
-      if (res.code) {
-        message.success("Start pulling in new orders！")
-        actionRef.current?.reload()
-      } else {
-        throw res.msg
-      }
-    }).catch(e => {
-      message.error(e)
-    }).finally(() => {
-      setPullOrderLoading(false)
-    })
+    setPullOrderLoading(true);
+    getAmazonOrders({ day: e.key })
+      .then((res) => {
+        if (res.code) {
+          message.success('Start pulling in new orders！');
+          actionRef.current?.reload();
+        } else {
+          throw res.msg;
+        }
+      })
+      .catch((e) => {
+        message.error(e);
+      })
+      .finally(() => {
+        setPullOrderLoading(false);
+      });
   }
 
   const menu = (
     <Menu onClick={handleMenuClick}>
-      <Menu.Item key="1">
-        One day
-      </Menu.Item>
-      <Menu.Item key="2" >
-        Tow day
-      </Menu.Item>
+      <Menu.Item key="1">One day</Menu.Item>
+      <Menu.Item key="2">Tow day</Menu.Item>
     </Menu>
   );
   return (
@@ -826,7 +931,7 @@ export default () => {
                     store_id: number;
                   };
                   order_item_record: {
-                    product_info: string
+                    product_info: string;
                   };
                   vendor: number;
                 }) => {
@@ -837,22 +942,26 @@ export default () => {
                     vendor_price: item.listing ? item?.listing.vendor_price : '-',
                     vendor: item.listing ? item?.listing.vendor_id : -10000,
                     City: JSON.parse(item.order_amazon.ShippingAddress).City || '-',
-                    AddressType:
-                      JSON.parse(item.order_amazon.ShippingAddress).AddressType || '-',
+                    AddressType: JSON.parse(item.order_amazon.ShippingAddress).AddressType || '-',
                     PostalCode: JSON.parse(item.order_amazon.ShippingAddress).PostalCode || '-',
                     StateOrRegion:
                       JSON.parse(item.order_amazon.ShippingAddress).StateOrRegion || '-',
-                    CountryCode:
-                      JSON.parse(item.order_amazon.ShippingAddress).CountryCode || '-',
+                    CountryCode: JSON.parse(item.order_amazon.ShippingAddress).CountryCode || '-',
                     Name: JSON.parse(item.order_amazon.ShippingAddress).Name || '-',
                     AddressLine1:
-                      ((JSON.parse(item.order_amazon.ShippingAddress).AddressLine1 || '') + ' ' + (JSON.parse(item.order_amazon.ShippingAddress).AddressLine2 || '')) || '-',
+                      (JSON.parse(item.order_amazon.ShippingAddress).AddressLine1 || '') +
+                        ' ' +
+                        (JSON.parse(item.order_amazon.ShippingAddress).AddressLine2 || '') || '-',
                     OrderItemTotal: item.order_amazon.OrderItemTotal,
                     vendor_change_time: item.listing.vendor_change_time,
                     phone: JSON.parse(item.order_amazon.ShippingAddress).Phone || '-',
-                    vpn: item.listing ? item?.listing.vpn : "",
-                    brand: item.order_item_record ? JSON.parse(item?.order_item_record.product_info)?.brand : "",
-                    weight: item.order_item_record ? JSON.parse(item?.order_item_record.product_info)?.weight : "",
+                    vpn: item.listing ? item?.listing.vpn : '',
+                    brand: item.order_item_record
+                      ? JSON.parse(item?.order_item_record.product_info)?.brand
+                      : '',
+                    weight: item.order_item_record
+                      ? JSON.parse(item?.order_item_record.product_info)?.weight
+                      : '',
                   };
                 },
               );
@@ -897,7 +1006,7 @@ export default () => {
         }}
         headerTitle={
           <>
-            <BellOutlined /> orders{' '}
+            <BellOutlined /> orders
             <span style={{ marginLeft: '20px', fontSize: '16px' }}>
               Current quantity limit： {limit}
             </span>
@@ -912,24 +1021,22 @@ export default () => {
         }}
         toolBarRender={() => [
           <Dropdown overlay={menu}>
-            <Button
-              key='pullNewOrder'
-              loading={pullOrderLoading}
-              icon={<CloudDownloadOutlined />}>
+            <Button key="pullNewOrder" loading={pullOrderLoading} icon={<CloudDownloadOutlined />}>
               Pull in new orders
             </Button>
           </Dropdown>,
           <Button
-            key='OrderProcessingFeedback'
+            key="OrderProcessingFeedback"
             onClick={() => {
-              feedbackModelRef?.current.func()
-            }}>
+              feedbackModelRef?.current.func();
+            }}
+          >
             Order Processing feedback
           </Button>,
           <Button
             key="twhouseEmalInfoBtn"
             onClick={() => {
-              setTwHouseInfoVisible(true)
+              setTwHouseInfoVisible(true);
             }}
           >
             Twhouse orders info
@@ -943,11 +1050,9 @@ export default () => {
           >
             Change Limit
           </Button>,
-          <Button
-            disabled={!selectedRowKeys.length}
-            onClick={clickDown}>
+          <Button disabled={!selectedRowKeys.length} onClick={clickDown}>
             export
-          </Button>
+          </Button>,
         ]}
       />
       <Modal

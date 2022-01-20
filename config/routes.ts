@@ -140,7 +140,7 @@
         path: '/distributors/Zoro',
         name: 'Zoro',
         component: './distributors/Zoro',
-      }
+      },
     ],
   },
   {
@@ -211,6 +211,11 @@
         name: 'NeweggReturns',
         path: '/returns/NeweggReturns',
         component: './returns/NeweggReturns',
+      },
+      {
+        name: 'Inventory',
+        path: '/returns/Inventory',
+        component: './returns/Inventory',
       },
     ],
   },

@@ -10,11 +10,10 @@ type requestItem = {
   SellerPartNumber?: string;
 };
 
-
 type updateReturnStatusItem = {
   id: number;
   status: number;
-}
+};
 
 export async function listIndex(params: requestItem) {
   return request('/api/amazon/returns', {
@@ -30,10 +29,16 @@ export async function newEggReturns(params: requestItem) {
   });
 }
 
+export async function netsuiteReturns(params: requestItem) {
+  return request('/api/netsuite/getList', {
+    method: 'get',
+    params: params,
+  });
+}
+
 export async function updateReturnStatus(params: updateReturnStatusItem) {
   return request('/api/amazon/updateReturnStatus', {
     method: 'post',
     data: params,
   });
 }
-
