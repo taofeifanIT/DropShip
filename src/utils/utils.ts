@@ -188,5 +188,5 @@ export function exportReport(data: any) {
     { title: 'Notes', dataIndex: 'Notes', key: 'Notes' },
     { title: 'tagName', dataIndex: 'tagName', key: 'tagName' },
   ];
-  exportExcel(header, tableData, `Orders ${moment().format('MMDD')}.csv`);
+  exportExcel(header, tableData, `Orders ${moment().format('MMDD')}.xls`);
 }

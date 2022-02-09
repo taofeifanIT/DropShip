@@ -763,7 +763,7 @@ export default () => {
         <Col className="gutter-row" span={5}>
           <Spin spinning={totalLoading}>
             <GetCard
-              one_level_title={'Total orders'}
+              one_level_title={<span style={{fontSize: '1.5vw'}}>Total orders</span>}
               one_level_number={totalObj.order_total}
               color="#f4516c"
               info={`Day order: ${  totalObj.order_total_today}`}

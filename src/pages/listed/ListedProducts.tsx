@@ -267,8 +267,8 @@ const EditLinKStr = (props: {
   );
 };
 const columns = (
-  refresh: () => void,
   editFn: (visible: boolean, id: number, record: any) => void,
+  callback?:(record:any) => void
 ): ProColumns<GithubIssueItem>[] => [
   {
     title: 'Tag name',
@@ -324,11 +324,14 @@ const columns = (
         <>
           <Space direction="vertical">
             <Text type="secondary">
-              ID:{' '}
+              ID:
               <a target="_blank" href={`${getTargetHref(record.vendor_id,record.ts_sku)}`}>
                 {record.ts_sku}
               </a>
               {record.notes && <Info content={record.notes} />}
+              <EditOutlined onClick={() => {
+                callback && callback(record)
+              }} />
             </Text>
             {record.asin && (
               <Text type="secondary">
@@ -1146,7 +1149,14 @@ export default () => {
           },
         }}
         size="small"
-        columns={columns(refresh, editFn)}
+        columns={columns(editFn, (record) => {
+          setDrawerVisible(true);
+          setRecord({
+            id: record.id,
+            content: record.notes,
+            title: record.vendor_sku,
+          });
+        })}
         actionRef={actionRef}
         formRef={ref}
         request={async (params = {}, sort) =>
@@ -1222,7 +1232,7 @@ export default () => {
           search: false,
         }}
         scroll={{
-          x: columns(refresh, editFn).reduce((sum, e) => sum + Number(e.width || 0), 0),
+          x: columns(editFn).reduce((sum, e) => sum + Number(e.width || 0), 0),
           y: getPageHeight() - 290,
         }}
         dateFormatter="string"
@@ -1230,14 +1240,6 @@ export default () => {
         // eslint-disable-next-line @typescript-eslint/no-shadow
         onRow={(record) => {
           return {
-            onDoubleClick: () => {
-              setDrawerVisible(true);
-              setRecord({
-                id: record.id,
-                content: record.notes,
-                title: record.vendor_sku,
-              });
-            }, // 鼠标移入行
             onClick: () => {
               if (drawerVisible) {
                 setRecord({

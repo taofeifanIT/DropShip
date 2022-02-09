@@ -215,6 +215,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
     search: false,
     width: 305,
     render: (_, record: GithubIssueItem) => {
+      let isExitOpBox = record.AddressLine1.toUpperCase().includes("PO BOX".toUpperCase())
       return (
         <>
           <Space direction="vertical">
@@ -222,10 +223,10 @@ const columns: ProColumns<GithubIssueItem>[] = [
               Name : <Text copyable>{record.Name}</Text>
             </Text>
             <Text type="secondary">
-              AddressLine1 : <Text copyable>{record.AddressLine1}</Text>
+              AddressLine1 : <Text style={{"color": isExitOpBox ? "red": ""}} copyable>{record.AddressLine1}</Text>
             </Text>
             <Text type="secondary">
-              PostalCode :{' '}
+              PostalCode :
               <Text copyable={{ text: record.PostalCode.split('-')[0] }}>{record.PostalCode}</Text>
             </Text>
             <Text type="secondary">
@@ -488,7 +489,6 @@ const SoldSwitch = (props: { record: GithubIssueItem }) => {
   }, [record.is_trial]);
   return (
     <div>
-      {' '}
       <Switch
         checkedChildren="Trial to sell"
         unCheckedChildren="normal sales"
@@ -532,7 +532,6 @@ const AuToOrderSwitch = (props: { record: GithubIssueItem }) => {
   }, [record.auto_order]);
   return (
     <div>
-      {' '}
       <Switch
         checkedChildren="Have order"
         unCheckedChildren="Place the order"

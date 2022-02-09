@@ -42,9 +42,9 @@ const importsExcel = (file) => {
  * @param {*} fileName
  */
 const exportExcel = (headers, data, fileName = 'demo.xlsx') => {
-  // const _headers = headers
-  //     .map((item, i) => Object.assign({}, { key: item.key, title: item.title, position: String.fromCharCode(65 + i) + 1 }))
-  //     .reduce((prev, next) => Object.assign({}, prev, { [next.position]: { key: next.key, v: next.title} }), {});
+  const _headers = headers
+      .map((item, i) => Object.assign({}, { key: item.key, title: item.title, position: String.fromCharCode(65 + i) + 1 }))
+      .reduce((prev, next) => Object.assign({}, prev, { [next.position]: { key: next.key, v: next.title} }), {});
   const _data = data
     .map((item, i) =>
       headers.map((key, j) =>
@@ -92,7 +92,7 @@ const exportExcel = (headers, data, fileName = 'demo.xlsx') => {
       }),
     },
   };
-  console.log(output);
+  // console.log(output);
   // 导出 Excel
   XLSX.writeFile(wb, fileName);
 };

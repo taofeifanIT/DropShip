@@ -8,7 +8,8 @@ import {
   SmileFilled,
   UpOutlined,
   ProfileOutlined,
-  CheckSquareOutlined 
+  CheckSquareOutlined,
+  EditOutlined
 } from '@ant-design/icons';
 import {
   Button,
@@ -714,6 +715,7 @@ export const columns = (
   isAuth: boolean | undefined,
   selfShow: boolean | undefined,
   hasDescription: boolean | undefined,
+  callback?:(record:any) => void
 ): ProColumns<any>[] => {
   const { updateApi, listingApi, deleteApi } = api;
   return [
@@ -833,6 +835,9 @@ export const columns = (
                   {record.vendor_sku}
                 </a>
                 {record.notes && <Info content={record.notes} />}
+                <EditOutlined onClick={() => {
+                callback && callback(record)
+              }} />
               </Text>
               {record.asin && (
                 <Text type="secondary">
@@ -1588,14 +1593,20 @@ const SupplierFunction = (props: { title: string; api: apiItem; isAuth: boolean,
         }}
         size="small"
         bordered
-        columns={columns(api, refresh, isAuth,selfShow,hasDescription)}
+        columns={columns(api, refresh, isAuth,selfShow,hasDescription, (record) => {
+          setDrawerVisible(true);
+          setRecord({
+            id: record.id,
+            content: record.notes,
+            title: record.vendor_sku,
+          });
+        })}
         actionRef={actionRef}
         formRef={ref}
         request={async (params = {}) =>
           new Promise((resolve) => {
             const tempParams = {
               ...params,
-              // ...sortParams,
               page: params.current,
               limit: params.pageSize,
             };
