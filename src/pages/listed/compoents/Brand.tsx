@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Table, Input, Popconfirm, Button, message, Modal, Tabs } from 'antd';
+import { Table, Input, Popconfirm, Button, message, Modal, Tabs,Form, Select } from 'antd';
 import {
   listBlackBrand,
   addBlackBrand,
@@ -9,7 +9,10 @@ import {
   autoDeleteBlackBrand,
   asinBlacklists,
   asinBlackAdd,
-  asinBlackDelete
+  asinBlackDelete,
+  skuBlackAdd,
+  skuBlackDelete,
+  skuBlacklists
 } from '@/services/listedProduct'
 const { TabPane } = Tabs
 
@@ -37,13 +40,16 @@ const EditableTable = () => {
     >
       <Tabs defaultActiveKey="1">
         <TabPane tab="brand black list" key="1">
-          <InputPlusTable listApi={listBlackBrand} addBrandApi={addBlackBrand} deleteBlackApi={deleteBlackBrand} />
+          <InputPlusTable listApi={listBlackBrand} addBrandApi={addBlackBrand} deleteBlackApi={deleteBlackBrand}  hasType />
         </TabPane>
         <TabPane tab="Auto_order black list" key="2">
           <InputPlusTable listApi={autolistBlackBrand} addBrandApi={autoAddBlackBrand} deleteBlackApi={autoDeleteBlackBrand} />
         </TabPane>
         <TabPane tab="Asin black list" key="3">
           <InputPlusTable listApi={asinBlacklists} addBrandApi={asinBlackAdd} deleteBlackApi={asinBlackDelete} />
+        </TabPane>
+        <TabPane tab="Sku black list" key="4">
+          <InputPlusTable listApi={skuBlacklists} addBrandApi={skuBlackAdd} deleteBlackApi={skuBlackDelete} hasType/>
         </TabPane>
       </Tabs>
     </Modal>
@@ -52,6 +58,36 @@ const EditableTable = () => {
 };
 
 const columns: any = (handleDelete: (id: number) => void) => [
+  {
+    title: 'name',
+    dataIndex: 'name',
+  },
+  {
+    title: 'type',
+    dataIndex: 'type',
+    render: (text: number) => {
+      return [ {
+        label: 'amazon',
+        value: 1,
+      },
+      {
+        label: 'ebay',
+        value: 4,
+      }].find(item => item.value === text)?.label
+    }
+  },
+  {
+    title: 'operation',
+    dataIndex: 'operation',
+    render: (_, record: { id: number }) => {
+      return <Popconfirm title="Sure to delete?" onConfirm={() => handleDelete(record.id)}>
+        <a>Delete</a>
+      </Popconfirm>
+    }
+  },
+];
+
+const otherColumns: any = (handleDelete: (id: number) => void) => [
   {
     title: 'name',
     dataIndex: 'name',
@@ -71,12 +107,13 @@ const InputPlusTable = (props: {
   listApi: any;
   addBrandApi: any;
   deleteBlackApi: any;
+  hasType?: boolean;
 }) => {
-  const { addBrandApi, listApi, deleteBlackApi } = props
+  const { addBrandApi, listApi, deleteBlackApi, hasType } = props
   const [data, setData] = useState<Array<brandItem>>([])
   const [loading, setLoading] = useState(false)
-  const [addBrand, setAddBrand] = useState("")
   const [addBtnLoading, setAddBtnLoading] = useState(false)
+  const [form] = Form.useForm();
   const handleDelete = (id: string) => {
     deleteBlackApi(id).then((res: any) => {
       if (res.code) {
@@ -90,19 +127,21 @@ const InputPlusTable = (props: {
     })
   }
   const addBrandFn = () => {
-    setAddBtnLoading(true)
-    addBrandApi(addBrand).then((res: any) => {
-      if (res.code) {
-        message.success('successful!')
-        setAddBrand("")
-        initData()
-      } else {
-        throw res.msg
-      }
-    }).catch(e => {
-      message.error(e)
-    }).finally(() => {
-      setAddBtnLoading(false)
+      form.validateFields().then(async (updatedValues) => {
+        console.log(updatedValues)
+        setAddBtnLoading(true)
+        addBrandApi(updatedValues).then((res: any) => {
+          if (res.code) {
+            message.success('successful!')
+            initData()
+          } else {
+            throw res.msg
+          }
+        }).catch(e => {
+          message.error(e)
+        }).finally(() => {
+          setAddBtnLoading(false)
+        })
     })
   }
   const initData = () => {
@@ -123,24 +162,32 @@ const InputPlusTable = (props: {
     initData()
   }, [])
   return <>
-    <Input.Group compact>
-      <Input style={{ width: 'calc(100% - 120px)' }} value={addBrand} onChange={(e) => {
-        setAddBrand(e.target.value)
-      }} />
-      <Button loading={addBtnLoading} onClick={() => {
-        addBrandFn()
-      }} type="primary">
-        Add
-      </Button>
-    </Input.Group>
+    <div style={{"marginBottom": '5px'}}>
+    <Form
+      layout={'inline'}
+      form={form}
+    >
+      <Form.Item label="value" name="value">
+        <Input placeholder="input placeholder" />
+      </Form.Item>
+      {hasType ? (<Form.Item label="type" name="type">
+          <Select style={{"width": "80px"}}>
+            <Select.Option value="1">amazon</Select.Option>
+            <Select.Option value="4">ebay</Select.Option>
+          </Select>
+      </Form.Item>): null}
+      <Form.Item>
+        <Button type="primary" loading={addBtnLoading} onClick={addBrandFn}>Add</Button>
+      </Form.Item>
+    </Form>
+    </div>
     <Table
       bordered
       dataSource={data}
       size={'small'}
       loading={loading}
-      columns={columns(handleDelete)}
+      columns={hasType?columns(handleDelete):otherColumns(handleDelete)}
       rowClassName="editable-row"
-      pagination={false}
     />
   </>
 }

@@ -96,6 +96,11 @@ type GithubIssueItem = {
   vendor_price: string;
   sku_num: number;
   is_trial: number;
+  store_id: number;
+  ack_reason: string;
+  ack_status: string;
+  OrderStatus: string;
+  order_status: number;
 };
 // https://www.google.com.hk/search?q=aini+13
 const columns: ProColumns<GithubIssueItem>[] = [
@@ -109,7 +114,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
     dataIndex: 'Marketplace',
     search: false,
     width: 385,
-    render: (_, record: GithubIssueItem) => {
+    render: (_, record) => {
       return (
         <>
           <Space direction="vertical">
@@ -122,7 +127,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
               <Paragraph style={{ display: 'inline' }} copyable={{ text: record.ASIN }}></Paragraph>
             </Text>
             <Text type="secondary">
-              Sku :
+              Sku:
               <Text>
                 {record?.listing && (
                   <>
@@ -142,7 +147,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
               </Text>
             </Text>
             <Text type="secondary">
-              order :
+              order:
               <Tooltip
                 placement="top"
                 title={record.OrderItemTotal > 1 ? 'Repeat order!' : undefined}
@@ -201,7 +206,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
               )}
             </Text>
             <Text type="secondary">
-              title : <ParagraphText content={record.Title} width={300} />
+              title: <ParagraphText content={record.Title} width={300} />
             </Text>
             {record.IsReplacementOrder ? <Tag color="#f50">IsReplacementOrder</Tag> : null}
           </Space>
@@ -214,29 +219,29 @@ const columns: ProColumns<GithubIssueItem>[] = [
     dataIndex: 'Pii',
     search: false,
     width: 305,
-    render: (_, record: GithubIssueItem) => {
+    render: (_, record) => {
       let isExitOpBox = record.AddressLine1.toUpperCase().includes("PO BOX".toUpperCase())
       return (
         <>
           <Space direction="vertical">
             <Text type="secondary">
-              Name : <Text copyable>{record.Name}</Text>
+              Name: <Text copyable>{record.Name}</Text>
             </Text>
             <Text type="secondary">
-              AddressLine1 : <Text style={{"color": isExitOpBox ? "red": ""}} copyable>{record.AddressLine1}</Text>
+              AddressLine1: <Text style={{ "color": isExitOpBox ? "red" : "" }} copyable>{record.AddressLine1}</Text>
             </Text>
             <Text type="secondary">
-              PostalCode :
+              PostalCode:
               <Text copyable={{ text: record.PostalCode.split('-')[0] }}>{record.PostalCode}</Text>
             </Text>
             <Text type="secondary">
-              City : <Text copyable>{record.City}</Text>
+              City: <Text copyable>{record.City}</Text>
             </Text>
             <Text type="secondary">
-              StateOrRegion : <Text copyable>{record.StateOrRegion}</Text>
+              StateOrRegion: <Text copyable>{record.StateOrRegion}</Text>
             </Text>
             <Text type="secondary">
-              phone : <Text copyable={{ text: record.phone.split(' ')[1] }}>{record.phone}</Text>
+              phone: <Text copyable={{ text: record.phone.split(' ')[1] }}>{record.phone}</Text>
             </Text>
             <Text type="secondary">
               <Tag color="#2db7f5">{record.CountryCode}</Tag>
@@ -258,12 +263,12 @@ const columns: ProColumns<GithubIssueItem>[] = [
     valueType: 'date',
     width: 250,
     search: false,
-    render: (_, record: GithubIssueItem) => {
+    render: (_, record) => {
       return (
         <>
           <Space direction="vertical">
             <Text type="secondary">
-              Purchase Date :
+              Purchase Date:
               <Text>
                 {moment(parseInt(`${record.order_amazon.PurchaseDate}000`)).format(
                   'YYYY-MM-DD HH:mm:ss',
@@ -271,11 +276,11 @@ const columns: ProColumns<GithubIssueItem>[] = [
               </Text>
             </Text>
             <Text type="secondary">
-              update_at :
+              update_at:
               <Text>{moment(record.update_at * 1000).format('YYYY-MM-DD HH:mm:ss')}</Text>
             </Text>
             <Text type="secondary">
-              vendor_change_time :
+              vendorChangeTime:
               <Text>{moment(record.vendor_change_time * 1000).format('YYYY-MM-DD HH:mm:ss')}</Text>
             </Text>
           </Space>
@@ -299,10 +304,88 @@ const columns: ProColumns<GithubIssueItem>[] = [
     hideInTable: true,
   },
   {
+    title: 'Other info',
+    width: 220,
+    search: false,
+    dataIndex: 'otherInfo',
+    render: (_, record) => {
+      const str =
+        `${'Order 1:\n' + '\n' + 'Ship to:\n' + ''}${record.Name}\n` +
+        `${record.AddressLine1}\n` +
+        `${record.City}, ${record.StateOrRegion} ${record.PostalCode}\n` +
+        `\n` +
+        `SKU: ${record.SellerSKU}\n` +
+        `QTY: ${record.QuantityOrdered}\n` +
+        `Price: $${record.vendor_price}\n` +
+        `\n` +
+        `Reference Number: ${record.AmazonOrderId.split('-')[record.AmazonOrderId.split('-').length - 1]
+        }\n`;
+      let vendorName = getKesValue("vendorData", record.vendor).vendor_name
+      let vendorContent = record.vendor === 5 ? <Paragraph copyable={{ text: str }} style={{ display: 'inline' }}>{vendorName}</Paragraph> : vendorName
+      let quantityOrdered = record.QuantityOrdered
+      let vendorPrice = record.vendor_price
+      let storeName = getKesValue("storeData", record.store_id).name
+      return (
+        <>
+          <Space direction="vertical">
+            <Text type="secondary">
+              Vendor:
+              <Text>
+                {vendorContent}
+              </Text>
+            </Text>
+            <Text type="secondary">
+              Vendor price:
+              <Text>{vendorPrice}</Text>
+            </Text>
+            <Text type="secondary">
+              Store:
+              <Text>{storeName}</Text>
+            </Text>
+            <Text type="secondary">
+              Quantity ordered:
+              <Text>{quantityOrdered}</Text>
+            </Text>
+          </Space>
+        </>
+      );
+    }
+  },
+  {
+    title: 'ACK',
+    width: 180,
+    search: false,
+    dataIndex: 'ACK',
+    render: (_, record) => {
+      return (
+        <>
+          <Space direction="vertical">
+            <Text type="secondary">
+              reason:
+              {record.ack_reason ?
+                <Text>
+                  {record.ack_reason}
+                </Text> :
+                'not yet'}
+            </Text>
+            <Text type="secondary">
+              status:
+              {record.ack_status ?
+                <Text>
+                  {record.ack_status}
+                </Text> :
+                'not yet'}
+            </Text>
+          </Space>
+        </>
+      );
+    }
+  },
+  {
     title: 'Store',
     dataIndex: 'store_id',
     valueType: 'select',
-    width: 200,
+    hideInTable: true,
     request: () => {
       const tempData = getKesGroup('storeData').map((item: { id: number; name: string }) => {
         return {
@@ -316,7 +399,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
   {
     title: 'Vendor',
     dataIndex: 'vendor',
-    width: 150,
+    hideInTable: true,
     valueType: 'select',
     request: async () => {
       return [
@@ -328,45 +411,20 @@ const columns: ProColumns<GithubIssueItem>[] = [
         }),
       ];
     },
-    render: (text, record: GithubIssueItem) => {
-      const str =
-        `${'Order 1:\n' + '\n' + 'Ship to:\n' + ''}${record.Name}\n` +
-        `${record.AddressLine1}\n` +
-        `${record.City}, ${record.StateOrRegion} ${record.PostalCode}\n` +
-        `\n` +
-        `SKU: ${record.SellerSKU}\n` +
-        `QTY: ${record.QuantityOrdered}\n` +
-        `Price: $${record.vendor_price}\n` +
-        `\n` +
-        `Reference Number: ${
-          record.AmazonOrderId.split('-')[record.AmazonOrderId.split('-').length - 1]
-        }\n`;
-      return record.vendor === 5 ? (
-        <Paragraph copyable={{ text: str }}>{text}</Paragraph>
-      ) : (
-        <>{text}</>
-      );
-    },
   },
   {
     title: 'Quantity ordered',
     dataIndex: 'QuantityOrdered',
     align: 'center',
-    width: 150,
-  },
-  {
-    title: 'Vendor price',
-    dataIndex: 'vendor_price',
-    width: 100,
-    align: 'center',
-    search: false,
+    hideInTable: true,
   },
   {
     title: 'After algorithm price',
     valueType: 'money',
-    width: 200,
+    // width: 200,
     dataIndex: 'after_algorithm_price',
     align: 'center',
+    hideInTable: true, // 暂时关闭
     render: (
       _,
       record: {
@@ -389,15 +447,61 @@ const columns: ProColumns<GithubIssueItem>[] = [
   },
   {
     title: 'OrderStatus',
-    dataIndex: 'OrderStatus',
-    width: 150,
-    render: (_, record) => {
-      return record.order_amazon.OrderStatus;
+    dataIndex: 'status',
+    valueType: 'select',
+    hideInTable: true,
+    valueEnum: {
+      "Unshipped": { text: 'Unshipped', status: 'Error' },
+      "Shipped": { text: 'Shipped', status: 'Success' },
     },
+  },
+  {
+    title: 'Status',
+    dataIndex: 'Status_info',
+    search: false,
+    width: 240,
+    render: (_, record) => {
+      let statusDesc = ''
+      switch (record.order_status) {
+        case 0:
+          statusDesc = 'No operation'
+          break
+        case 1:
+          statusDesc = 'Automatic order has been placed'
+          break
+        case 2:
+          statusDesc = 'Automatic order failure'
+          break
+        case 3:
+          statusDesc = 'The logistics tracking number has been obtained'
+          break
+        default:
+          statusDesc = 'Unknown operation Operation code:'+record.order_status
+      }
+      return (
+        <>
+          <Space direction="vertical">
+            <Text type="secondary">
+              Order status:
+              <Text>
+                {record.order_amazon.OrderStatus}
+              </Text>
+            </Text>
+            <Text type="secondary">
+              Operating status:
+              <Text>
+                {statusDesc}
+              </Text>
+            </Text>
+          </Space>
+        </>
+      );
+    }
   },
   {
     title: 'ItemPrice amount',
     dataIndex: 'ItemPriceAmount',
+    valueType: 'money',
     width: 150,
   },
   {
@@ -406,7 +510,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
     fixed: 'right',
     align: 'center',
     width: 140,
-    render: (text, record) => {
+    render: (_, record) => {
       return (
         <>
           Issue tracking:
@@ -949,8 +1053,8 @@ export default () => {
                     Name: JSON.parse(item.order_amazon.ShippingAddress).Name || '-',
                     AddressLine1:
                       (JSON.parse(item.order_amazon.ShippingAddress).AddressLine1 || '') +
-                        ' ' +
-                        (JSON.parse(item.order_amazon.ShippingAddress).AddressLine2 || '') || '-',
+                      ' ' +
+                      (JSON.parse(item.order_amazon.ShippingAddress).AddressLine2 || '') || '-',
                     OrderItemTotal: item.order_amazon.OrderItemTotal,
                     vendor_change_time: item.listing.vendor_change_time,
                     phone: JSON.parse(item.order_amazon.ShippingAddress).Phone || '-',

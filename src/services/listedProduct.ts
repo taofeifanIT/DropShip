@@ -70,8 +70,10 @@ export async function listBlackBrand() {
   return request(`/api/brand_black/lists`);
 }
 
-export async function addBlackBrand(name: string) {
-  return request(`/api/brand_black/add?name=${name}`);
+type addBlackListItem = {value: string,type?: string}
+
+export async function addBlackBrand(obj:addBlackListItem) {
+  return request(`/api/brand_black/add?name=${obj[Object.keys(obj)[0]]}&type=${obj[Object.keys(obj)[1]]}`);
 }
 
 export async function deleteBlackBrand(id: string) {
@@ -90,8 +92,8 @@ export async function autolistBlackBrand() {
   return request(`/api/auto_order_blacklist/lists`);
 }
 
-export async function autoAddBlackBrand(name: string) {
-  return request(`/api/auto_order_blacklist/add?name=${name}`);
+export async function autoAddBlackBrand(obj:addBlackListItem) {
+  return request(`/api/auto_order_blacklist/add?name=${obj[Object.keys(obj)[0]]}`);
 }
 
 export async function autoDeleteBlackBrand(id: string) {
@@ -102,10 +104,22 @@ export async function asinBlacklists() {
   return request(`/api/asin_blacklist/lists`);
 }
 
-export async function asinBlackAdd(name: string) {
-  return request(`/api/asin_blacklist/add?name=${name}`);
+export async function asinBlackAdd(obj: addBlackListItem) {
+  return request(`/api/asin_blacklist/add?name=${obj[Object.keys(obj)[0]]}`);
 }
 
 export async function asinBlackDelete(id: string) {
   return request(`/api/asin_blacklist/delete?id=${id}`);
+}
+
+export async function skuBlacklists() {
+  return request(`/api/sku_blacklist/lists`);
+}
+
+export async function skuBlackAdd(obj: addBlackListItem) {
+  return request(`/api/sku_blacklist/add?name=${obj[Object.keys(obj)[0]]}&type=${obj[Object.keys(obj)[1]]}`);
+}
+
+export async function skuBlackDelete(id: string) {
+  return request(`/api/sku_blacklist/delete?id=${id}`);
 }
