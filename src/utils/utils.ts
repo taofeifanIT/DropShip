@@ -154,29 +154,27 @@ export function findIndexPage(arr: any[]) {
   return path;
 }
 
+export function getPurchaseFromTitle(key:number){
+  const excelStore = {
+    10: '[Tels] Newegg',
+    5: '[Tels] TWHouse',
+    7: '[Tels] Petra Industries',
+    8: '[Tels] MA Labs',
+    6: '[Tels] Eldorado',
+    2: '[Tels] Grainger',
+    9: '[Tels] D&H Distributing',
+    11: '[Tels] Scansource',
+    13: '[Tels] Zoro',
+    1: '[Tels] Ingram Micro USA',
+  };
+  return excelStore[key]
+}
+
 export function exportReport(data: any) {
-  const tableData = [
-    {
-      OrderID: 'OrderID',
-      Date: 'Date',
-      Marketplace: 'Marketplace',
-      SKU: 'SKU',
-      PricePerUnit: 'PricePerUnit',
-      QTY: 'QTY',
-      TotalRevenue: 'TotalRevenue',
-      AmazonFee: 'AmazonFee',
-      PurchasePrice: 'PurchasePrice',
-      Profit: 'Profit',
-      PurchasedFrom: 'PurchasedFrom',
-      Notes: 'Notes',
-      tagName: 'tagName',
-    },
-    ...data,
-  ];
   const header = [
-    { title: 'OrderID', dataIndex: 'OrderID', key: 'OrderID' },
     { title: 'Date', dataIndex: 'Date', key: 'Date' },
     { title: 'Marketplace', dataIndex: 'Marketplace', key: 'Marketplace' },
+    { title: 'OrderID', dataIndex: 'OrderID', key: 'OrderID' },
     { title: 'SKU', dataIndex: 'SKU', key: 'SKU' },
     { title: 'PricePerUnit', dataIndex: 'PricePerUnit', key: 'PricePerUnit' },
     { title: 'QTY', dataIndex: 'QTY', key: 'QTY' },
@@ -186,7 +184,7 @@ export function exportReport(data: any) {
     { title: 'Profit', dataIndex: 'Profit', key: 'Profit' },
     { title: 'PurchasedFrom', dataIndex: 'PurchasedFrom', key: 'PurchasedFrom' },
     { title: 'Notes', dataIndex: 'Notes', key: 'Notes' },
-    { title: 'tagName', dataIndex: 'tagName', key: 'tagName' },
-  ];
-  exportExcel(header, tableData, `Orders ${moment().format('MMDD')}.xls`);
+    { title: 'tagName', dataIndex: 'tagName', key: 'tagName' }
+  ]
+  exportExcel(header, data, `Orders ${moment().format('MMDD')}.xlsx`);
 }

@@ -272,6 +272,27 @@ const columns = (): ProColumns<AmazonReturnsItem>[] => [
     },
   },
   {
+    title: 'Status',
+    dataIndex: 'status',
+    valueType: 'select',
+    hideInTable: true,
+    width: 200,
+    request: async (): Promise<any> => [
+      {
+        label: "Is applying for",
+        value: 0,
+      },
+      {
+        label: "Compelete",
+        value: 1,
+      },
+      {
+        label: "Reject",
+        value: 2,
+      }
+    ]
+  },
+  {
     title: 'action',
     valueType: 'option',
     fixed: 'right',

@@ -39,7 +39,7 @@ import {
 } from '@/services/order/order';
 import { getPageHeight } from '@/utils/utils';
 import { getTargetHref, getAsonHref } from '@/utils/jumpUrl';
-import { getKesGroup, getKesValue } from '@/utils/utils';
+import { getKesGroup, getKesValue,getPurchaseFromTitle } from '@/utils/utils';
 import { vendors, configs } from '@/services/publicKeys';
 import moment from 'moment';
 import styles from './style.less';
@@ -835,19 +835,6 @@ const FeedbackModel = (props: { onRef: any }) => {
   );
 };
 
-const excelStore = {
-  10: '[Tels] Newegg',
-  5: '[Tels] TWHouse',
-  7: '[Tels] Petra Industries',
-  8: '[Tels] MA Labs',
-  6: '[Tels] Eldorado',
-  2: '[Tels] Grainger',
-  9: '[Tels] D&H Distributing',
-  11: '[Tels] Scansource',
-  13: '[Tels] Zoro',
-  1: '[Tels] Ingram Micro USA',
-};
-
 export default () => {
   const actionRef = useRef<ActionType>();
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -860,7 +847,7 @@ export default () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
   const [tableRows, setTableRows] = useState<number[]>([]);
   const [pullOrderLoading, setPullOrderLoading] = useState(false);
-  let feedbackModelRef: React.ReactNode = createRef<HTMLElement>();
+  let feedbackModelRef: any = createRef<HTMLElement>();
   const showModal = () => {
     setIsModalVisible(true);
   };
@@ -899,7 +886,7 @@ export default () => {
         AmazonFee: '',
         PurchasePrice: '',
         Profit: '',
-        PurchasedFrom: excelStore[item.listing.vendor_id],
+        PurchasedFrom: getPurchaseFromTitle(item.listing.vendor_id),
         Notes: '',
         tagName: tagName,
       };

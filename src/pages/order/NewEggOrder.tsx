@@ -3,12 +3,12 @@ import { useEffect, useRef, useState } from 'react';
 import { Button, Typography, Space, Form, Modal, InputNumber, message, Input } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { newEggListing, shipOrder } from '../../services/order/newEggOrder';
-import { getNewEggHref } from '../../utils/jumpUrl';
-import { getKesGroup, getKesValue } from '../../utils/utils';
-import type { vendors } from '../../services/publicKeys';
-import { getPageHeight } from '../../utils/utils';
-import { getTargetHref } from '../../utils/jumpUrl';
+import { newEggListing, shipOrder } from '@/services/order/newEggOrder';
+import { getNewEggHref } from '@/utils/jumpUrl';
+import { getKesGroup, getKesValue } from '@/utils/utils';
+import type { vendors } from '@/services/publicKeys';
+import { getPageHeight,getPurchaseFromTitle } from '@/utils/utils';
+import { getTargetHref } from '@/utils/jumpUrl';
 import ParagraphText from '@/components/ParagraphText';
 import moment from 'moment';
 import { exportReport } from '@/utils/utils';
@@ -41,14 +41,20 @@ type GithubIssueItem = {
   vendor_sku: string;
   Status: string;
   Description: string;
-  OrderItemId: number;
+  OrderItemId: string;
+  QuantityOrdered: number;
+  UnitPrice: string;
+  order_newegg: {
+    OrderDate: string;
+  }
+  update_at: string;
 };
 
 const ActionModal = (props: {
   record: GithubIssueItem | any;
   visible: boolean;
   onCancel: (params: any) => void;
-  init: () => void;
+  init?: () => void;
 }) => {
   const { record, visible, onCancel, init } = props;
   const [form] = Form.useForm();
@@ -66,7 +72,7 @@ const ActionModal = (props: {
             message.success('operation succcesful!');
             setTimeout(() => {
               onCancel(false);
-              init();
+              init && init();
             }, 1000);
           } else {
             throw res.msg;
@@ -256,15 +262,7 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
     valueType: 'date',
     width: 250,
     search: false,
-    render: (
-      _,
-      record: {
-        order_newegg: {
-          OrderDate: string;
-        };
-        update_at: string;
-      },
-    ) => {
+    render: (_,record) => {
       return (
         <>
           <Space direction="vertical">
@@ -377,38 +375,28 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
   },
 ];
 
-const excelStore = {
-  10: '[Tels] Newegg',
-  5: '[Tels] TWHouse',
-  7: '[Tels] Petra Industries',
-  8: '[Tels] MA Labs',
-  6: '[Tels] Eldorado',
-  2: '[Tels] Grainger',
-  9: '[Tels] D&H Distributing',
-  11: '[Tels] Scansource',
-  13: '[Tels] Zoro',
-  1: '[Tels] Ingram Micro USA',
-};
-
 export default () => {
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState(-1);
-  const [tableRows, setTableRows] = useState<number[]>([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
+  const [tableRows, setTableRows] = useState<GithubIssueItem[]>([]);
   function clickDown() {
-    const tableData = tableRows.map((item: any) => {
-      var tagName = getKesValue('tagsData', item.listing.tag_id).tag_name;
+    const tableData = tableRows.map((item) => {
+      var tagName = item.tag_id ? getKesValue('tagsData', item.tag_id).tag_name : ""
+      let storeName = item.store_id ? getKesValue('storeData', item.store_id).name : ""
+      let sku = item.vendor_sku ? item.vendor_sku.replace(/(^\s*)|(\s*$)/g, '') : ""
       return {
-        OrderID: item.AmazonOrderId.replace(/(^\s*)|(\s*$)/g, ''),
+        OrderID: item.OrderNumber.replace(/(^\s*)|(\s*$)/g, ''),
         Date: moment().format('M/D/YYYY'),
-        Marketplace: item.storeName.replace(/(^\s*)|(\s*$)/g, ''),
-        SKU: item.SellerSKU.replace(/(^\s*)|(\s*$)/g, ''),
-        PricePerUnit: parseFloat(item.ItemPriceAmount) / parseInt(item.QuantityOrdered),
+        Marketplace: storeName.replace(/(^\s*)|(\s*$)/g, ''),
+        SKU: sku,
+        PricePerUnit: parseFloat(item.UnitPrice) / item.QuantityOrdered,
         QTY: item.QuantityOrdered.toString().replace(/(^\s*)|(\s*$)/g, ''),
         TotalRevenue: '',
         AmazonFee: '',
         PurchasePrice: '',
         Profit: '',
-        PurchasedFrom: excelStore[item.listing.vendor_id],
+        PurchasedFrom: getPurchaseFromTitle(item.vendor_id),
         Notes: '',
         tagName: tagName,
       };
@@ -425,7 +413,9 @@ export default () => {
         headerTitle="NewEgg orders"
         actionRef={actionRef}
         rowSelection={{
+          selectedRowKeys,
           onChange: (RowKeys: any[] | number[], selectRows: any[]) => {
+            setSelectedRowKeys(RowKeys);
             setTableRows(selectRows);
             // console.log('selectedRowKeys changed: ', RowKeys);
           },
@@ -468,7 +458,7 @@ export default () => {
                   QuantityOrdered: item.order_newegg.OrderQty,
                   OrderNumber: item.order_newegg.OrderNumber,
                   after_algorithm_price: item.listing.after_algorithm_price,
-                  store_id: item.listing.store_id,
+                  store_id: item.listing?.store_id,
                   tag_id: item.listing.tag_id,
                   vendor_id: item.listing.vendor_id,
                   vendor_price: item.listing.vendor_price,
@@ -523,6 +513,11 @@ export default () => {
           y: getPageHeight() - 250,
         }}
         dateFormatter="string"
+        toolBarRender={() => [
+          <Button disabled={!selectedRowKeys.length} onClick={clickDown}>
+            export
+          </Button>
+        ]}
       />
     </>
   );

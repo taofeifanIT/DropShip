@@ -1,13 +1,13 @@
 /* eslint-disable radix */
 import { useRef, useState } from 'react';
-import { Typography, Space, message,Tooltip} from 'antd';
+import { Typography, Space, message,Tooltip,Button} from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { ebayOrders } from '../../services/order/ebay';
-import { getKesGroup, getKesValue } from '../../utils/utils';
-import type { vendors } from '../../services/publicKeys';
-import { getPageHeight } from '../../utils/utils';
-import { getTargetHref } from '../../utils/jumpUrl';
+import { ebayOrders } from '@/services/order/ebay';
+import { getKesGroup, getKesValue } from '@/utils/utils';
+import type { vendors } from '@/services/publicKeys';
+import { getPageHeight,exportReport,getPurchaseFromTitle } from '@/utils/utils';
+import { getTargetHref } from '@/utils/jumpUrl';
 import ParagraphText from '@/components/ParagraphText'
 import moment from 'moment';
 import styles from './style.less';
@@ -33,9 +33,10 @@ type GithubIssueItem = {
     update_at: string;
     listing_id: number;
     listing: {
-        vendor_id?: number;
-        tag_id?: number;
-        vendor_price?: string;
+        vendor_id: number;
+        tag_id: number;
+        vendor_price: string;
+        after_algorithm_price: string;
     };
     order_ebay_id: number;
     country_id: number;
@@ -260,9 +261,18 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
     }
   },
   {
+    title: 'Quantity ordered',
+    dataIndex: 'quantity',
+    align: 'center',
+    width: 150,
+  },
+  {
     title: 'ItemPrice amount',
     dataIndex: 'ItemPriceAmount',
     width: 120,
+    render: (_,record) => {
+      return record.listing.after_algorithm_price
+    }
   },
   {
     title: 'Store',
@@ -284,6 +294,30 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
 export default () => {
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState<number>(-1);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
+  const [tableRows, setTableRows] = useState<GithubIssueItem[]>([]);
+  function clickDown() {
+    const tableData = tableRows.map((item) => {
+      var tagName = item.tag_id ? getKesValue('tagsData', item.tag_id).tag_name : ""
+      let storeName = item.store_id ? getKesValue('storeData', item.store_id).name : ""
+      return {
+        OrderID: item.orderId.replace(/(^\s*)|(\s*$)/g, ''),
+        Date: moment().format('M/D/YYYY'),
+        Marketplace: storeName.replace(/(^\s*)|(\s*$)/g, ''),
+        SKU: item.sku.replace(/(^\s*)|(\s*$)/g, ''),
+        PricePerUnit: item.listing.after_algorithm_price,
+        QTY: item.quantity.toString().replace(/(^\s*)|(\s*$)/g, ''),
+        TotalRevenue: '',
+        AmazonFee: '',
+        PurchasePrice: '',
+        Profit: '',
+        PurchasedFrom: getPurchaseFromTitle(item.listing.vendor_id),
+        Notes: '',
+        tagName: tagName,
+      };
+    });
+    exportReport(tableData);
+  }
   return (
     <>
       <ProTable<GithubIssueItem>
@@ -291,6 +325,14 @@ export default () => {
         columns={columns(() => {
           actionRef.current?.reload()
         })}
+        rowSelection={{
+          selectedRowKeys,
+          onChange: (RowKeys: any[] | number[], selectRows: any[]) => {
+            setSelectedRowKeys(RowKeys);
+            setTableRows(selectRows);
+            // console.log('selectedRowKeys changed: ', RowKeys);
+          },
+        }}
         headerTitle="Ebay orders"
         actionRef={actionRef}
         className={styles.tableStyle}
@@ -379,6 +421,11 @@ export default () => {
           y: getPageHeight() - 250,
         }}
         dateFormatter="string"
+        toolBarRender={() => [
+          <Button disabled={!selectedRowKeys.length} onClick={clickDown}>
+            export
+          </Button>
+        ]}
       />
     </>
   );
