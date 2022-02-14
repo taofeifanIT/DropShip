@@ -891,7 +891,7 @@ export default () => {
         tagName: tagName,
       };
     });
-    exportReport(tableData);
+    exportReport(tableData,1);
   }
   const returnTwhouseOrders = () => {
     const orders = tableRows

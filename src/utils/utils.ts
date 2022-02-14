@@ -170,21 +170,40 @@ export function getPurchaseFromTitle(key:number){
   return excelStore[key]
 }
 
-export function exportReport(data: any) {
-  const header = [
-    { title: 'Date', dataIndex: 'Date', key: 'Date' },
-    { title: 'Marketplace', dataIndex: 'Marketplace', key: 'Marketplace' },
-    { title: 'OrderID', dataIndex: 'OrderID', key: 'OrderID' },
-    { title: 'SKU', dataIndex: 'SKU', key: 'SKU' },
-    { title: 'PricePerUnit', dataIndex: 'PricePerUnit', key: 'PricePerUnit' },
-    { title: 'QTY', dataIndex: 'QTY', key: 'QTY' },
-    { title: 'TotalRevenue', dataIndex: 'TotalRevenue', key: 'TotalRevenue' },
-    { title: 'AmazonFee', dataIndex: 'AmazonFee', key: 'AmazonFee' },
-    { title: 'PurchasePrice', dataIndex: 'PurchasePrice', key: 'PurchasePrice', type: 'number' },
-    { title: 'Profit', dataIndex: 'Profit', key: 'Profit' },
-    { title: 'PurchasedFrom', dataIndex: 'PurchasedFrom', key: 'PurchasedFrom' },
-    { title: 'Notes', dataIndex: 'Notes', key: 'Notes' },
-    { title: 'tagName', dataIndex: 'tagName', key: 'tagName' }
-  ]
+const otherHeader = [
+  { title: 'Date', dataIndex: 'Date', key: 'Date' },
+  { title: 'Marketplace', dataIndex: 'Marketplace', key: 'Marketplace' },
+  { title: 'OrderID', dataIndex: 'OrderID', key: 'OrderID' },
+  { title: 'SKU', dataIndex: 'SKU', key: 'SKU' },
+  { title: 'PricePerUnit', dataIndex: 'PricePerUnit', key: 'PricePerUnit' },
+  { title: 'QTY', dataIndex: 'QTY', key: 'QTY' },
+  { title: 'TotalRevenue', dataIndex: 'TotalRevenue', key: 'TotalRevenue' },
+  { title: 'AmazonFee', dataIndex: 'AmazonFee', key: 'AmazonFee' },
+  { title: 'PurchasePrice', dataIndex: 'PurchasePrice', key: 'PurchasePrice', type: 'number' },
+  { title: 'Profit', dataIndex: 'Profit', key: 'Profit' },
+  { title: 'PurchasedFrom', dataIndex: 'PurchasedFrom', key: 'PurchasedFrom' },
+  { title: 'Notes', dataIndex: 'Notes', key: 'Notes' },
+  { title: 'tagName', dataIndex: 'tagName', key: 'tagName' }
+]
+
+const amazonHeader = [
+  { title: 'OrderID', dataIndex: 'OrderID', key: 'OrderID' },
+  { title: 'Date', dataIndex: 'Date', key: 'Date' },
+  { title: 'Marketplace', dataIndex: 'Marketplace', key: 'Marketplace' },
+  { title: 'SKU', dataIndex: 'SKU', key: 'SKU' },
+  { title: 'PricePerUnit', dataIndex: 'PricePerUnit', key: 'PricePerUnit' },
+  { title: 'QTY', dataIndex: 'QTY', key: 'QTY' },
+  { title: 'TotalRevenue', dataIndex: 'TotalRevenue', key: 'TotalRevenue' },
+  { title: 'AmazonFee', dataIndex: 'AmazonFee', key: 'AmazonFee' },
+  { title: 'PurchasePrice', dataIndex: 'PurchasePrice', key: 'PurchasePrice', type: 'number' },
+  { title: 'Profit', dataIndex: 'Profit', key: 'Profit' },
+  { title: 'PurchasedFrom', dataIndex: 'PurchasedFrom', key: 'PurchasedFrom' },
+  { title: 'Notes', dataIndex: 'Notes', key: 'Notes' },
+  { title: 'tagName', dataIndex: 'tagName', key: 'tagName' }
+]
+
+export function exportReport(data: any, store = 0) {
+  let header:any = otherHeader
+  if(store === 1) header = amazonHeader
   exportExcel(header, data, `Orders ${moment().format('MMDD')}.xlsx`);
 }
