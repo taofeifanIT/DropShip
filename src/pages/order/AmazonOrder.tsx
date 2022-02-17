@@ -67,7 +67,6 @@ type GithubIssueItem = {
   ASIN: string;
   Title: string;
   SellerSKU: string;
-  listing: any;
   OrderItemTotal: number;
   OrderItemId: number;
   IsReplacementOrder: number;
@@ -101,6 +100,20 @@ type GithubIssueItem = {
   ack_status: string;
   OrderStatus: string;
   order_status: number;
+  listing: {
+    vendor_id: number;
+    vendor_price: number;
+    vendor_change_time: string;
+    vendor_sku: string;
+    vpn: string;
+    brand: string;
+  };
+  order_item_record: {
+    product_info: string;
+    amount: string;
+  };
+  tagName: string;
+  storeName: string;
 };
 // https://www.google.com.hk/search?q=aini+13
 const columns: ProColumns<GithubIssueItem>[] = [
@@ -320,7 +333,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
         `\n` +
         `Reference Number: ${record.AmazonOrderId.split('-')[record.AmazonOrderId.split('-').length - 1]
         }\n`;
-      let vendorName = getKesValue("vendorData", record.vendor).vendor_name
+      let vendorName = getKesValue("vendorData", record?.vendor)?.vendor_name
       let vendorContent = record.vendor === 5 ? <Paragraph copyable={{ text: str }} style={{ display: 'inline' }}>{vendorName}</Paragraph> : vendorName
       let quantityOrdered = record.QuantityOrdered
       let vendorPrice = record.vendor_price
@@ -425,16 +438,6 @@ const columns: ProColumns<GithubIssueItem>[] = [
     dataIndex: 'after_algorithm_price',
     align: 'center',
     hideInTable: true, // 暂时关闭
-    render: (
-      _,
-      record: {
-        listing: {
-          after_algorithm_price: string;
-        };
-      },
-    ) => {
-      return <>{record?.listing && record.listing.after_algorithm_price}</>;
-    },
   },
   {
     title: 'Auto order',
@@ -497,6 +500,12 @@ const columns: ProColumns<GithubIssueItem>[] = [
         </>
       );
     }
+  },
+  {
+    title: 'Amount',
+    dataIndex: 'amount',
+    valueType: 'money',
+    width: 150,
   },
   {
     title: 'ItemPrice amount',
@@ -845,7 +854,7 @@ export default () => {
   const [limit, setLimit] = useState<configs>(getKesValue('configsData', 'order_quantity_limit'));
   const [scrollX, setScrollX] = useState(columns.reduce((sum, e) => sum + Number(e.width || 0), 0));
   const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
-  const [tableRows, setTableRows] = useState<number[]>([]);
+  const [tableRows, setTableRows] = useState<GithubIssueItem[]>([]);
   const [pullOrderLoading, setPullOrderLoading] = useState(false);
   let feedbackModelRef: any = createRef<HTMLElement>();
   const showModal = () => {
@@ -873,14 +882,13 @@ export default () => {
     });
   };
   function clickDown() {
-    const tableData = tableRows.map((item: any) => {
-      var tagName = getKesValue('tagsData', item.listing.tag_id).tag_name;
+    const tableData = tableRows.map((item: GithubIssueItem) => {
       return {
         OrderID: item.AmazonOrderId.replace(/(^\s*)|(\s*$)/g, ''),
         Date: moment().format('M/D/YYYY'),
         Marketplace: item.storeName.replace(/(^\s*)|(\s*$)/g, ''),
         SKU: item.SellerSKU.replace(/(^\s*)|(\s*$)/g, ''),
-        PricePerUnit: parseFloat(item.ItemPriceAmount) / parseInt(item.QuantityOrdered),
+        PricePerUnit: item.order_item_record ? (parseFloat(item.order_item_record.amount) / item.QuantityOrdered) : '',
         QTY: item.QuantityOrdered.toString().replace(/(^\s*)|(\s*$)/g, ''),
         TotalRevenue: '',
         AmazonFee: '',
@@ -888,7 +896,7 @@ export default () => {
         Profit: '',
         PurchasedFrom: getPurchaseFromTitle(item.listing.vendor_id),
         Notes: '',
-        tagName: tagName,
+        tagName: item.tagName,
       };
     });
     exportReport(tableData,1);
@@ -1007,31 +1015,16 @@ export default () => {
             };
             list(tempParams).then((res) => {
               const tempData = res.data.list.map(
-                (item: {
-                  listing: {
-                    vendor_id: number;
-                    vendor_price: number;
-                    vendor_change_time: string;
-                    vpn: string;
-                    brand: string;
-                  };
-                  order_amazon: {
-                    ShippingAddress: string;
-                    OrderItemTotal: string;
-                    store_id: number;
-                  };
-                  order_item_record: {
-                    product_info: string;
-                  };
-                  vendor: number;
-                }) => {
+                (item: any) => {
                   return {
                     ...item,
                     storeName: getKesValue('storeData', item.order_amazon.store_id)?.name,
-                    vendorName: getKesValue('vendorData', item?.listing.vendor_id)?.vendor_name,
+                    tagName: getKesValue('tagsData', item.listing?.tag_id)?.tag_name,
+                    vendorName: getKesValue('vendorData', item?.listing?.vendor_id)?.vendor_name,
                     vendor_price: item.listing ? item?.listing.vendor_price : '-',
                     vendor: item.listing ? item?.listing.vendor_id : -10000,
                     City: JSON.parse(item.order_amazon.ShippingAddress).City || '-',
+                    amount: item.order_item_record?.amount,
                     AddressType: JSON.parse(item.order_amazon.ShippingAddress).AddressType || '-',
                     PostalCode: JSON.parse(item.order_amazon.ShippingAddress).PostalCode || '-',
                     StateOrRegion:

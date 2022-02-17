@@ -316,7 +316,7 @@ export default () => {
         tagName: tagName,
       };
     });
-    exportReport(tableData);
+    exportReport(tableData,1);
   }
   return (
     <>
