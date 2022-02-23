@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Row, Col, Card, Typography, Input, List, Spin, Tabs, DatePicker, Select,Badge } from 'antd';
-import { Rose, Line, Column,G2,Liquid } from '@ant-design/charts';
+import { Rose, Line, Column,G2,Liquid,Pie } from '@ant-design/charts';
 import ProTable from '@ant-design/pro-table';
 import type { ProColumns } from '@ant-design/pro-table';
 import {
@@ -615,30 +615,56 @@ const RankingList = () => {
   );
 };
 
-
-const DemoLiquid: React.FC = () => {
-  const [obj, setObj] = useState<{
-    waiting_update_count: number;
-    mq_count: number;
-  }>({
-    waiting_update_count: 0,
-    mq_count: 0
-  })
-  var config = {
-    percent: obj.waiting_update_count / 100,
-    style: { height: '200px' },
-    outline: {
-      border: 4,
-      distance: 8,
-    },
-    wave: { length: 128 },
-  };
+const DemoPie = () => {
+  const [data, setData] = useState<any>([])
   const [loading,setLoading] = useState(false)
+  const config = {
+    appendPadding: 10,
+    data,
+    angleField: 'value',
+    colorField: 'key',
+    radius: 0.8,
+    legend: false,
+    style: {
+      height: 200
+    },
+    label: {
+      type: 'inner',
+      offset: '-50%',
+      style: {
+        fill: '#fff',
+        fontSize: 18,
+        textAlign: 'center',
+      },
+    },
+    pieStyle: ({ key }) => {
+      if (key === 'mq_count') {
+        return {
+          fill: 'p(a)https://gw.alipayobjects.com/zos/antfincdn/FioHMFgIld/pie-wenli1.png',
+        };
+      }
+
+      return {
+        fill: 'p(a)https://gw.alipayobjects.com/zos/antfincdn/Ye2DqRx%2627/pie-wenli2.png',
+      };
+    },
+    interactions: [
+      {
+        type: 'element-single-selected',
+      },
+    ],
+  };
   const getRate = () => {
     setLoading(true);
     mqDataStatus()
       .then((res) => {
-        setObj(res.data);
+        let tempData = Object.keys(res.data).map(key => {
+          return {
+            key,
+            value: res.data[key]
+          }
+        })
+        setData(tempData);
       })
       .finally(() => {
         setLoading(false);
@@ -652,24 +678,24 @@ const DemoLiquid: React.FC = () => {
   }, []);
   return (<Spin spinning={loading}>
     <Card title='Task queue execution status' size='small' bordered={false} style={{marginTop: '5px'}}>
-                  <Row>
+    <Row>
                       <Col span={14}>
-                        <Liquid {...config} />
+                        <Pie {...config} />
                       </Col>
                       <Col span={10}>
                       <br />
-                      <Badge color="#2db7f5" text={`Number of queue tasks ${obj.mq_count}`} />
+                      <Badge color="#2db7f5" text={`Number of queue tasks ${data[0]?.value}`} />
                       <br />
                       <br />
-                      <Badge color="#ff0000" text={`Number of tasks to be performed ${obj.waiting_update_count}`} />
+                      <Badge color="#ff0000" text={`Number of tasks to be performed ${data[1]?.value}`} />
                       <br />
                       <br />
-                      <Badge color="yellow" text="not yet" />
                       </Col>
                   </Row>
                 </Card>
-  </Spin>);
+  </Spin>);;
 };
+
 
 export default () => {
   const [totalObj, setTotalObj] = useState<{
@@ -823,7 +849,8 @@ export default () => {
           <Card bodyStyle={{ paddingTop: '10px' }}>
             <Row gutter={16}>
               <Col className="gutter-row" span={6}>
-              <DemoLiquid />
+              {/* <DemoLiquid /> */}
+              <DemoPie />
               </Col>
               <Col className="gutter-row" span={12}>
                 <div>

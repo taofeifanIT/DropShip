@@ -36,10 +36,11 @@ import {
   getAmazonOrders,
   updateTrial,
   autoOrder,
+  tagStatus,
 } from '@/services/order/order';
 import { getPageHeight } from '@/utils/utils';
 import { getTargetHref, getAsonHref } from '@/utils/jumpUrl';
-import { getKesGroup, getKesValue,getPurchaseFromTitle } from '@/utils/utils';
+import { getKesGroup, getKesValue, getPurchaseFromTitle } from '@/utils/utils';
 import { vendors, configs } from '@/services/publicKeys';
 import moment from 'moment';
 import styles from './style.less';
@@ -114,6 +115,7 @@ type GithubIssueItem = {
   };
   tagName: string;
   storeName: string;
+  is_auto: 0 | 1; // 1:可自动下单  0： 手动下单
 };
 // https://www.google.com.hk/search?q=aini+13
 const columns: ProColumns<GithubIssueItem>[] = [
@@ -449,6 +451,24 @@ const columns: ProColumns<GithubIssueItem>[] = [
     },
   },
   {
+    title: 'Order type',
+    dataIndex: 'is_auto',
+    hideInTable: true,
+    valueEnum: {
+      '1': { text: 'Automatic order', status: 'Error' },
+      '0': { text: 'Manual order processing', status: 'Success' },
+    },
+  },
+  {
+    title: 'Trial status',
+    dataIndex: 'is_trial',
+    hideInTable: true,
+    valueEnum: {
+      '1': { text: 'open', status: 'Error' },
+      '0': { text: 'close', status: 'Success' },
+    },
+  },
+  {
     title: 'OrderStatus',
     dataIndex: 'status',
     valueType: 'select',
@@ -479,7 +499,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
           statusDesc = 'The logistics tracking number has been obtained'
           break
         default:
-          statusDesc = 'Unknown operation Operation code:'+record.order_status
+          statusDesc = 'Unknown operation Operation code:' + record.order_status
       }
       return (
         <>
@@ -523,32 +543,117 @@ const columns: ProColumns<GithubIssueItem>[] = [
       return (
         <>
           Issue tracking:
-          <IssueSwitch record={record} />
+          {/* <IssueSwitch record={record} /> */}
+          <OrderSwitch
+            params={{
+              id: record.order_amazon.id
+            }}
+            targetKey={"issue_tracking"}
+            targetValue={record.order_amazon.issue_tracking}
+            checkedChildren={"tracking"}
+            unCheckedChildren={"No trace"}
+            api={updateIssueTrack}
+          />
           <br />
           Trial to sell:
-          <SoldSwitch record={record} />
-          Automatic order:
-          <AuToOrderSwitch record={record} />
+          <OrderSwitch
+            params={{
+              vendor_id: record.listing.vendor_id,
+              vendor_sku: record.listing.vendor_sku
+            }}
+            targetKey={"is_trial"}
+            targetValue={record.is_trial}
+            checkedChildren={"Trial to sell"}
+            unCheckedChildren={"normal sales"}
+            api={updateTrial}
+            isFalseDisbled
+          />
+          {/* <SoldSwitch record={record} /> */}
+          {record.is_auto ? (<>Automatic order:
+            <OrderSwitch
+              params={{
+                amazonOrderId: record.AmazonOrderId,
+              }}
+              targetKey={"auto_order"}
+              targetValue={record.auto_order}
+              checkedChildren={"Have order"}
+              unCheckedChildren={"Place the order"}
+              api={autoOrder}
+              isTrueDisbled
+            /></>) :
+            (<><br /><br /><ManualorderBtn record={record} /></>)
+          }
         </>
       );
     },
   },
 ];
 
-const IssueSwitch = (props: { record: GithubIssueItem }) => {
-  const { record } = props;
-  const [issueStatus, setIssueStatus] = useState<any>(!!record.order_amazon.issue_tracking);
-  const [switchLoading, setSwaitchLoading] = useState(false);
-  const changeIssueType = (val: number) => {
-    setSwaitchLoading(true);
-    updateIssueTrack({
-      id: record.order_amazon.id,
-      issue_tracking: val,
+const ManualorderBtn = (props: { record: GithubIssueItem }) => {
+  const [loading, setLoading] = useState(false);
+  const [issueStatus, setIssueStatus] = useState<any>(!!props.record.order_status);
+  const chagneManualOrderStatus = () => {
+    setLoading(true);
+    tagStatus({
+      amazonOrderId: props.record.AmazonOrderId,
     })
       .then((res) => {
         if (res.code) {
+          message.success(`Operation is successful`);
+          setIssueStatus(true)
+        } else {
+          throw res.msg;
+        }
+      })
+      .catch((e) => {
+        message.error(e);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }
+  return <Button type="primary" loading={loading} disabled={issueStatus} size='small' onClick={chagneManualOrderStatus}>Manual order</Button>
+}
+
+
+
+const OrderSwitch = (props: {
+  params: any;
+  targetKey: string;
+  targetValue: number;
+  checkedChildren: string;
+  unCheckedChildren: string;
+  api: any;
+  isFalseDisbled?: boolean;
+  isTrueDisbled?: boolean;
+}) => {
+  const {
+    params,
+    targetKey,
+    targetValue,
+    checkedChildren,
+    unCheckedChildren,
+    api,
+    isFalseDisbled = false,
+    isTrueDisbled = false
+  } = props;
+  const [issueStatus, setIssueStatus] = useState<boolean>(!!targetValue);
+  const [switchLoading, setSwaitchLoading] = useState(false);
+  let inlineDisabled = false
+  if (isFalseDisbled && !issueStatus) {
+    inlineDisabled = true
+  }
+  if (isTrueDisbled && issueStatus) {
+    inlineDisabled = true
+  }
+  const changeIssueType = (val: number) => {
+    params[targetKey] = val
+    setSwaitchLoading(true);
+    api(params)
+      .then((res: any) => {
+        if (res.code) {
           message.success('operation successful!');
-          setIssueStatus(val);
+          setIssueStatus(!!val);
         }
       })
       .finally(() => {
@@ -556,108 +661,23 @@ const IssueSwitch = (props: { record: GithubIssueItem }) => {
       });
   };
   useEffect(() => {
-    setIssueStatus(!!record.order_amazon.issue_tracking);
-  }, [record.order_amazon.issue_tracking]);
+    setIssueStatus(!!targetValue);
+  }, [targetValue]);
   return (
     <Switch
-      checkedChildren="tracking"
-      unCheckedChildren="No trace"
+      checkedChildren={checkedChildren}
+      unCheckedChildren={unCheckedChildren}
       loading={switchLoading}
       checked={issueStatus}
+      disabled={inlineDisabled}
       style={{ width: 90 }}
-      onChange={(val: any) => {
-        changeIssueType(val + 0);
+      onChange={() => {
+        changeIssueType(+!issueStatus);
       }}
     />
   );
 };
 
-const SoldSwitch = (props: { record: GithubIssueItem }) => {
-  const { record } = props;
-  const [issueStatus, setIssueStatus] = useState<any>(!!record.is_trial);
-  const [switchLoading, setSwaitchLoading] = useState(false);
-  const changeIssueType = (status: boolean) => {
-    updateTrial({
-      vendor_id: record.listing.vendor_id,
-      vendor_sku: record.listing.vendor_sku,
-      is_trial: +status,
-    })
-      .then((res) => {
-        if (res.code) {
-          message.success(`Sku ${record.listing.vendor_sku} will now be sold normally`);
-          setIssueStatus(+status);
-        } else {
-          throw res.msg;
-        }
-      })
-      .catch((e) => {
-        message.error(e);
-      })
-      .finally(() => {
-        setSwaitchLoading(false);
-      });
-  };
-  useEffect(() => {
-    setIssueStatus(!!record.is_trial);
-  }, [record.is_trial]);
-  return (
-    <div>
-      <Switch
-        checkedChildren="Trial to sell"
-        unCheckedChildren="normal sales"
-        disabled={!issueStatus}
-        loading={switchLoading}
-        checked={issueStatus}
-        onChange={(val) => {
-          !val && changeIssueType(val);
-        }}
-      />
-    </div>
-  );
-};
-
-const AuToOrderSwitch = (props: { record: GithubIssueItem }) => {
-  const { record } = props;
-  const [issueStatus, setIssueStatus] = useState<any>(!!record.auto_order);
-  const [switchLoading, setSwaitchLoading] = useState(false);
-  const changeIssueType = (status: boolean) => {
-    setSwaitchLoading(true);
-    autoOrder({
-      amazonOrderId: record.AmazonOrderId,
-    })
-      .then((res) => {
-        if (res.code) {
-          message.success(`Operation is successful`);
-          setIssueStatus(+status);
-        } else {
-          throw res.msg;
-        }
-      })
-      .catch((e) => {
-        message.error(e);
-      })
-      .finally(() => {
-        setSwaitchLoading(false);
-      });
-  };
-  useEffect(() => {
-    setIssueStatus(!!record.auto_order);
-  }, [record.auto_order]);
-  return (
-    <div>
-      <Switch
-        checkedChildren="Have order"
-        unCheckedChildren="Place the order"
-        disabled={issueStatus}
-        loading={switchLoading}
-        checked={issueStatus}
-        onChange={(val) => {
-          val && changeIssueType(val);
-        }}
-      />
-    </div>
-  );
-};
 
 type feedbackDataType = {
   key: string;
@@ -899,7 +919,7 @@ export default () => {
         tagName: item.tagName,
       };
     });
-    exportReport(tableData,1);
+    exportReport(tableData, 1);
   }
   const returnTwhouseOrders = () => {
     const orders = tableRows

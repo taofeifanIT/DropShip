@@ -70,3 +70,11 @@ export async function autoOrder(params: { amazonOrderId: string }) {
     data: params,
   });
 }
+
+export async function tagStatus(params: { amazonOrderId: string }) {
+  return request('/api/amazon/tag_status', {
+    method: 'POST',
+    data: params,
+  });
+}
+
