@@ -42,3 +42,13 @@ export async function updateReturnStatus(params: updateReturnStatusItem) {
     data: params,
   });
 }
+
+export async function manualListing(params: {
+  store_ids:string;
+  ids: string;
+}) {
+  return request('/api/netsuite/manual_listing', {
+    method: 'post',
+    data: params,
+  });
+}

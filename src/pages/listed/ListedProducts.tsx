@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState,useImperativeHandle } from 'react';
+import React, { useEffect, useRef, useState, useImperativeHandle } from 'react';
 import {
   ReconciliationOutlined,
   AmazonOutlined,
@@ -81,7 +81,7 @@ type GithubIssueItem = {
   vendor_price: string;
   update_at: number;
   sales: number;
-  marketplace_and_db_diff: number; 
+  marketplace_and_db_diff: number;
   batch_id: number;
   waiting_update_time: number;
   unlisting_time: number;
@@ -89,7 +89,7 @@ type GithubIssueItem = {
   buybox_info: {
     ListingPrice: {
       Amount: number | string
-    } 
+    }
   } | string | any
 };
 
@@ -268,642 +268,642 @@ const EditLinKStr = (props: {
 };
 const columns = (
   editFn: (visible: boolean, id: number, record: any) => void,
-  callback?:(record:any) => void
+  callback?: (record: any) => void
 ): ProColumns<GithubIssueItem>[] => [
-  {
-    title: 'Tag name',
-    dataIndex: 'tag_id',
-    valueType: 'select',
-    hideInTable: true,
-    renderFormItem: (_, { type, defaultRender, formItemProps, fieldProps}, form) => {
-      if (type === 'form') {
-        return null;
+    {
+      title: 'Tag name',
+      dataIndex: 'tag_id',
+      valueType: 'select',
+      hideInTable: true,
+      renderFormItem: (_, { type, defaultRender, formItemProps, fieldProps }, form) => {
+        if (type === 'form') {
+          return null;
+        }
+        const status = form.getFieldValue('state');
+        if (status !== 'open') {
+          return (
+            // value 和 onchange 会通过 form 自动注入。
+            <Select
+              {...fieldProps}
+              showSearch
+              style={{ width: '100%' }}
+              placeholder="Select a tag"
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option?.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {getKesGroup('tagsData').map((item: tags) => {
+                return <Select.Option key={`op${item.id}`} value={item.id}>{item.tag_name}</Select.Option>;
+              })}
+            </Select>
+          );
+        }
+        return defaultRender(_);
       }
-      const status = form.getFieldValue('state');
-      if (status !== 'open') {
+    },
+    {
+      title: 'vendor_sku',
+      dataIndex: 'vendor_sku',
+      hideInTable: true,
+    },
+    {
+      dataIndex: 'index',
+      valueType: 'indexBorder',
+      width: 48,
+    },
+    {
+      title: 'product',
+      dataIndex: 'id',
+      search: false,
+      width: 300,
+      sorter: true,
+      render: (_, record: any) => {
+        const tagTitle = getKesValue('tagsData', record.tag_id)?.tag_name;
         return (
-          // value 和 onchange 会通过 form 自动注入。
-          <Select
-          {...fieldProps}
-            showSearch
-            style={{ width: '100%' }}
-            placeholder="Select a tag"
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option?.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-          >
-            {getKesGroup('tagsData').map((item: tags) => {
-          return <Select.Option key={`op${item.id}`} value={item.id}>{item.tag_name}</Select.Option>;
-        })}
-          </Select>
-        );
-      }
-      return defaultRender(_);
-    }
-  },
-  {
-    title: 'vendor_sku',
-    dataIndex: 'vendor_sku',
-    hideInTable: true,
-  },
-  {
-    dataIndex: 'index',
-    valueType: 'indexBorder',
-    width: 48,
-  },
-  {
-    title: 'product',
-    dataIndex: 'id',
-    search: false,
-    width: 300,
-    sorter: true,
-    render: (_, record: any) => {
-      const tagTitle = getKesValue('tagsData', record.tag_id)?.tag_name;
-      return (
-        <>
-          <Space direction="vertical">
-            <Text type="secondary">
-              ID:
-              <a target="_blank" href={`${getTargetHref(record.vendor_id,record.ts_sku)}`}>
-                {record.ts_sku}
-              </a>
-              {record.notes && <Info content={record.notes} />}
-              <EditOutlined onClick={() => {
-                callback && callback(record)
-              }} />
-            </Text>
-            {record.asin && (
+          <>
+            <Space direction="vertical">
               <Text type="secondary">
-                <AmazonOutlined />
-                Asin: <EditLinKStr record={record} />
+                ID:
+                <a target="_blank" href={`${getTargetHref(record.vendor_id, record.ts_sku)}`}>
+                  {record.ts_sku}
+                </a>
+                {record.notes && <Info content={record.notes} />}
+                <EditOutlined onClick={() => {
+                  callback && callback(record)
+                }} />
               </Text>
-            )}
-            {record.newegg_id && (
+              {record.asin && (
+                <Text type="secondary">
+                  <AmazonOutlined />
+                  Asin: <EditLinKStr record={record} />
+                </Text>
+              )}
+              {record.newegg_id && (
+                <Text type="secondary">
+                  newegg:{' '}
+                  <Text>
+                    <a target="_Blank" href={getNewEggHref(record.newegg_id)}>
+                      {record.newegg_id}
+                    </a>
+                  </Text>
+                </Text>
+              )}
               <Text type="secondary">
-                newegg:{' '}
+                Tag Name:{' '}
+                <Text style={{ width: '210px' }} title={tagTitle} ellipsis>
+                  {tagTitle}
+                </Text>
+              </Text>
+              <Text type="secondary">
+                Description: <ParagraphText content={record.title} width={780} />
+              </Text>
+            </Space>
+          </>
+        );
+      },
+    },
+    {
+      title: 'Price',
+      dataIndex: 'Price',
+      search: false,
+      width: 170,
+      render: (_, record) => {
+        const getText = (pop: string) => {
+          // 垃圾后台的数据不规范而写的无语判断
+          if (record.buybox_info === '[]' || record.buybox_info === null) {
+            return <span>not yet</span>;
+          }
+          return `${JSON.parse(record.buybox_info)[pop].Amount}$`;
+        };
+        const getMarketPlace = () => {
+          // marketplace大于50时，marketplace超过(marketplace/buyBox)30%时，文本变红处理
+          const marketplace = parseFloat(record.store_price_now);
+          if (record.buybox_info !== '[]' && record.buybox_info !== null) {
+            const bugBox = parseFloat(JSON.parse(record.buybox_info).ListingPrice.Amount);
+            if (marketplace > 50) {
+              const adtrus = marketplace - bugBox;
+              const adtrusRate = (adtrus / marketplace) * 100;
+              if (adtrusRate > 30) {
+                return (<Tooltip placement="top" title={'The market price is over $50 and over 30% (market price /buyBox)'}>
+                  <span style={{ color: 'red' }}>{marketplace}</span>
+                </Tooltip>)
+              }
+            }
+          }
+          return <span>{marketplace}</span>;
+        };
+        return (
+          <>
+            <Space direction="vertical">
+              <Text type="secondary">
+                Marketplace: <Text>{getMarketPlace()}$</Text>
+              </Text>
+              <Text type="secondary">
+                After algorithm: <Text>{record.after_algorithm_price}$</Text>
+              </Text>
+              <Text type="secondary">
+                Price offset: <Text>{record.price_offset}$</Text>
+              </Text>
+              <Text type="secondary">
+                Lowest Listed: <Text>{getText('LandedPrice')}</Text>
+              </Text>
+              <Text type="secondary">
+                Buy Box: <Text>{getText('ListingPrice')}</Text>
+              </Text>
+            </Space>
+          </>
+        );
+      },
+    },
+    {
+      title: 'quantity',
+      dataIndex: 'quantity',
+      search: false,
+      width: 180,
+      render: (_, record: any) => {
+        return (
+          <>
+            <Space direction="vertical">
+              <Text type="secondary">
+                Marketplace Inventory: <Text>{record.listing_to_store_quantity}</Text>
+              </Text>
+              <Text type="secondary">
+                Quantity Offset: <Text>{record.quantity_offset}</Text>
+              </Text>
+              <Text type="secondary">
+                vendor quantity: <Text>{record.vendor_quantity}</Text>
+              </Text>
+            </Space>
+          </>
+        );
+      },
+    },
+    {
+      title: 'Multi',
+      dataIndex: 'Multi',
+      search: false,
+      width: 200,
+      render: (_, record: any) => {
+        const getCountryImg = (countryName: string) => {
+          switch (countryName) {
+            case 'UK':
+              return (
+                <img
+                  width="20"
+                  src={
+                    'https://dss2.baidu.com/6ONYsjip0QIZ8tyhnq/it/u=1640819749,3704395080&fm=58&app=83&f=JPG?w=200&h=132&s=7097A97266B303A3091E6AEC0300A006'
+                  }
+                />
+              );
+            case 'US':
+              return (
+                <img
+                  width="20"
+                  src={
+                    'https://dss2.baidu.com/6ONYsjip0QIZ8tyhnq/it/u=806796136,1072976903&fm=58&app=83&f=JPEG?w=200&h=132&s=7063B1546F9C31EBB6AD4FDD03001006'
+                  }
+                />
+              );
+            default:
+              return null
+          }
+        };
+        return (
+          <>
+            <Space direction="vertical">
+              <Text type="secondary">
+                Marketplace:
+                <Text>{getKesValue('marketPlaceData', record.marketplace_id)?.marketplace}</Text>
+              </Text>
+              <Text type="secondary">
+                Store: <Text>{getKesValue('storeData', record.store_id)?.name}</Text>
+              </Text>
+              <Text type="secondary">
+                Country:
+                <Text>{getCountryImg(getKesValue('countryData', record.country_id)?.country)}</Text>
+              </Text>
+            </Space>
+          </>
+        );
+      },
+    },
+    {
+      title: 'time',
+      dataIndex: 'time',
+      search: false,
+      width: 360,
+      render: (_, record) => {
+        const isBeyondTime = () => {
+          if (record.waiting_update_time) {
+            var hours = Math.abs(moment(record.waiting_update_time * 1000).diff(moment(), 'hours'))
+            if (hours >= 24) {
+              return (<Tooltip placement="top" title={"It's been over 24 hours"}>
+                <span style={{ color: 'red' }}>{moment(record.waiting_update_time * 1000).format('YYYY-MM-DD HH:mm:ss')}</span>
+              </Tooltip>)
+            }
+            return <span>{record.listing_status}</span>
+          }
+          return <span>not yet</span>
+        }
+        return (
+          <>
+            <Space direction="vertical">
+              <Text type="secondary">
+                task_update_at:
                 <Text>
-                  <a target="_Blank" href={getNewEggHref(record.newegg_id)}>
-                    {record.newegg_id}
+                  {(record.task_update_at &&
+                    moment(parseInt(`${record.task_update_at}000`)).format('YYYY-MM-DD HH:mm:ss')) ||
+                    'not yet'}
+                </Text>
+              </Text>
+              <Text type="secondary">
+                update_at:{' '}
+                <Text>
+                  <a
+                    onClick={() => {
+                      history.push(`/log/OperationLog?batch_id=${record.batch_id}`);
+                    }}
+                  >
+                    {(record.update_at &&
+                      moment(parseInt(`${record.update_at}000`)).format('YYYY-MM-DD HH:mm:ss')) ||
+                      'not yet'}
                   </a>
                 </Text>
               </Text>
-            )}
-            <Text type="secondary">
-              Tag Name:{' '}
-              <Text style={{ width: '210px' }} title={tagTitle} ellipsis>
-                {tagTitle}
-              </Text>
-            </Text>
-            <Text type="secondary">
-              Description: <ParagraphText content={record.title} width={780} />
-            </Text>
-          </Space>
-        </>
-      );
-    },
-  },
-  {
-    title: 'Price',
-    dataIndex: 'Price',
-    search: false,
-    width: 170,
-    render: (_, record) => {
-      const getText = (pop: string) => {
-        // 垃圾后台的数据不规范而写的无语判断
-        if (record.buybox_info === '[]' || record.buybox_info === null) {
-          return <span>not yet</span>;
-        }
-        return `${JSON.parse(record.buybox_info)[pop].Amount  }$`;
-      };
-      const getMarketPlace = () => {
-        // marketplace大于50时，marketplace超过(marketplace/buyBox)30%时，文本变红处理
-        const marketplace = parseFloat(record.store_price_now);
-        if (record.buybox_info !== '[]' && record.buybox_info !== null) {
-          const bugBox = parseFloat(JSON.parse(record.buybox_info).ListingPrice.Amount);
-          if (marketplace > 50) {
-            const adtrus = marketplace - bugBox;
-            const adtrusRate = (adtrus / marketplace) * 100;
-            if (adtrusRate > 30) {
-              return (<Tooltip placement="top" title={'The market price is over $50 and over 30% (market price /buyBox)'}>
-                          <span style={{ color: 'red' }}>{marketplace}</span>
-                      </Tooltip>)
-            }
-          }
-        }
-        return <span>{marketplace}</span>;
-      };
-      return (
-        <>
-          <Space direction="vertical">
-            <Text type="secondary">
-              Marketplace: <Text>{getMarketPlace()}$</Text>
-            </Text>
-            <Text type="secondary">
-              After algorithm: <Text>{record.after_algorithm_price}$</Text>
-            </Text>
-            <Text type="secondary">
-              Price offset: <Text>{record.price_offset}$</Text>
-            </Text>
-            <Text type="secondary">
-              Lowest Listed: <Text>{getText('LandedPrice')}</Text>
-            </Text>
-            <Text type="secondary">
-              Buy Box: <Text>{getText('ListingPrice')}</Text>
-            </Text>
-          </Space>
-        </>
-      );
-    },
-  },
-  {
-    title: 'quantity',
-    dataIndex: 'quantity',
-    search: false,
-    width: 180,
-    render: (_, record: any) => {
-      return (
-        <>
-          <Space direction="vertical">
-            <Text type="secondary">
-              Marketplace Inventory: <Text>{record.listing_to_store_quantity}</Text>
-            </Text>
-            <Text type="secondary">
-              Quantity Offset: <Text>{record.quantity_offset}</Text>
-            </Text>
-            <Text type="secondary">
-              vendor quantity: <Text>{record.vendor_quantity}</Text>
-            </Text>
-          </Space>
-        </>
-      );
-    },
-  },
-  {
-    title: 'Multi',
-    dataIndex: 'Multi',
-    search: false,
-    width: 200,
-    render: (_, record: any) => {
-      const getCountryImg = (countryName: string) => {
-        switch (countryName) {
-          case 'UK':
-            return (
-              <img
-                width="20"
-                src={
-                  'https://dss2.baidu.com/6ONYsjip0QIZ8tyhnq/it/u=1640819749,3704395080&fm=58&app=83&f=JPG?w=200&h=132&s=7097A97266B303A3091E6AEC0300A006'
-                }
-              />
-            );
-          case 'US':
-            return (
-              <img
-                width="20"
-                src={
-                  'https://dss2.baidu.com/6ONYsjip0QIZ8tyhnq/it/u=806796136,1072976903&fm=58&app=83&f=JPEG?w=200&h=132&s=7063B1546F9C31EBB6AD4FDD03001006'
-                }
-              />
-            );
-          default:
-            return null
-        }
-      };
-      return (
-        <>
-          <Space direction="vertical">
-            <Text type="secondary">
-              Marketplace:
-              <Text>{getKesValue('marketPlaceData', record.marketplace_id)?.marketplace}</Text>
-            </Text>
-            <Text type="secondary">
-              Store: <Text>{getKesValue('storeData', record.store_id)?.name}</Text>
-            </Text>
-            <Text type="secondary">
-              Country:
-              <Text>{getCountryImg(getKesValue('countryData', record.country_id)?.country)}</Text>
-            </Text>
-          </Space>
-        </>
-      );
-    },
-  },
-  {
-    title: 'time',
-    dataIndex: 'time',
-    search: false,
-    width: 360,
-    render: (_, record) => {
-      const isBeyondTime = () => {
-        if(record.waiting_update_time){
-          var hours = Math.abs(moment(record.waiting_update_time * 1000).diff(moment(), 'hours'))
-          if(hours >=24){
-            return(<Tooltip placement="top" title={"It's been over 24 hours"}>
-                      <span style={{ color: 'red' }}>{moment(record.waiting_update_time * 1000).format('YYYY-MM-DD HH:mm:ss')}</span>
-                   </Tooltip>)
-          }
-          return <span>{record.listing_status}</span>
-        }
-        return <span>not yet</span>
-      }
-      return (
-        <>
-          <Space direction="vertical">
-            <Text type="secondary">
-              task_update_at:
-              <Text>
-                {(record.task_update_at &&
-                  moment(parseInt(`${record.task_update_at  }000`)).format('YYYY-MM-DD HH:mm:ss')) ||
-                  'not yet'}
-              </Text>
-            </Text>
-            <Text type="secondary">
-              update_at:{' '}
-              <Text>
-                <a
-                  onClick={() => {
-                    history.push(`/log/OperationLog?batch_id=${record.batch_id}`);
-                  }}
-                >
-                  {(record.update_at &&
-                    moment(parseInt(`${record.update_at  }000`)).format('YYYY-MM-DD HH:mm:ss')) ||
+              <Text type="secondary">
+                price_and_quantity_change_time:
+                <Text>
+                  {(record.price_and_quantity_change_time &&
+                    moment(parseInt(`${record.price_and_quantity_change_time}000`)).format(
+                      'YYYY-MM-DD HH:mm:ss',
+                    )) ||
                     'not yet'}
-                </a>
+                </Text>
               </Text>
-            </Text>
-            <Text type="secondary">
-              price_and_quantity_change_time:
-              <Text>
-                {(record.price_and_quantity_change_time &&
-                  moment(parseInt(`${record.price_and_quantity_change_time  }000`)).format(
-                    'YYYY-MM-DD HH:mm:ss',
-                  )) ||
-                  'not yet'}
+              <Text type="secondary">
+                add_time:
+                <Text>
+                  {(record.add_time &&
+                    moment(parseInt(`${record.add_time}000`)).format('YYYY-MM-DD HH:mm:ss')) ||
+                    'not yet'}
+                </Text>
               </Text>
-            </Text>
-            <Text type="secondary">
-              add_time:
-              <Text>
-                {(record.add_time &&
-                  moment(parseInt(`${record.add_time  }000`)).format('YYYY-MM-DD HH:mm:ss')) ||
-                  'not yet'}
+              <Text type="secondary">
+                waiting_update_time:
+                <Text>{isBeyondTime()}</Text>
               </Text>
-            </Text>
-            <Text type="secondary">
-            waiting_update_time:
-              <Text>{isBeyondTime()}</Text>
-            </Text>
-            <Text type="secondary">
-            unlisting_time:
-              <Text>
-                {(record.unlisting_time &&
-                  moment(parseInt(`${record.unlisting_time  }000`)).format('YYYY-MM-DD HH:mm:ss')) ||
-                  'not yet'}
+              <Text type="secondary">
+                unlisting_time:
+                <Text>
+                  {(record.unlisting_time &&
+                    moment(parseInt(`${record.unlisting_time}000`)).format('YYYY-MM-DD HH:mm:ss')) ||
+                    'not yet'}
+                </Text>
               </Text>
-            </Text>
-          </Space>
-        </>
-      );
-    },
-  },
-  {
-    title: 'vendor',
-    dataIndex: 'vendor',
-    search: false,
-    width: 150,
-    render: (_, record) => {
-      return (
-        <>
-          <Space direction="vertical">
-            <Text type="secondary">
-              vendor: <Text>{getKesValue('vendorData', record.vendor_id)?.vendor_name}</Text>
-            </Text>
-            <Text type="secondary">
-              vendor_sku: <Text>{record.vendor_sku}</Text>
-            </Text>
-            <Text type="secondary">
-              vendor_quantity: <Text>{record.vendor_quantity}</Text>
-            </Text>
-            <Text type="secondary">
-              vendor_price: <Text>{record.vendor_price}</Text>
-            </Text>
-          </Space>
-        </>
-      );
-    },
-  },
-  {
-    title: 'Asin',
-    dataIndex: 'asin',
-    copyable: true,
-    hideInTable: true,
-  },
-  {
-    title: 'is_sale',
-    dataIndex: 'is_sale',
-    valueType: 'select',
-    hideInTable: true,
-    request: async () => {
-      return [
-        {
-          label: "Have sold",
-          value: 1,
-        },
-        {
-          label: 'Unsold',
-          value: 0,
-        },
-      ];
-    },
-  },
-  {
-    title: 'Sort',
-    dataIndex: 'sort_field',
-    valueType: 'select',
-    hideInTable: true,
-    renderFormItem: (_, { type, defaultRender}, form) => {
-      const basicData = getKesGroup('listing_sort_field')
-      const options = [...Object.keys(basicData).map((item: listing_sort_field)=>{
-        return {
-          value: item,
-          label: basicData[item],
-          children:[
-            {
-              value: `${item} desc`,
-              label: `desc`,
-            },
-            {
-              value: `${item} asc`,
-              label: `asc`,
-            },
-          ]
-        }
-      })];
-      if (type === 'form') {
-        return null;
-      }
-      const status = form.getFieldValue('state');
-      if (status !== 'open') {
-        return (
-          // value 和 onchange 会通过 form 自动注入。
-          <Cascader options={options} placeholder="Please select" />
+            </Space>
+          </>
         );
+      },
+    },
+    {
+      title: 'vendor',
+      dataIndex: 'vendor',
+      search: false,
+      width: 150,
+      render: (_, record) => {
+        return (
+          <>
+            <Space direction="vertical">
+              <Text type="secondary">
+                vendor: <Text>{getKesValue('vendorData', record.vendor_id)?.vendor_name}</Text>
+              </Text>
+              <Text type="secondary">
+                vendor_sku: <Text>{record.vendor_sku}</Text>
+              </Text>
+              <Text type="secondary">
+                vendor_quantity: <Text>{record.vendor_quantity}</Text>
+              </Text>
+              <Text type="secondary">
+                vendor_price: <Text>{record.vendor_price}</Text>
+              </Text>
+            </Space>
+          </>
+        );
+      },
+    },
+    {
+      title: 'Asin',
+      dataIndex: 'asin',
+      copyable: true,
+      hideInTable: true,
+    },
+    {
+      title: 'is_sale',
+      dataIndex: 'is_sale',
+      valueType: 'select',
+      hideInTable: true,
+      request: async () => {
+        return [
+          {
+            label: "Have sold",
+            value: 1,
+          },
+          {
+            label: 'Unsold',
+            value: 0,
+          },
+        ];
+      },
+    },
+    {
+      title: 'Sort',
+      dataIndex: 'sort_field',
+      valueType: 'select',
+      hideInTable: true,
+      renderFormItem: (_, { type, defaultRender }, form) => {
+        const basicData = getKesGroup('listing_sort_field')
+        const options = [...Object.keys(basicData).map((item: listing_sort_field) => {
+          return {
+            value: item,
+            label: basicData[item],
+            children: [
+              {
+                value: `${item} desc`,
+                label: `desc`,
+              },
+              {
+                value: `${item} asc`,
+                label: `asc`,
+              },
+            ]
+          }
+        })];
+        if (type === 'form') {
+          return null;
+        }
+        const status = form.getFieldValue('state');
+        if (status !== 'open') {
+          return (
+            // value 和 onchange 会通过 form 自动注入。
+            <Cascader options={options} placeholder="Please select" />
+          );
+        }
+        return defaultRender(_);
       }
-      return defaultRender(_);
-    }
-  },
-  {
-    title: 'Listing status',
-    dataIndex: 'listing_status',
-    valueType: 'select',
-    width: 150,
-    valueEnum: {
-      '1': { text: 'PendingListing', status: 'Processing' },
-      '2': { text: 'Listed', status: 'Success' },
-      '3': { text: 'UnListed', status: 'Error' },
     },
-    render: (_, record) => {
-      if (record.marketplace_and_db_diff === 2) {
-        return (<Tooltip placement="top" title={'In Db not in marketplace'}>
+    {
+      title: 'Listing status',
+      dataIndex: 'listing_status',
+      valueType: 'select',
+      width: 150,
+      valueEnum: {
+        '1': { text: 'PendingListing', status: 'Processing' },
+        '2': { text: 'Listed', status: 'Success' },
+        '3': { text: 'UnListed', status: 'Error' },
+      },
+      render: (_, record) => {
+        if (record.marketplace_and_db_diff === 2) {
+          return (<Tooltip placement="top" title={'In Db not in marketplace'}>
             <span style={{ color: 'red' }}>{record.listing_status}</span>
-        </Tooltip>)
-      } 
+          </Tooltip>)
+        }
         return record.listing_status;
-      
+
+      },
     },
-  },
-  {
-    title: 'marketplace_and_db_diff',
-    dataIndex: 'marketplace_and_db_diff',
-    valueType: 'select',
-    hideInTable: true,
-    valueEnum: {
-      '2': { text: 'InDbnotInMarketPlace'},
-      '3': { text: 'InDbAndInMarketplace'},
+    {
+      title: 'marketplace_and_db_diff',
+      dataIndex: 'marketplace_and_db_diff',
+      valueType: 'select',
+      hideInTable: true,
+      valueEnum: {
+        '2': { text: 'InDbnotInMarketPlace' },
+        '3': { text: 'InDbAndInMarketplace' },
+      },
     },
-  },
-  {
-    title: 'Deleted state',
-    dataIndex: 'is_delete',
-    valueType: 'select',
-    width: 150,
-    initialValue: ['0'],
-    valueEnum: {
-      0: { text: 'Not deleted', status: 'Success' },
-      1: { text: 'deleted', status: 'Error' },
+    {
+      title: 'Deleted state',
+      dataIndex: 'is_delete',
+      valueType: 'select',
+      width: 150,
+      initialValue: ['0'],
+      valueEnum: {
+        0: { text: 'Not deleted', status: 'Success' },
+        1: { text: 'deleted', status: 'Error' },
+      },
     },
-  },
-  // scroll={{
-  {
-    title: 'Price algorithm',
-    dataIndex: 'price_algorithm_id',
-    valueType: 'select',
-    width: 150,
-    request: async () => {
-      return [
-        ...getKesGroup('priceAlgorithmsData').map((item: priceAlgorithms) => {
-          return {
-            label: item.name,
-            value: item.id,
-          };
-        }),
-      ];
+    // scroll={{
+    {
+      title: 'Price algorithm',
+      dataIndex: 'price_algorithm_id',
+      valueType: 'select',
+      width: 150,
+      request: async () => {
+        return [
+          ...getKesGroup('priceAlgorithmsData').map((item: priceAlgorithms) => {
+            return {
+              label: item.name,
+              value: item.id,
+            };
+          }),
+        ];
+      },
     },
-  },
-  {
-    title: 'Store',
-    dataIndex: 'store_id',
-    valueType: 'select',
-    hideInTable: true,
-    request: async () => {
-      return [
-        ...getKesGroup('storeData').map((item: stores) => {
-          return {
-            label: item.name,
-            value: item.id,
-          };
-        }),
-      ];
+    {
+      title: 'Store',
+      dataIndex: 'store_id',
+      valueType: 'select',
+      hideInTable: true,
+      request: async () => {
+        return [
+          ...getKesGroup('storeData').map((item: stores) => {
+            return {
+              label: item.name,
+              value: item.id,
+            };
+          }),
+        ];
+      },
     },
-  },
-  {
-    title: 'marketPlace',
-    dataIndex: 'marketplace_id',
-    valueType: 'select',
-    hideInTable: true,
-    request: async () => {
-      return [
-        ...getKesGroup('marketPlaceData').map((item: marketplaces) => {
-          return {
-            label: item.marketplace,
-            value: item.id,
-          };
-        }),
-      ];
+    {
+      title: 'marketPlace',
+      dataIndex: 'marketplace_id',
+      valueType: 'select',
+      hideInTable: true,
+      request: async () => {
+        return [
+          ...getKesGroup('marketPlaceData').map((item: marketplaces) => {
+            return {
+              label: item.marketplace,
+              value: item.id,
+            };
+          }),
+        ];
+      },
     },
-  },
-  {
-    title: 'vendor',
-    dataIndex: 'vendor_id',
-    valueType: 'select',
-    hideInTable: true,
-    request: async () => {
-      return [
-        ...getKesGroup('vendorData').map((item: vendors) => {
-          return {
-            label: item.vendor_name,
-            value: item.id,
-          };
-        }),
-      ];
+    {
+      title: 'vendor',
+      dataIndex: 'vendor_id',
+      valueType: 'select',
+      hideInTable: true,
+      request: async () => {
+        return [
+          ...getKesGroup('vendorData').map((item: vendors) => {
+            return {
+              label: item.vendor_name,
+              value: item.id,
+            };
+          }),
+        ];
+      },
     },
-  },
-  {
-    title: 'sales',
-    dataIndex: 'sales',
-    width: 150,
-    sorter: true
-  },
-  {
-    title: 'Custom price',
-    dataIndex: 'custom_price',
-    valueType: 'select',
-    hideInTable: true,
-    request: async () => {
-      return [
-        {
-          label: 'Set',
-          value: 0,
-        },
-        {
-          label: 'not set',
-          value: 1,
-        },
-      ];
+    {
+      title: 'sales',
+      dataIndex: 'sales',
+      width: 150,
+      sorter: true
     },
-  },
-  {
-    title: 'title',
-    dataIndex: 'title',
-    hideInTable: true,
-  },
-  {
-    title: 'newegg_id',
-    dataIndex: 'newegg_id',
-    hideInTable: true,
-  },
-  {
-    title: 'available status',
-    dataIndex: 'quantity_offset',
-    request: async () => {
-      return [
-        {
-          label: 'unavailable',
-          value: -1,
-        },
-        {
-          label: 'available',
-          value: undefined,
-        },
-      ];
+    {
+      title: 'Custom price',
+      dataIndex: 'custom_price',
+      valueType: 'select',
+      hideInTable: true,
+      request: async () => {
+        return [
+          {
+            label: 'Set',
+            value: 0,
+          },
+          {
+            label: 'not set',
+            value: 1,
+          },
+        ];
+      },
     },
-    hideInTable: true,
-  },
-  {
-    title: 'upc',
-    dataIndex: 'upc',
-    width: 200,
-  },
-  {
-    title: 'got_buybox',
-    dataIndex: 'got_buybox',
-    width: 200,
-    request: async () => {
-      return [
-        {
-          label: 'Buy box is equal to price',
-          value: 1,
-        },
-        {
-          label: 'no equal',
-          value: undefined,
-        },
-      ];
+    {
+      title: 'title',
+      dataIndex: 'title',
+      hideInTable: true,
     },
-    hideInTable: true,
-  },
-  {
-    title: 'no_update',
-    dataIndex: 'no_update',
-    hideInTable: true,
-    valueType: 'digit'
-  },
-  {
-    title: 'action',
-    valueType: 'option',
-    fixed: 'right',
-    align: 'center',
-    width: 100,
-    render: (_,record) => {
-      const [unavailableLoading, setUnavailableLoading] = useState(false)
-      return (
-        <>
-          <Button
-            style={{ width: '115px' }}
-            size="small"
-            type="primary"
-            onClick={() => {
-              editFn(true, record.id, record);
-            }}
-          >
-            <EditOutlined />
-            Edit
-          </Button>
-          <Button
-            style={{ width: '115px', marginTop: '8px' }}
-            size="small"
-            type="primary"
-            loading={unavailableLoading}
-            ghost
-            disabled={record.quantity_offset === -1 || record.listing_status !== "Listed"}
-            onClick={() => {
-              setUnavailableLoading(true)
-              batchChangeQuantity({
-                listing_ids: [record.id],
-                quantity_offset: -1
-              }).then(res => {
-                if (res && res.code){
-                  message.success("operation successful!")
-                  record.quantity_offset = -1
-                } else {
-                  throw res.msg
-                }
-              }).catch((e: string) => {
-                message.error(e)
-              }).finally(() => {
-                setUnavailableLoading(false)
-              })
-            }}
-          >
-            unavailable
-          </Button>
-          <HistoryChat
-            style={{ width: '115px', marginTop: '8px' }}
-            vendor_id={record.vendor_id}
-            vendor_sku={record.vendor_sku}
-          />
-        </>
-      );
+    {
+      title: 'newegg_id',
+      dataIndex: 'newegg_id',
+      hideInTable: true,
     },
-  },
-];
+    {
+      title: 'available status',
+      dataIndex: 'quantity_offset',
+      request: async () => {
+        return [
+          {
+            label: 'unavailable',
+            value: -1,
+          },
+          {
+            label: 'available',
+            value: undefined,
+          },
+        ];
+      },
+      hideInTable: true,
+    },
+    {
+      title: 'upc',
+      dataIndex: 'upc',
+      width: 200,
+    },
+    {
+      title: 'got_buybox',
+      dataIndex: 'got_buybox',
+      width: 200,
+      request: async () => {
+        return [
+          {
+            label: 'Buy box is equal to price',
+            value: 1,
+          },
+          {
+            label: 'no equal',
+            value: undefined,
+          },
+        ];
+      },
+      hideInTable: true,
+    },
+    {
+      title: 'no_update',
+      dataIndex: 'no_update',
+      hideInTable: true,
+      valueType: 'digit'
+    },
+    {
+      title: 'action',
+      valueType: 'option',
+      fixed: 'right',
+      align: 'center',
+      width: 100,
+      render: (_, record) => {
+        const [unavailableLoading, setUnavailableLoading] = useState(false)
+        return (
+          <>
+            <Button
+              style={{ width: '115px' }}
+              size="small"
+              type="primary"
+              onClick={() => {
+                editFn(true, record.id, record);
+              }}
+            >
+              <EditOutlined />
+              Edit
+            </Button>
+            <Button
+              style={{ width: '115px', marginTop: '8px' }}
+              size="small"
+              type="primary"
+              loading={unavailableLoading}
+              ghost
+              disabled={record.quantity_offset === -1 || record.listing_status !== "Listed"}
+              onClick={() => {
+                setUnavailableLoading(true)
+                batchChangeQuantity({
+                  listing_ids: [record.id],
+                  quantity_offset: -1
+                }).then(res => {
+                  if (res && res.code) {
+                    message.success("operation successful!")
+                    record.quantity_offset = -1
+                  } else {
+                    throw res.msg
+                  }
+                }).catch((e: string) => {
+                  message.error(e)
+                }).finally(() => {
+                  setUnavailableLoading(false)
+                })
+              }}
+            >
+              unavailable
+            </Button>
+            <HistoryChat
+              style={{ width: '115px', marginTop: '8px' }}
+              vendor_id={record.vendor_id}
+              vendor_sku={record.vendor_sku}
+            />
+          </>
+        );
+      },
+    },
+  ];
 type listingArugment = {
   initData: () => void;
   ids: number[];
   setIds: (ids: number[]) => void;
 }
-const RelistingFrame =React.forwardRef((props: listingArugment,ref)=>{
-  const { initData, ids,setIds } = props
+const RelistingFrame = React.forwardRef((props: listingArugment, ref) => {
+  const { initData, ids, setIds } = props
   const [from] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loading, setLoading] = useState(false)
@@ -912,27 +912,27 @@ const RelistingFrame =React.forwardRef((props: listingArugment,ref)=>{
   const inputRef = useRef();
   useImperativeHandle(ref, () => ({
     showModal: (type: string) => {
-    setIsModalVisible(true)
-    setApiType(type)
-    const tempTitle = type === "unlist" ? "batch unlist" : "batch relisting"
-    setTitle(tempTitle)
+      setIsModalVisible(true)
+      setApiType(type)
+      const tempTitle = type === "unlist" ? "batch unlist" : "batch relisting"
+      setTitle(tempTitle)
     }
-}));
-const handleOk = () => {
-  from.validateFields().then(async (updatedValues: {tag_id?: number,unlisting_time_after?: any,unlisting_time_before?: any,unlisting_type?: boolean}) => {
-    let batchApi = batchRelisting
-    const params = {listing_ids: ids, ...updatedValues}
-    if(apiType === "unlist"){
-      batchApi = unlisting
-    } else {
-      params.unlisting_time_after = params.unlisting_time_after ? moment(params.unlisting_time_after).format('YYYY-MM-DD HH:mm:ss') : undefined
-      params.unlisting_time_before = params.unlisting_time_before ? moment(params.unlisting_time_before).format('YYYY-MM-DD HH:mm:ss') : undefined
-    }
-    if (updatedValues.unlisting_type){
-      batchApi = realUnlisting
-    }
-    setLoading(true)
-    batchApi(params).then((res) => {
+  }));
+  const handleOk = () => {
+    from.validateFields().then(async (updatedValues: { tag_id?: number, unlisting_time_after?: any, unlisting_time_before?: any, unlisting_type?: boolean }) => {
+      let batchApi = batchRelisting
+      const params = { listing_ids: ids, ...updatedValues }
+      if (apiType === "unlist") {
+        batchApi = unlisting
+      } else {
+        params.unlisting_time_after = params.unlisting_time_after ? moment(params.unlisting_time_after).format('YYYY-MM-DD HH:mm:ss') : undefined
+        params.unlisting_time_before = params.unlisting_time_before ? moment(params.unlisting_time_before).format('YYYY-MM-DD HH:mm:ss') : undefined
+      }
+      if (updatedValues.unlisting_type) {
+        batchApi = realUnlisting
+      }
+      setLoading(true)
+      batchApi(params).then((res) => {
         if (res.code) {
           console.log(res)
           message.success('Operation successful!');
@@ -947,43 +947,43 @@ const handleOk = () => {
         setLoading(false)
         setIsModalVisible(false)
       });
-  })
-};
+    })
+  };
 
-const handleCancel = () => {
-  setIsModalVisible(false);
-};
-return <Modal title={title}  confirmLoading={loading} ref={inputRef} visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+  return <Modal title={title} confirmLoading={loading} ref={inputRef} visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
     <Form form={from} labelCol={{ span: 6 }} wrapperCol={{ span: 14 }} layout="horizontal">
-            <Form.Item label="tags" name="tag_id">
-                  <Select
-                      showSearch
-                      allowClear
-                      style={{ width: '100%' }}
-                      placeholder="Select a tag"
-                      optionFilterProp="children"
-                      filterOption={(input, option) =>
-                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                      }
-                    >
-                      {getKesGroup('tagsData').map((item: tags) => {
-                    return <Select.Option key={`op${item.id}`} value={item.id}>{item.tag_name}</Select.Option>;
-                  })}
-                    </Select>
-            </Form.Item>
-           {title !== "batch unlist" ? (<>
-            <Form.Item label="start time" name="unlisting_time_after">
-             <DatePicker showTime/>
-            </Form.Item>
-            <Form.Item label="end time" name="unlisting_time_before">
-             <DatePicker showTime/>
-            </Form.Item>
-           </>) :  <Form.Item label="unListing type" name="unlisting_type">
-              <Switch checkedChildren="real unlisting" unCheckedChildren="unlisting" />
-            </Form.Item>}
-        </Form>
-        <h3>Selected {ids.length} item</h3>
-</Modal>
+      <Form.Item label="tags" name="tag_id">
+        <Select
+          showSearch
+          allowClear
+          style={{ width: '100%' }}
+          placeholder="Select a tag"
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+        >
+          {getKesGroup('tagsData').map((item: tags) => {
+            return <Select.Option key={`op${item.id}`} value={item.id}>{item.tag_name}</Select.Option>;
+          })}
+        </Select>
+      </Form.Item>
+      {title !== "batch unlist" ? (<>
+        <Form.Item label="start time" name="unlisting_time_after">
+          <DatePicker showTime />
+        </Form.Item>
+        <Form.Item label="end time" name="unlisting_time_before">
+          <DatePicker showTime />
+        </Form.Item>
+      </>) : <Form.Item label="unListing type" name="unlisting_type">
+        <Switch checkedChildren="real unlisting" unCheckedChildren="unlisting" />
+      </Form.Item>}
+    </Form>
+    <h3>Selected {ids.length} item</h3>
+  </Modal>
 })
 
 export default () => {
@@ -1123,13 +1123,13 @@ export default () => {
         showIcon
         style={{ marginBottom: '10px' }}
         message={`Next Amazon Listing update time:${moment(
-          parseInt(`${initialState?.listTimes?.getAmazonListingDeliverTime  }000`),
+          parseInt(`${initialState?.listTimes?.getAmazonListingDeliverTime}000`),
         ).format('YYYY-MM-DD HH:mm:ss')}/
                              Next Amazon Feed/update price/quantity update time:${moment(
-                               parseInt(
-                                 `${initialState?.listTimes?.getAmazonNormalDeliverTime  }000`,
-                               ),
-                             ).format('YYYY-MM-DD HH:mm:ss')}`}
+          parseInt(
+            `${initialState?.listTimes?.getAmazonNormalDeliverTime}000`,
+          ),
+        ).format('YYYY-MM-DD HH:mm:ss')}`}
       />
       <Notes
         visible={drawerVisible}
@@ -1163,12 +1163,12 @@ export default () => {
           new Promise((resolve) => {
             const sortParms: any = {}
             const tempParam = JSON.parse(JSON.stringify(params))
-            if(sort && JSON.stringify(sort) !== "{}"){
-              if(sort.id){
+            if (sort && JSON.stringify(sort) !== "{}") {
+              if (sort.id) {
                 sortParms.sort_field = 'add_time'
                 sortParms.sort = sort.id === 'ascend' ? 'asc' : 'desc'
               }
-              if(sort.sales){
+              if (sort.sales) {
                 sortParms.sort_field = 'sales'
                 sortParms.sort = sort.sales === 'ascend' ? 'asc' : 'desc'
               }
@@ -1176,8 +1176,8 @@ export default () => {
             if (params.is_delete === '10000') {
               tempParam.is_delete = undefined;
             }
-            if(params.sort_field && params.sort_field.length > 0){
-              tempParam.sort_field =  params?.sort_field[1]
+            if (params.sort_field && params.sort_field.length > 0) {
+              tempParam.sort_field = params?.sort_field[1]
             }
             const tempParams = {
               ...tempParam,
@@ -1253,13 +1253,13 @@ export default () => {
         }}
         toolBarRender={() => [
           <Button
-          key="batchunlishbytag"
-          onClick={() => {
-            comparisonRef.current.showModal('relisting')
-          }}
-        >
-          Batch relisting
-        </Button>,
+            key="batchunlishbytag"
+            onClick={() => {
+              comparisonRef.current.showModal('relisting')
+            }}
+          >
+            Batch relisting
+          </Button>,
           <Brand key='brandmanage' />,
           <Button
             key="ImportOutlined"
@@ -1273,15 +1273,15 @@ export default () => {
           >
             Delete
           </Button>,
-           <Button
-           key="batchunlishbytag"
-           onClick={() => {
-            comparisonRef.current.showModal('unlist')
-           }}
-           icon={<ReconciliationOutlined />}
-         >
-           Batch unlist
-         </Button>,
+          <Button
+            key="batchunlishbytag"
+            onClick={() => {
+              comparisonRef.current.showModal('unlist')
+            }}
+            icon={<ReconciliationOutlined />}
+          >
+            Batch unlist
+          </Button>,
           <Button
             key="uploadAndDown"
             disabled={!selectedRowKeys.length}
@@ -1295,13 +1295,13 @@ export default () => {
             onClick={() => {
               const valObj = ref.current?.getFieldsValue();
               let tempParams: string = '';
-              Object.keys(valObj).forEach((key,index) => {
+              Object.keys(valObj).forEach((key, index) => {
                 if (valObj[key]) {
-                      let paramsStr = `${key}=${valObj[key]}`;
-                      tempParams += `${index ? '&' : ''}${paramsStr}`;
+                  let paramsStr = `${key}=${valObj[key]}`;
+                  tempParams += `${index ? '&' : ''}${paramsStr}`;
                 }
               })
-              tempParams = `${'https://api-multi.itmars.net/listing/index?'}${  tempParams  }&is_download=1`;
+              tempParams = `${'https://api-multi.itmars.net/listing/index?'}${tempParams}&is_download=1`;
               createDownload(`test.csv`, tempParams);
             }}
           >
@@ -1352,7 +1352,7 @@ export default () => {
         listingId={listId}
         refresh={refresh}
       />
-      <RelistingFrame  ref={comparisonRef} ids={selectedRowKeys} setIds={setSelectedRowKeys}  initData={refresh} />
+      <RelistingFrame ref={comparisonRef} ids={selectedRowKeys} setIds={setSelectedRowKeys} initData={refresh} />
     </>
   );
 };

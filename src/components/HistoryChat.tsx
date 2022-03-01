@@ -14,13 +14,11 @@ const HistoryChat = (props: { vendor_id: string; vendor_sku: string; style: any 
     });
     const handleOpenView = () => {
       setHistoryVisible(true);
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       getHistoryData();
     };
     const handleOpenViewCancel = () => {
       setHistoryVisible(false);
     };
-    // eslint-disable-next-line @typescript-eslint/no-shadow
     const DemoColumn = (props: {
       data: { log_vendor_price_change: any[]; log_vendor_quantity_change: any[] };
     }) => {
@@ -153,9 +151,6 @@ const HistoryChat = (props: { vendor_id: string; vendor_sku: string; style: any 
       </>
     );
   };
-
-  
-
 
 
   export default HistoryChat

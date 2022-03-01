@@ -60,6 +60,7 @@ export type country = {
 export type vendors = {
   id: number;
   vendor_name: string;
+  country_id: number;
 };
 export type tags = {
   id: number;

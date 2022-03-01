@@ -116,6 +116,7 @@ type GithubIssueItem = {
   tagName: string;
   storeName: string;
   is_auto: 0 | 1; // 1:可自动下单  0： 手动下单
+  ItemPriceAmount: string;
 };
 // https://www.google.com.hk/search?q=aini+13
 const columns: ProColumns<GithubIssueItem>[] = [
@@ -265,7 +266,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
               ) : (
                 <Tag color="#87d068">{record.AddressType}</Tag>
               )}
-              {record.is_return ? <Tag color="#f50">Is return</Tag> : null}
+              {record.is_return ? <Tag color="#f50">Is return(clean)</Tag> : null}
             </Text>
           </Space>
         </>
@@ -554,7 +555,6 @@ const columns: ProColumns<GithubIssueItem>[] = [
             unCheckedChildren={"No trace"}
             api={updateIssueTrack}
           />
-          <br />
           Trial to sell:
           <OrderSwitch
             params={{
@@ -581,7 +581,7 @@ const columns: ProColumns<GithubIssueItem>[] = [
               api={autoOrder}
               isTrueDisbled
             /></>) :
-            (<><br /><br /><ManualorderBtn record={record} /></>)
+            (<><br /><ManualorderBtn record={record} /></>)
           }
         </>
       );
@@ -664,17 +664,19 @@ const OrderSwitch = (props: {
     setIssueStatus(!!targetValue);
   }, [targetValue]);
   return (
-    <Switch
-      checkedChildren={checkedChildren}
-      unCheckedChildren={unCheckedChildren}
-      loading={switchLoading}
-      checked={issueStatus}
-      disabled={inlineDisabled}
-      style={{ width: 90 }}
-      onChange={() => {
-        changeIssueType(+!issueStatus);
-      }}
-    />
+    <div>
+      <Switch
+        checkedChildren={checkedChildren}
+        unCheckedChildren={unCheckedChildren}
+        loading={switchLoading}
+        checked={issueStatus}
+        disabled={inlineDisabled}
+        style={{ width: 90 }}
+        onChange={() => {
+          changeIssueType(+!issueStatus);
+        }}
+      />
+    </div>
   );
 };
 
@@ -908,7 +910,7 @@ export default () => {
         Date: moment().format('M/D/YYYY'),
         Marketplace: item.storeName.replace(/(^\s*)|(\s*$)/g, ''),
         SKU: item.SellerSKU.replace(/(^\s*)|(\s*$)/g, ''),
-        PricePerUnit: item.order_item_record ? (parseFloat(item.order_item_record.amount) / item.QuantityOrdered) : '',
+        PricePerUnit: parseFloat(item.ItemPriceAmount) / item.QuantityOrdered,
         QTY: item.QuantityOrdered.toString().replace(/(^\s*)|(\s*$)/g, ''),
         TotalRevenue: '',
         AmazonFee: '',
