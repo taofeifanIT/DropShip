@@ -200,7 +200,7 @@ const authHeaderInterceptor = (url: string, options: RequestOptionsInit) => {
   const publicParams: any = getPublicParams();
   authHeader = { token: token || '' };
   if (publicParams) {
-    tempParams = { ...JSON.parse(publicParams), ...tempParams };
+    tempParams = { ...publicParams, ...tempParams };
     tempOption.params = tempParams;
     tempOption.data = { ...options.data, ...tempParams };
   }
@@ -222,7 +222,7 @@ const authHeaderInterceptor = (url: string, options: RequestOptionsInit) => {
   }
   return {
     url: `${lastUrl}`,
-    options: { ...tempOption, interceptors: true, headers: authHeader,timeout: 15 * 1000 },
+    options: { ...tempOption, interceptors: true, headers: authHeader,timeout: 30 * 1000 },
   };
 };
 // https://umijs.org/zh-CN/plugins/plugin-request

@@ -47,8 +47,7 @@ import { Info } from '@/components/Notes';
 import { createDownload } from '@/utils/utils';
 import { Column } from '@ant-design/charts';
 import ParagraphText from '@/components/ParagraphText'
-// import HistoryChat from '@/components/HistoryChat'
-import HistoryChat from '@/components/HistoryChat'
+import HistoryChat from '@/components/historyChat/AsyncHistoryChat'
 import moment from 'moment';
 
 const { Text,Paragraph } = Typography;
@@ -277,7 +276,7 @@ const ButtonGroup = (props: {
     dynamicForm
       .validateFields()
       .then((value: any) => {
-         console.log(value)
+        //  console.log(value)
          setEbayParams(value)
          setConfigurationVisible(false)
       })
@@ -386,7 +385,6 @@ const ButtonGroup = (props: {
     );
   };
   const getAuthButton = () => {
-    // eslint-disable-next-line default-case
     switch (record.is_auth) {
       case -1:
         return (
@@ -427,6 +425,8 @@ const ButtonGroup = (props: {
             UnAuthorized
           </Button>
         );
+      default:
+        return null
     }
   };
   const marketPop = (storeId: number) => {
@@ -712,7 +712,7 @@ const ButtonGroup = (props: {
 export const columns = (
   api: apiItem,
   refresh: (match?:boolean) => void,
-  isAuth: boolean | undefined,
+  isAuth: any,
   selfShow: boolean | undefined,
   hasDescription: boolean | undefined,
   callback?:(record:any) => void
@@ -734,7 +734,7 @@ export const columns = (
           }),
         ];
       },
-      renderFormItem: (_, { type, defaultRender, formItemProps, fieldProps}, form) => {
+      renderFormItem: (_, { type, defaultRender, formItemProps, fieldProps}: any, form) => {
         if (type === 'form') {
           return null;
         }
@@ -749,7 +749,7 @@ export const columns = (
               placeholder="Select a tag"
               optionFilterProp="children"
               filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                option?.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
             >
               {getKesGroup('tagsData').map((item: tags) => {
@@ -794,6 +794,7 @@ export const columns = (
                 />
               );
           }
+          return ""
         };
         const getCountryImg = (countryName: string) => {
           // eslint-disable-next-line default-case
@@ -818,6 +819,8 @@ export const columns = (
                   style={{ verticalAlign: 'inherit' }}
                 />
               );
+            default:
+              return countryName
           }
         };
 
@@ -917,7 +920,6 @@ export const columns = (
                   },
                 }}
               >
-                {/* PDX Plus Perfect 10 Booty - Tan */}
                 {record.title}
               </Paragraph>
               </Text>
@@ -964,7 +966,7 @@ export const columns = (
       search: false,
       align: 'center',
       width: selfShow ? 180 : 0,
-      render: (text: string) => {
+      render: (text: any) => {
         return (<Image width={180} src={text} />)
       }
     },
@@ -983,6 +985,8 @@ export const columns = (
               return <span style={{ color: '#eabf00' }}>not match</span>;
             case 1:
               return <span style={{ color: '#87d068' }}>match</span>;
+            default:
+              return `An unknown status code ${status}`
           }
         };
         return (
@@ -1068,7 +1072,7 @@ export const columns = (
       dataIndex: 'is_auth',
       valueType: 'select',
       align: 'center',
-      search: !!isAuth,
+      search: isAuth,
       hideInTable: true,
       request: async () => [
         {
@@ -1275,7 +1279,7 @@ export const columns = (
       fixed: 'right',
       width: 150,
       align: 'center',
-      render: (text, record: any) => {
+      render: (_, record: any) => {
         return (
           <>
             <ButtonGroup

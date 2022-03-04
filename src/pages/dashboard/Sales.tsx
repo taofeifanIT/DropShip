@@ -200,6 +200,7 @@ export default () => {
     status_data: [],
   });
 
+  let initTimer: any = null
 
   const init = () => {
     setLoading(true);
@@ -232,9 +233,12 @@ export default () => {
   };
   useEffect(() => {
     init();
-    setInterval(() => {
+    initTimer = setInterval(() => {
       init();
     }, 1000 * 60 * 5);
+    return () => {
+      clearInterval(initTimer)
+    }
   }, []);
   return (
     <div style={{ background: '#fff', padding: '8px' }} id="salsePage">

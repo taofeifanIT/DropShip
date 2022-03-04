@@ -45,7 +45,7 @@ import type { marketplaces, priceAlgorithms, stores, tags, vendors, listing_sort
 import { getKesGroup, getKesValue } from '@/utils/utils';
 import { getTargetHref, getAsonHref, getNewEggHref } from '@/utils/jumpUrl';
 import ParagraphText from '@/components/ParagraphText';
-import HistoryChat from '@/components/HistoryChat';
+import HistoryChat from '@/components/historyChat/AsyncHistoryChat';
 import { createDownload } from '@/utils/utils';
 import type { FormInstance } from 'antd';
 import Brand from './compoents/Brand'
@@ -97,11 +97,11 @@ type GithubIssueItem = {
 const BatchPriceModal = (props: {
   batchPriceModalVisible: boolean;
   setBatchPriceModalVisible: (visible: boolean) => void;
-  listingId: number;
   record: any;
   refresh: () => void;
 }) => {
-  const { batchPriceModalVisible, setBatchPriceModalVisible, listingId, refresh, record } = props;
+  const { batchPriceModalVisible, setBatchPriceModalVisible, refresh, record } = props;
+  const id = record.id
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [from] = Form.useForm();
 
@@ -132,17 +132,17 @@ const BatchPriceModal = (props: {
       const resultMsg = [];
       const priceoffsetMsg: any = await changeOperation(priceOffset, {
         price_offset: updatedValues.price_offset,
-        listing_id: listingId,
+        listing_id: id,
       });
       resultMsg.push(<p>price offset modified {priceoffsetMsg.msg}</p>);
       const quantityoffsetMsg: any = await changeOperation(quantityOffset, {
         quantity_offset: updatedValues.quantity_offset,
-        listing_id: listingId,
+        listing_id: id,
       });
       resultMsg.push(<p>quantity offset modified {quantityoffsetMsg.msg}</p>);
       const customPriceMsg: any = await changeOperation(update, {
         custom_price: updatedValues.custom_price,
-        id: listingId,
+        id,
       });
       resultMsg.push(<p>quantity offset modified {customPriceMsg.msg}</p>);
       refresh();
@@ -223,7 +223,7 @@ const EditLinKStr = (props: {
   };
   useEffect(() => {
     if (editStatus) {
-      inputEl?.current?.focus();
+      (inputEl?.current as any).focus();
     }
   }, [editStatus]);
   return (
@@ -267,7 +267,7 @@ const EditLinKStr = (props: {
   );
 };
 const columns = (
-  editFn: (visible: boolean, id: number, record: any) => void,
+  refresh: () => void,
   callback?: (record: any) => void
 ): ProColumns<GithubIssueItem>[] => [
     {
@@ -275,7 +275,7 @@ const columns = (
       dataIndex: 'tag_id',
       valueType: 'select',
       hideInTable: true,
-      renderFormItem: (_, { type, defaultRender, formItemProps, fieldProps }, form) => {
+      renderFormItem: (_, { type, defaultRender, formItemProps, fieldProps }: any, form) => {
         if (type === 'form') {
           return null;
         }
@@ -397,13 +397,13 @@ const columns = (
           <>
             <Space direction="vertical">
               <Text type="secondary">
-                Marketplace: <Text>{getMarketPlace()}$</Text>
+                Marketplace: <Text>${getMarketPlace()}</Text>
               </Text>
               <Text type="secondary">
-                After algorithm: <Text>{record.after_algorithm_price}$</Text>
+                After algorithm: <Text>${record.after_algorithm_price}</Text>
               </Text>
               <Text type="secondary">
-                Price offset: <Text>{record.price_offset}$</Text>
+                Price offset: <Text>${record.price_offset}</Text>
               </Text>
               <Text type="secondary">
                 Lowest Listed: <Text>{getText('LandedPrice')}</Text>
@@ -693,7 +693,6 @@ const columns = (
         1: { text: 'deleted', status: 'Error' },
       },
     },
-    // scroll={{
     {
       title: 'Price algorithm',
       dataIndex: 'price_algorithm_id',
@@ -846,14 +845,21 @@ const columns = (
       width: 100,
       render: (_, record) => {
         const [unavailableLoading, setUnavailableLoading] = useState(false)
+        const [visible, setVisible] = useState(false)
         return (
           <>
+            <BatchPriceModal
+              batchPriceModalVisible={visible}
+              setBatchPriceModalVisible={setVisible}
+              record={record}
+              refresh={refresh}
+            />
             <Button
               style={{ width: '115px' }}
               size="small"
               type="primary"
               onClick={() => {
-                editFn(true, record.id, record);
+                setVisible(true)
               }}
             >
               <EditOutlined />
@@ -934,7 +940,6 @@ const RelistingFrame = React.forwardRef((props: listingArugment, ref) => {
       setLoading(true)
       batchApi(params).then((res) => {
         if (res.code) {
-          console.log(res)
           message.success('Operation successful!');
           setIds([])
           initData()
@@ -962,7 +967,7 @@ const RelistingFrame = React.forwardRef((props: listingArugment, ref) => {
           style={{ width: '100%' }}
           placeholder="Select a tag"
           optionFilterProp="children"
-          filterOption={(input, option) =>
+          filterOption={(input, option: any) =>
             option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
           }
         >
@@ -986,11 +991,27 @@ const RelistingFrame = React.forwardRef((props: listingArugment, ref) => {
   </Modal>
 })
 
+const TimeAlert = () => {
+  const { initialState } = useModel('@@initialState');
+  return (
+    <Alert
+      showIcon
+      style={{ marginBottom: '10px' }}
+      message={`Next Amazon Listing update time:${moment(
+        parseInt(`${initialState?.listTimes?.getAmazonListingDeliverTime}000`),
+      ).format('YYYY-MM-DD HH:mm:ss')}/
+                           Next Amazon Feed/update price/quantity update time:${moment(
+        parseInt(
+          `${initialState?.listTimes?.getAmazonNormalDeliverTime}000`,
+        ),
+      ).format('YYYY-MM-DD HH:mm:ss')}`}
+    />)
+}
+
 export default () => {
   const actionRef = useRef<ActionType>();
   const ref = useRef<FormInstance>();
   const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
-  const [visible, setVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -1004,8 +1025,6 @@ export default () => {
     title: ''
   });
   const [from] = Form.useForm();
-  const [listId, setListId] = useState<number>(-1);
-  const [currentItem, setCurrentItem] = useState(null);
   const [brandModal, setBrandModal] = useState<{
     visible: boolean;
     confirmLoading: boolean;
@@ -1034,19 +1053,11 @@ export default () => {
       })
     }
   })
-  const { initialState } = useModel('@@initialState');
   const comparisonRef = useRef();
   // 生成 intl 对象
   // const enUSIntl = createIntl('en_US', enUS);
   const refresh = (): void => {
     actionRef.current?.reload();
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-shadow
-  const editFn = (comlounVisible: boolean, listId: number, record: any) => {
-    setVisible(comlounVisible);
-    setListId(listId);
-    setCurrentItem(record);
   };
   const showModal = () => {
     setIsModalVisible(true);
@@ -1103,7 +1114,6 @@ export default () => {
               }
             })
             .catch((e) => {
-              // eslint-disable-next-line no-console
               console.error(e);
               message.error(e);
             })
@@ -1119,18 +1129,7 @@ export default () => {
   }
   return (
     <>
-      <Alert
-        showIcon
-        style={{ marginBottom: '10px' }}
-        message={`Next Amazon Listing update time:${moment(
-          parseInt(`${initialState?.listTimes?.getAmazonListingDeliverTime}000`),
-        ).format('YYYY-MM-DD HH:mm:ss')}/
-                             Next Amazon Feed/update price/quantity update time:${moment(
-          parseInt(
-            `${initialState?.listTimes?.getAmazonNormalDeliverTime}000`,
-          ),
-        ).format('YYYY-MM-DD HH:mm:ss')}`}
-      />
+      <TimeAlert />
       <Notes
         visible={drawerVisible}
         setVisible={setDrawerVisible}
@@ -1149,7 +1148,7 @@ export default () => {
           },
         }}
         size="small"
-        columns={columns(editFn, (record) => {
+        columns={columns(refresh,(record) => {
           setDrawerVisible(true);
           setRecord({
             id: record.id,
@@ -1226,18 +1225,18 @@ export default () => {
         }}
         pagination={{
           pageSize: 30,
-          showQuickJumper: true
+          showQuickJumper: true,
+          pageSizeOptions: ['10', '20', '30', '40', '50', '100', '200', '300', '400', '500'],
         }}
         options={{
           search: false,
         }}
         scroll={{
-          x: columns(editFn).reduce((sum, e) => sum + Number(e.width || 0), 0),
+          x: columns(refresh).reduce((sum, e) => sum + Number(e.width || 0), 0),
           y: getPageHeight() - 290,
         }}
         dateFormatter="string"
         headerTitle="Listed product"
-        // eslint-disable-next-line @typescript-eslint/no-shadow
         onRow={(record) => {
           return {
             onClick: () => {
@@ -1255,7 +1254,7 @@ export default () => {
           <Button
             key="batchunlishbytag"
             onClick={() => {
-              comparisonRef.current.showModal('relisting')
+              (comparisonRef.current as any).showModal('relisting')
             }}
           >
             Batch relisting
@@ -1276,7 +1275,7 @@ export default () => {
           <Button
             key="batchunlishbytag"
             onClick={() => {
-              comparisonRef.current.showModal('unlist')
+              (comparisonRef.current as any).showModal('unlist')
             }}
             icon={<ReconciliationOutlined />}
           >
@@ -1345,13 +1344,6 @@ export default () => {
       >
         <Brand />
       </Modal>
-      <BatchPriceModal
-        batchPriceModalVisible={visible}
-        setBatchPriceModalVisible={setVisible}
-        record={currentItem}
-        listingId={listId}
-        refresh={refresh}
-      />
       <RelistingFrame ref={comparisonRef} ids={selectedRowKeys} setIds={setSelectedRowKeys} initData={refresh} />
     </>
   );

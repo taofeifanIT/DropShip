@@ -6,10 +6,8 @@ import Avatar from './AvatarDropdown';
 import NoticeIconView from '@/components/NoticeIcon/index';
 import styles from './index.less';
 import { getPublicParams, setPublicParams } from '@/utils/cookes';
-import { getKesGroup } from '@/utils/utils';
+import { getKesGroup,getKesValue } from '@/utils/utils';
 import { checkIssueOrder,updateIssueTrack} from '@/services/order/order';
-// import Dos from '@/components/Dos'
-// const TestContext= createContext();
 export type SiderTheme = 'light' | 'dark';
 
 type OrderMessage = {
@@ -35,10 +33,19 @@ const formItemLayout = {
   },
 };
 const GlobalHeaderRight: React.FC = () => {
-  const { initialState, setInitialState } = useModel('@@initialState');
+  const { initialState } = useModel('@@initialState');
   const [form] = Form.useForm();
   const [visible, setVisible] = React.useState(false);
-  // const count = useContext(TestContext)  //得到count
+  const {
+    country_id = 0,
+    company_id = 0,
+    marketplace_id = 0
+  } = getPublicParams() || {
+    country_id:0,
+    company_id:0,
+    marketplace_id:0
+  }
+
   if (!initialState || !initialState.settings) {
     return null;
   }
@@ -52,15 +59,16 @@ const GlobalHeaderRight: React.FC = () => {
     setVisible(visible);
   };
   const onFinish = (fieldsValue: any) => {
-    // Should format date value before submit.
     setPublicParams(fieldsValue);
     setVisible(false);
-    setInitialState({
-      ...initialState,
-      conText: fieldsValue,
-    });
+    history.go(0)
   };
 
+  const onReset = () => {
+    form.resetFields();
+    setPublicParams({})
+    history.go(0)
+  };
   const openNotification = (item:OrderMessage) => {
     const key = `open${item.order_id}`;
     const btn = (
@@ -102,13 +110,11 @@ const GlobalHeaderRight: React.FC = () => {
       }
     })
   }
-
   var loopTask: any = null
   const loopGetOrder = () => {
     var currentUser = initialState?.currentUser
     if(currentUser){
       if(currentUser.auth_group?.title == 'Super Admin'){
-        console.log(currentUser.auth_group?.title)
          if(!loopTask){
           getCheckIssueOrder();
           loopTask = setInterval(() => {
@@ -124,11 +130,7 @@ const GlobalHeaderRight: React.FC = () => {
   React.useEffect(() => {
     let publicParms = getPublicParams();
     if (publicParms && visible) {
-      let fields = JSON.parse(publicParms || '');
-      form.setFieldsValue({
-        ...fields,
-      });
-      // form.setFields(JSON.parse(getPublicParams() || ""))
+      form.setFieldsValue(publicParms);
     }
   }, [visible]);
   React.useEffect(() => {
@@ -138,6 +140,9 @@ const GlobalHeaderRight: React.FC = () => {
     <Space className={className}>
       {/* <Dos /> */}
       <Tag color="#108ee9">{initialState?.currentUser?.auth_group?.title}</Tag>
+      {!!country_id && <Tag color="#2db7f5">{getKesValue("countryData",country_id).country}</Tag>}
+      {!!company_id && <Tag color="magenta">{getKesValue("companyData",company_id).name}</Tag>}
+      {!!marketplace_id && <Tag color="geekblue">{getKesValue("marketPlaceData",marketplace_id).marketplace}</Tag>}
       {initialState?.currentUser?.auth_group?.title !== 'Outsourcer' ? (
         <span style={{ margin: '0 12px' }}>
           <NoticeIconView />
@@ -264,7 +269,7 @@ const GlobalHeaderRight: React.FC = () => {
                 <Button type="primary" size="small" htmlType="submit">
                   Submit
                 </Button>
-                <Button style={{ marginLeft: '10px' }} type="default" size="small">
+                <Button style={{ marginLeft: '10px' }} type="default" size="small" onClick={onReset}>
                   reset
                 </Button>
               </Form.Item>

@@ -618,6 +618,7 @@ const RankingList = () => {
 const DemoPie = () => {
   const [data, setData] = useState<any>([])
   const [loading,setLoading] = useState(false)
+  let initTimer: any =null
   const config = {
     appendPadding: 10,
     data,
@@ -643,7 +644,6 @@ const DemoPie = () => {
           fill: 'p(a)https://gw.alipayobjects.com/zos/antfincdn/FioHMFgIld/pie-wenli1.png',
         };
       }
-
       return {
         fill: 'p(a)https://gw.alipayobjects.com/zos/antfincdn/Ye2DqRx%2627/pie-wenli2.png',
       };
@@ -672,9 +672,12 @@ const DemoPie = () => {
   };
   useEffect(() => {
     getRate();
-    setInterval(() => {
+    initTimer = setInterval(() => {
       getRate();
     }, 1000 * 60 * 10);
+    return () => {
+      clearInterval(initTimer)
+    }
   }, []);
   return (<Spin spinning={loading}>
     <Card title='Task queue execution status' size='small' bordered={false} style={{marginTop: '5px'}}>

@@ -21,8 +21,6 @@ import {
   Switch,
   Spin,
   Tabs,
-  Row,
-  Col,
   Dropdown,
   Menu,
 } from 'antd';
@@ -103,6 +101,7 @@ type GithubIssueItem = {
   order_status: number;
   listing: {
     vendor_id: number;
+    tag_id: number;
     vendor_price: number;
     vendor_change_time: string;
     vendor_sku: string;
@@ -694,10 +693,8 @@ type feedbackDataType = {
 const FeedbackModel = (props: { onRef: any }) => {
   const [visible, setVisible] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
-  const [designType, setDesignType] = useState(false);
-  const [width, setWidth] = useState(800);
   const [data, setData] = useState<feedbackDataType[]>([]);
-  const columns = [
+  const columns: any[] = [
     {
       title: 'AmazonOrderId',
       dataIndex: 'AmazonOrderId',
@@ -710,9 +707,16 @@ const FeedbackModel = (props: { onRef: any }) => {
       key: 'po',
     },
     {
+      title: 'Order sku',
+      dataIndex: 'order_sku',
+      key: 'order_sku',
+      width: 150
+    },
+    {
       title: 'reason',
       dataIndex: 'reason',
       key: 'reason',
+      width: 200
     },
     {
       title: 'Track Number',
@@ -720,14 +724,36 @@ const FeedbackModel = (props: { onRef: any }) => {
       key: 'track_number',
     },
     {
-      title: 'Quantity Shipped',
-      dataIndex: 'quantity_shipped',
-      key: 'quantity_shipped',
+      title: 'Quantity',
+      dataIndex: 'Quantity',
+      key: 'Quantity',
+      width: 100,
+      render: (_: any, record: any) => {
+        return <Space direction="vertical">
+          <Text type="secondary">
+            Shipped: <Text>{record.quantity_shipped}</Text>
+          </Text>
+          <Text type="secondary">
+            ordered: <Text>{record.quantity_ordered}</Text>
+          </Text>
+        </Space>
+      }
     },
     {
-      title: 'Quantity Ordered',
-      dataIndex: 'quantity_ordered',
-      key: 'quantity_ordered',
+      title: 'File',
+      dataIndex: 'File',
+      key: 'File',
+      width: 160,
+      render: (_: any, record: any) => {
+        return <Space direction="vertical">
+          <Text type="secondary">
+            Quantity: <Text>{record.file_quantity}</Text>
+          </Text>
+          <Text type="secondary">
+            Sku: <Text>{record.file_sku}</Text>
+          </Text>
+        </Space>
+      }
     },
     {
       title: 'Status',
@@ -760,12 +786,6 @@ const FeedbackModel = (props: { onRef: any }) => {
       <Menu.Item key="1" onClick={init}>
         Refresh
       </Menu.Item>
-      <Menu.Item key="2" onClick={() => setDesignType(false)}>
-        Tabs display
-      </Menu.Item>
-      <Menu.Item key="3" onClick={() => setDesignType(true)}>
-        Tiled display
-      </Menu.Item>
     </Menu>
   );
   useImperativeHandle(props.onRef, () => {
@@ -779,48 +799,6 @@ const FeedbackModel = (props: { onRef: any }) => {
   const showModal = () => {
     setVisible(true);
   };
-  const tabsType = () => {
-    return data.map((item, index) => {
-      return (
-        <TabPane tab={item.key} key={index + 'tab'}>
-          <Table
-            dataSource={item.items}
-            size="small"
-            key={'table' + item.key}
-            pagination={{
-              pageSize: 300,
-              pageSizeOptions: ['10', '20', '30', '50', '100', '200', '300', '400', '500'],
-              showQuickJumper: true,
-            }}
-            columns={columns}
-          />
-        </TabPane>
-      );
-    });
-  };
-  const tiledType = () => {
-    return (
-      <Row gutter={24}>
-        {data.map((item, index) => {
-          return (
-            <Col span={8} key={index + 'col'}>
-              <Table
-                title={() => <h4>{item.key}</h4>}
-                dataSource={item.items}
-                bordered
-                size="small"
-                key={'table' + item.key}
-                pagination={{
-                  size: 'small',
-                }}
-                columns={columns}
-              />
-            </Col>
-          );
-        })}
-      </Row>
-    );
-  };
   useEffect(() => {
     if (visible && !data.length) {
       init();
@@ -828,18 +806,11 @@ const FeedbackModel = (props: { onRef: any }) => {
       return;
     }
   }, [visible]);
-  useEffect(() => {
-    if (designType) {
-      setWidth(2150);
-    } else {
-      setWidth(800);
-    }
-  }, [designType]);
   return (
     <>
       <Modal
         title="Order Processing feedback"
-        width={width}
+        width={1180}
         visible={visible}
         onOk={handleCancel}
         confirmLoading={confirmLoading}
@@ -848,16 +819,23 @@ const FeedbackModel = (props: { onRef: any }) => {
         <Dropdown overlay={menu} trigger={['contextMenu']}>
           <Spin spinning={confirmLoading}>
             <Tabs
-              tabBarExtraContent={
-                <Switch
-                  checkedChildren="tiled"
-                  unCheckedChildren="tabs"
-                  checked={designType}
-                  onChange={setDesignType}
-                />
-              }
             >
-              {designType ? tiledType() : tabsType()}
+              {data.map((item, index) => (
+                  <TabPane tab={item.key} key={index + 'tab'}>
+                    <Table<any>
+                      dataSource={item.items}
+                      size="small"
+                      bordered
+                      key={'table' + item.key}
+                      rowKey="AmazonOrderId"
+                      columns={columns}
+                      expandable={{
+                        expandedRowRender: record => <p style={{ margin: 0 }}>{record.t1}</p>,
+                        rowExpandable: record => !!record.t1,
+                      }}
+                    />
+                  </TabPane>
+                ))}
             </Tabs>
           </Spin>
         </Dropdown>

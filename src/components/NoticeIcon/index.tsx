@@ -122,6 +122,7 @@ const NoticeIconView = () => {
     setNotices(tempNoticesInfo);
     setError(tempErrorInfo);
   };
+  let listTimes = ""
   const getOccupancyRate = () => {
     const tempSockek: any = new WebSocket(
       'wss://api-multi.itmars.net:2345?token=' + localStorage.getItem('token'),
@@ -131,11 +132,12 @@ const NoticeIconView = () => {
     };
     tempSockek.onmessage = function (msg: any) {
       const pop = JSON.parse(msg.data);
-      if (history.location.pathname === '/listed/ListedProducts') {
+      if (history.location.pathname === '/listed/ListedProducts' && pop.DeliverTime.getAmazonNormalDeliverTime !== listTimes) {
         setInitialState({
           ...initialState,
           listTimes: pop.DeliverTime,
         });
+        listTimes = pop.DeliverTime.getAmazonNormalDeliverTime
       }
       setInfos(pop);
     };
