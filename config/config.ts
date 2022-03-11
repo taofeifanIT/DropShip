@@ -1,7 +1,6 @@
 // https://umijs.org/config/
 import { defineConfig } from 'umi';
 import { join } from 'path';
-
 import defaultSettings from './defaultSettings';
 import proxy from './proxy';
 import routes from './routes';
@@ -65,6 +64,7 @@ export default defineConfig({
   ],
   chunks: ['vendors', 'umi'],
   chainWebpack: function (config, { webpack }) {
+    config.plugins.delete('progress');
     config.merge({
       optimization: {
         splitChunks: {
@@ -81,8 +81,10 @@ export default defineConfig({
               priority: 10,
             },
           },
+          
         },
       }
     });
+    // config.plugin('HardSourceWebpackPlugin').use(HardSourceWebpackPlugin)
   },
 });

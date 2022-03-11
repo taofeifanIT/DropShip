@@ -58,6 +58,7 @@ const GlobalHeaderRight: React.FC = () => {
   const handleVisibleChange = (visible: boolean) => {
     setVisible(visible);
   };
+  
   const onFinish = (fieldsValue: any) => {
     setPublicParams(fieldsValue);
     setVisible(false);

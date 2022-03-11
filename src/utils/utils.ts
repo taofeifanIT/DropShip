@@ -199,7 +199,9 @@ const amazonHeader = [
   { title: 'Profit', dataIndex: 'Profit', key: 'Profit' },
   { title: 'PurchasedFrom', dataIndex: 'PurchasedFrom', key: 'PurchasedFrom' },
   { title: 'Notes', dataIndex: 'Notes', key: 'Notes' },
-  { title: 'tagName', dataIndex: 'tagName', key: 'tagName' }
+  { title: 'tagName', dataIndex: 'tagName', key: 'tagName' },
+  { title: 'ack_status', dataIndex: 'ack_status', key: 'ack_status' },
+  { title: 'ShipperTrackingNumber', dataIndex: 'ShipperTrackingNumber', key: 'ShipperTrackingNumber' },
 ]
 
 export function exportReport(data: any, store = 0) {

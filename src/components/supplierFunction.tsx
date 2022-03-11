@@ -1238,11 +1238,6 @@ export const columns = (
       },
     },
     {
-      title: 'availability',
-      dataIndex: 'availability',
-      hideInTable: true
-    },
-    {
       title: 'listing_filter',
       dataIndex: 'listing_filter',
       hideInTable: true,

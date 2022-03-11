@@ -35,6 +35,7 @@ import {
   updateTrial,
   autoOrder,
   tagStatus,
+  setPurchasePrice,
 } from '@/services/order/order';
 import { getPageHeight } from '@/utils/utils';
 import { getTargetHref, getAsonHref } from '@/utils/jumpUrl';
@@ -43,6 +44,7 @@ import { vendors, configs } from '@/services/publicKeys';
 import moment from 'moment';
 import styles from './style.less';
 import ParagraphText from '@/components/ParagraphText';
+import Edit from '@/components/Edit'
 import { exportReport } from '@/utils/utils';
 const { Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -116,9 +118,11 @@ type GithubIssueItem = {
   storeName: string;
   is_auto: 0 | 1; // 1:可自动下单  0： 手动下单
   ItemPriceAmount: string;
+  ShipperTrackingNumber: string;
+  purchase_price: number;
 };
 // https://www.google.com.hk/search?q=aini+13
-const columns: ProColumns<GithubIssueItem>[] = [
+const columns = (refresh?: (localUpdate?:boolean) => void): ProColumns<GithubIssueItem>[] =>  [
   {
     dataIndex: 'index',
     valueType: 'indexBorder',
@@ -266,37 +270,6 @@ const columns: ProColumns<GithubIssueItem>[] = [
                 <Tag color="#87d068">{record.AddressType}</Tag>
               )}
               {record.is_return ? <Tag color="#f50">Is return(clean)</Tag> : null}
-            </Text>
-          </Space>
-        </>
-      );
-    },
-  },
-  {
-    title: 'Date',
-    dataIndex: 'time',
-    valueType: 'date',
-    width: 250,
-    search: false,
-    render: (_, record) => {
-      return (
-        <>
-          <Space direction="vertical">
-            <Text type="secondary">
-              Purchase Date:
-              <Text>
-                {moment(parseInt(`${record.order_amazon.PurchaseDate}000`)).format(
-                  'YYYY-MM-DD HH:mm:ss',
-                )}
-              </Text>
-            </Text>
-            <Text type="secondary">
-              update_at:
-              <Text>{moment(record.update_at * 1000).format('YYYY-MM-DD HH:mm:ss')}</Text>
-            </Text>
-            <Text type="secondary">
-              vendorChangeTime:
-              <Text>{moment(record.vendor_change_time * 1000).format('YYYY-MM-DD HH:mm:ss')}</Text>
             </Text>
           </Space>
         </>
@@ -522,6 +495,16 @@ const columns: ProColumns<GithubIssueItem>[] = [
     }
   },
   {
+    title: 'Purchase price',
+    dataIndex: 'purchase_price',
+    valueType: 'money',
+    search: false,
+    width: 150,
+    render: (text,record) => {
+      return <Edit id={record.id} pramsKey={"purchase_price"} api={setPurchasePrice} record={record}  refresh={refresh} children={text} />
+    }
+  },
+  {
     title: 'Amount',
     dataIndex: 'amount',
     valueType: 'money',
@@ -532,6 +515,37 @@ const columns: ProColumns<GithubIssueItem>[] = [
     dataIndex: 'ItemPriceAmount',
     valueType: 'money',
     width: 150,
+  },
+  {
+    title: 'Date',
+    dataIndex: 'time',
+    valueType: 'date',
+    width: 250,
+    search: false,
+    render: (_, record) => {
+      return (
+        <>
+          <Space direction="vertical">
+            <Text type="secondary">
+              Purchase Date:
+              <Text>
+                {moment(parseInt(`${record.order_amazon.PurchaseDate}000`)).format(
+                  'YYYY-MM-DD HH:mm:ss',
+                )}
+              </Text>
+            </Text>
+            <Text type="secondary">
+              update_at:
+              <Text>{moment(record.update_at * 1000).format('YYYY-MM-DD HH:mm:ss')}</Text>
+            </Text>
+            <Text type="secondary">
+              vendorChangeTime:
+              <Text>{moment(record.vendor_change_time * 1000).format('YYYY-MM-DD HH:mm:ss')}</Text>
+            </Text>
+          </Space>
+        </>
+      );
+    },
   },
   {
     title: 'action',
@@ -852,11 +866,22 @@ export default () => {
   const [from] = Form.useForm();
   const [currentRow, setCurrentRow] = useState(-1);
   const [limit, setLimit] = useState<configs>(getKesValue('configsData', 'order_quantity_limit'));
-  const [scrollX, setScrollX] = useState(columns.reduce((sum, e) => sum + Number(e.width || 0), 0));
+  const [scrollX, setScrollX] = useState(columns().reduce((sum, e) => sum + Number(e.width || 0), 0));
   const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
   const [tableRows, setTableRows] = useState<GithubIssueItem[]>([]);
   const [pullOrderLoading, setPullOrderLoading] = useState(false);
+  const [time, setTime] = useState(moment().unix())
   let feedbackModelRef: any = createRef<HTMLElement>();
+
+
+  const refresh = (localUpdate = false): void => {
+    if(localUpdate){
+      setTime(moment().unix())
+    }else {
+      actionRef.current?.reload();
+    }
+  };
+
   const showModal = () => {
     setIsModalVisible(true);
   };
@@ -892,11 +917,13 @@ export default () => {
         QTY: item.QuantityOrdered.toString().replace(/(^\s*)|(\s*$)/g, ''),
         TotalRevenue: '',
         AmazonFee: '',
-        PurchasePrice: '',
+        PurchasePrice: item.purchase_price || "",
         Profit: '',
         PurchasedFrom: getPurchaseFromTitle(item.listing.vendor_id),
-        Notes: '',
+        Notes: item.is_return ? "Is return(clean)" : "",
         tagName: item.tagName,
+        ack_status: item.ack_status || "",
+        ShipperTrackingNumber: item.ShipperTrackingNumber || ""
       };
     });
     exportReport(tableData, 1);
@@ -969,7 +996,7 @@ export default () => {
     <>
       <ProTable<GithubIssueItem>
         size="small"
-        columns={columns}
+        columns={columns(refresh)}
         actionRef={actionRef}
         className={styles.tableStyle}
         rowSelection={{
@@ -1080,10 +1107,10 @@ export default () => {
         }}
         scroll={{ x: scrollX, y: getPageHeight() - 250 }}
         onColumnsStateChange={(col) => {
-          const allWidth = columns.reduce((sum, e) => sum + Number(e.width || 0), 0);
+          const allWidth = columns().reduce((sum, e) => sum + Number(e.width || 0), 0);
           let reduceNum: number = 0;
           for (const c in col) {
-            reduceNum += columns[c].width || 0;
+            reduceNum += columns()[c].width || 0;
           }
           setScrollX(allWidth - reduceNum);
         }}

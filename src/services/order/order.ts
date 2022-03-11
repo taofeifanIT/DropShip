@@ -78,3 +78,11 @@ export async function tagStatus(params: { amazonOrderId: string }) {
   });
 }
 
+export async function setPurchasePrice(params: { id: string,purchase_price: string }) {
+  return request('/api/amazon/setPurchasePrice', {
+    method: 'POST',
+    data: params,
+  });
+}
+
+

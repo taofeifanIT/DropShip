@@ -5,7 +5,6 @@ import {
   DeleteOutlined,
   ExclamationCircleOutlined,
   EditOutlined,
-  EnterOutlined,
 } from '@ant-design/icons';
 import {
   Button,
@@ -17,7 +16,6 @@ import {
   Form,
   InputNumber,
   Alert,
-  Input,
   Select,
   Cascader,
   DatePicker,
@@ -40,6 +38,7 @@ import {
 import { getPageHeight } from '@/utils/utils';
 import { useModel, history } from 'umi';
 import Notes, { Info } from '@/components/Notes';
+import Edit from '@/components/Edit'
 import moment from 'moment';
 import type { marketplaces, priceAlgorithms, stores, tags, vendors, listing_sort_field } from '@/services/publicKeys';
 import { getKesGroup, getKesValue } from '@/utils/utils';
@@ -193,79 +192,79 @@ const BatchPriceModal = (props: {
   );
 };
 
-const EditLinKStr = (props: {
-  record: {
-    id: number;
-    country_id: number;
-    asin: string;
-  };
-}) => {
-  const { country_id, asin, id } = props.record;
-  const [editStatus, setEditStates] = useState(false);
-  const [editAsin, setEditAsin] = useState(asin);
-  const inputEl = useRef(null);
-  const updateApi = (title: string) => {
-    if (title.trim() === asin) {
-      setEditStates(false);
-      return;
-    }
-    update({
-      id,
-      asin: title,
-    }).then((res) => {
-      if (res.code) {
-        message.success('operation successful!');
-      } else {
-        message.error(res.msg);
-        setEditAsin(asin);
-      }
-    });
-  };
-  useEffect(() => {
-    if (editStatus) {
-      (inputEl?.current as any).focus();
-    }
-  }, [editStatus]);
-  return (
-    <>
-      {editStatus ? (
-        <>
-          <Input
-            ref={inputEl}
-            size={'small'}
-            style={{ width: '120px' }}
-            suffix={<EnterOutlined />}
-            value={editAsin}
-            onPressEnter={(e: any) => {
-              setEditAsin(e.target.value);
-              setEditStates(false);
-              updateApi(e.target.value);
-            }}
-            onChange={(e) => {
-              setEditAsin(e.target.value);
-            }}
-            onBlur={() => {
-              setEditStates(false);
-              updateApi(editAsin);
-            }}
-          ></Input>
-        </>
-      ) : (
-        <>
-          <Link href={`${getAsonHref(country_id)}${asin}`} target="_blank">
-            {editAsin}
-          </Link>
-          <EditOutlined
-            style={{ color: '#1890ff', cursor: 'pointer', marginLeft: '6px' }}
-            onClick={() => {
-              setEditStates(true);
-            }}
-          />
-        </>
-      )}
-    </>
-  );
-};
+// const EditLinKStr = (props: {
+//   record: {
+//     id: number;
+//     country_id: number;
+//     asin: string;
+//   };
+// }) => {
+//   const { country_id, asin, id } = props.record;
+//   const [editStatus, setEditStates] = useState(false);
+//   const [editAsin, setEditAsin] = useState(asin);
+//   const inputEl = useRef(null);
+//   const updateApi = (title: string) => {
+//     if (title.trim() === asin) {
+//       setEditStates(false);
+//       return;
+//     }
+//     update({
+//       id,
+//       asin: title,
+//     }).then((res) => {
+//       if (res.code) {
+//         message.success('operation successful!');
+//       } else {
+//         message.error(res.msg);
+//         setEditAsin(asin);
+//       }
+//     });
+//   };
+//   useEffect(() => {
+//     if (editStatus) {
+//       (inputEl?.current as any).focus();
+//     }
+//   }, [editStatus]);
+//   return (
+//     <>
+//       {editStatus ? (
+//         <>
+//           <Input
+//             ref={inputEl}
+//             size={'small'}
+//             style={{ width: '120px' }}
+//             suffix={<EnterOutlined />}
+//             value={editAsin}
+//             onPressEnter={(e: any) => {
+//               setEditAsin(e.target.value);
+//               setEditStates(false);
+//               updateApi(e.target.value);
+//             }}
+//             onChange={(e) => {
+//               setEditAsin(e.target.value);
+//             }}
+//             onBlur={() => {
+//               setEditStates(false);
+//               updateApi(editAsin);
+//             }}
+//           ></Input>
+//         </>
+//       ) : (
+//         <>
+//           <Link href={`${getAsonHref(country_id)}${asin}`} target="_blank">
+//             {editAsin}
+//           </Link>
+//           <EditOutlined
+//             style={{ color: '#1890ff', cursor: 'pointer', marginLeft: '6px' }}
+//             onClick={() => {
+//               setEditStates(true);
+//             }}
+//           />
+//         </>
+//       )}
+//     </>
+//   );
+// };
 const columns = (
   refresh: () => void,
   callback?: (record: any) => void
@@ -303,7 +302,7 @@ const columns = (
       }
     },
     {
-      title: 'vendor_sku',
+      title: 'Sku',
       dataIndex: 'vendor_sku',
       hideInTable: true,
     },
@@ -313,7 +312,7 @@ const columns = (
       width: 48,
     },
     {
-      title: 'product',
+      title: 'Product',
       dataIndex: 'id',
       search: false,
       width: 300,
@@ -336,7 +335,18 @@ const columns = (
               {record.asin && (
                 <Text type="secondary">
                   <AmazonOutlined />
-                  Asin: <EditLinKStr record={record} />
+                  Asin:
+                  <Edit
+                    id={record.id}
+                    pramsKey='asin'
+                    record={record}
+                    api={update}
+                    refresh={refresh}
+                    children={
+                      (<Link href={`${getAsonHref(record.country_id)}${record.asin}`} target="_blank">
+                        {record.asin}
+                      </Link>)
+                    } />
                 </Text>
               )}
               {record.newegg_id && (
@@ -417,7 +427,7 @@ const columns = (
       },
     },
     {
-      title: 'quantity',
+      title: 'Quantity',
       dataIndex: 'quantity',
       search: false,
       width: 180,
@@ -489,7 +499,7 @@ const columns = (
       },
     },
     {
-      title: 'time',
+      title: 'Time',
       dataIndex: 'time',
       search: false,
       width: 360,
@@ -843,66 +853,69 @@ const columns = (
       fixed: 'right',
       align: 'center',
       width: 100,
-      render: (_, record) => {
-        const [unavailableLoading, setUnavailableLoading] = useState(false)
-        const [visible, setVisible] = useState(false)
-        return (
-          <>
-            <BatchPriceModal
-              batchPriceModalVisible={visible}
-              setBatchPriceModalVisible={setVisible}
-              record={record}
-              refresh={refresh}
-            />
-            <Button
-              style={{ width: '115px' }}
-              size="small"
-              type="primary"
-              onClick={() => {
-                setVisible(true)
-              }}
-            >
-              <EditOutlined />
-              Edit
-            </Button>
-            <Button
-              style={{ width: '115px', marginTop: '8px' }}
-              size="small"
-              type="primary"
-              loading={unavailableLoading}
-              ghost
-              disabled={record.quantity_offset === -1 || record.listing_status !== "Listed"}
-              onClick={() => {
-                setUnavailableLoading(true)
-                batchChangeQuantity({
-                  listing_ids: [record.id],
-                  quantity_offset: -1
-                }).then(res => {
-                  if (res && res.code) {
-                    message.success("operation successful!")
-                    record.quantity_offset = -1
-                  } else {
-                    throw res.msg
-                  }
-                }).catch((e: string) => {
-                  message.error(e)
-                }).finally(() => {
-                  setUnavailableLoading(false)
-                })
-              }}
-            >
-              unavailable
-            </Button>
-            <HistoryChat
-              style={{ width: '115px', marginTop: '8px' }}
-              vendor_id={record.vendor_id}
-              vendor_sku={record.vendor_sku}
-            />
-          </>
-        );
-      },
+      render: (_, record) => <Action record={record} refresh={refresh} />
     },
   ];
+
+const Action = ({ record, refresh }: any) => {
+  const [unavailableLoading, setUnavailableLoading] = useState(false)
+  const [visible, setVisible] = useState(false)
+  return (
+    <>
+      <BatchPriceModal
+        batchPriceModalVisible={visible}
+        setBatchPriceModalVisible={setVisible}
+        record={record}
+        refresh={refresh}
+      />
+      <Button
+        style={{ width: '115px' }}
+        size="small"
+        type="primary"
+        onClick={() => {
+          setVisible(true)
+        }}
+      >
+        <EditOutlined />
+        Edit
+      </Button>
+      <Button
+        style={{ width: '115px', marginTop: '8px' }}
+        size="small"
+        type="primary"
+        loading={unavailableLoading}
+        ghost
+        disabled={record.quantity_offset === -1 || record.listing_status !== "Listed"}
+        onClick={() => {
+          setUnavailableLoading(true)
+          batchChangeQuantity({
+            listing_ids: [record.id],
+            quantity_offset: -1
+          }).then(res => {
+            if (res && res.code) {
+              message.success("operation successful!")
+              record.quantity_offset = -1
+            } else {
+              throw res.msg
+            }
+          }).catch((e: string) => {
+            message.error(e)
+          }).finally(() => {
+            setUnavailableLoading(false)
+          })
+        }}
+      >
+        unavailable
+      </Button>
+      <HistoryChat
+        style={{ width: '115px', marginTop: '8px' }}
+        vendor_id={record.vendor_id}
+        vendor_sku={record.vendor_sku}
+      />
+    </>
+  );
+}
+
 type listingArugment = {
   initData: () => void;
   ids: number[];
@@ -1015,6 +1028,7 @@ export default () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [time, setTime] = useState(moment().unix())
   const [record, setRecord] = useState<{
     id: number,
     content: string,
@@ -1056,8 +1070,12 @@ export default () => {
   const comparisonRef = useRef();
   // 生成 intl 对象
   // const enUSIntl = createIntl('en_US', enUS);
-  const refresh = (): void => {
-    actionRef.current?.reload();
+  const refresh = (localUpdate = false): void => {
+    if(localUpdate){
+      setTime(moment().unix())
+    }else {
+      actionRef.current?.reload();
+    }
   };
   const showModal = () => {
     setIsModalVisible(true);
@@ -1148,7 +1166,7 @@ export default () => {
           },
         }}
         size="small"
-        columns={columns(refresh,(record) => {
+        columns={columns(refresh, (record) => {
           setDrawerVisible(true);
           setRecord({
             id: record.id,
