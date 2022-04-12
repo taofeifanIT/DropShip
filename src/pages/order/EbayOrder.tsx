@@ -1,77 +1,92 @@
 /* eslint-disable radix */
 import { useRef, useState } from 'react';
-import { Typography, Space, message,Tooltip,Button} from 'antd';
+import { Typography, Space, message, Tooltip, Button, Tag } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import { ebayOrders } from '@/services/order/ebay';
 import { getKesGroup, getKesValue } from '@/utils/utils';
 import type { vendors } from '@/services/publicKeys';
-import { getPageHeight,exportReport,getPurchaseFromTitle } from '@/utils/utils';
+import { getPageHeight, exportReport, getPurchaseFromTitle } from '@/utils/utils';
 import { getTargetHref } from '@/utils/jumpUrl';
 import ParagraphText from '@/components/ParagraphText'
 import moment from 'moment';
 import styles from './style.less';
 
-const { Text,Paragraph } = Typography;
+const { Text, Paragraph } = Typography;
 type GithubIssueItem = {
+  id: number;
+  orderId: string;
+  lineItemId: string;
+  legacyItemId: string;
+  sku: string;
+  title: string;
+  lineItemFulfillmentStatus: string;
+  quantity: number;
+  lineItemCost: string;
+  total: string;
+  deliveryCost: string;
+  ebayCollectAndRemitTaxes: string;
+  lineItemFulfillmentInstructions: string;
+  itemLocation: string;
+  store_id: string;
+  add_time: number;
+  update_at: string;
+  listing_id: number;
+  listing: {
+    vendor_id: number;
+    tag_id: number;
+    vendor_price: string;
+    after_algorithm_price: string;
+    store_price_now: string;
+  };
+  order_ebay_id: number;
+  country_id: number;
+  order_ebay: {
     id: number;
     orderId: string;
-    lineItemId: string;
-    legacyItemId: string;
-    sku: string;
-    title: string;
-    lineItemFulfillmentStatus: string;
-    quantity: number;
-    lineItemCost: string;
-    total: string;
-    deliveryCost: string;
-    ebayCollectAndRemitTaxes: string;
-    lineItemFulfillmentInstructions: string;
-    itemLocation: string;
-    store_id: string;
-    add_time: number;
+    legacyOrderId: string;
+    creationDate: string;
+    lastModifiedDate: string;
+    orderFulfillmentStatus: string;
+    sellerId: string;
+    buyer: {
+      username: string;
+      taxAddress: {
+        stateOrProvince: string;
+        postalCode: string;
+        countryCode: string;
+      };
+    };
+    pricingSummary: string;
+    cancelStatus: string;
+    paymentSummary: string;
+    fulfillmentStartInstructions: string;
+    fulfillmentHrefs: unknown;
+    totalFeeBasisAmount: string;
+    totalMarketplaceFee: string;
+    OrderItemTotal: number;
+    add_time: string;
     update_at: string;
-    listing_id: number;
-    listing: {
-        vendor_id: number;
-        tag_id: number;
-        vendor_price: string;
-        after_algorithm_price: string;
-    };
-    order_ebay_id: number;
-    country_id: number;
-    order_ebay: {
-        id: number;
-        orderId: string;
-        legacyOrderId: string;
-        creationDate: string;
-        lastModifiedDate: string;
-        orderFulfillmentStatus: string;
-        sellerId: string;
-        buyer: {
-            username: string;
-            taxAddress: {
-                stateOrProvince: string;
-                postalCode: string;
-                countryCode: string;
-            };
-        };
-        pricingSummary: string;
-        cancelStatus: string;
-        paymentSummary: string;
-        fulfillmentStartInstructions: string;
-        fulfillmentHrefs: unknown;
-        totalFeeBasisAmount: string;
-        totalMarketplaceFee: string;
-        OrderItemTotal: number;
-        add_time: string;
-        update_at: string;
-        store_id: number;
-    };
-    vendor_id?: number;
-    tag_id?: number;
-    isRepeatFirst: number;
-    isRepeatLaster: number;
+    store_id: number;
+  };
+  order_item_record: {
+    store_price_now: string;
+  },
+  vendor_id?: number;
+  tag_id?: number;
+  isRepeatFirst: number;
+  isRepeatLaster: number;
+  shipAddress: {
+    addressLine1: string;
+    city: string;
+    countryCode: string;
+    email: string;
+    fullName: string;
+    phoneNumber: string;
+    postalCode: string;
+    stateOrProvince: string;
+  }
+  is_return?: number;
 }
 
 
@@ -99,7 +114,7 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
                     <a
                       target="_blank"
                       rel="noreferrer"
-                      href={`${getTargetHref(record?.listing.vendor_id || "",record.sku)}`}
+                      href={`${getTargetHref(record?.listing.vendor_id || "", record.sku)}`}
                     >
                       {record.sku}
                     </a>
@@ -112,39 +127,39 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
               </Text>
             </Text>
             <Text type="secondary">
-                orderId : <Text>
+              orderId : <Text>
 
                 <Tooltip
-                placement="top"
-                title={record.isRepeatFirst === 1 || record.isRepeatLaster ? 'Repeat order!' : undefined}
-              >
-                <Text
-                  copyable
-                  style={record.isRepeatFirst === 1 || record.isRepeatLaster ? { color: 'red', width: '160px' } : undefined}
+                  placement="top"
+                  title={record.isRepeatFirst === 1 || record.isRepeatLaster ? 'Repeat order!' : undefined}
                 >
-                  {record.orderId}
-                </Text>
-              </Tooltip>
+                  <Text
+                    copyable
+                    style={record.isRepeatFirst === 1 || record.isRepeatLaster ? { color: 'red', width: '160px' } : undefined}
+                  >
+                    {record.orderId}
+                  </Text>
+                </Tooltip>
 
-                </Text>
+              </Text>
             </Text>
             <Text type="secondary">
               lineItemId : <Text copyable>{record.lineItemId}</Text>
             </Text>
             <Text type="secondary">
-                legacyItemId : <Text copyable>{record.legacyItemId}</Text>
+              legacyItemId : <Text copyable>{record.legacyItemId}</Text>
             </Text>
-              {record.tag_id && (<Text type="secondary">
-                Tag Name:
-                  {record && (<ParagraphText
-                  content={getKesValue('tagsData', record.tag_id || "")?.tag_name}
-                  width={280}
-                />)}
+            {record.tag_id && (<Text type="secondary">
+              Tag Name:
+              {record && (<ParagraphText
+                content={getKesValue('tagsData', record.tag_id || "")?.tag_name}
+                width={280}
+              />)}
             </Text>)}
             <Text type="secondary">Title : <ParagraphText
-                content={record.title}
-                width={280}
-              /></Text>
+              content={record.title}
+              width={280}
+            /></Text>
           </Space>
         </>
       );
@@ -155,21 +170,35 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
     dataIndex: 'Pii',
     search: false,
     width: 345,
-    render: (_,record) => {
+    render: (_, record) => {
+      const { addressLine1 = "", city = "", countryCode = "", email = "", fullName = "", phoneNumber = "", postalCode = "", stateOrProvince = "" } = record.shipAddress
       return (
         <>
           <Space direction="vertical">
             <Text type="secondary">
-             Username : <Text copyable>{`${record.order_ebay.buyer.username}`}</Text>
+              Name: <Text copyable>{`${fullName}`}</Text>
             </Text>
             <Text type="secondary">
-             countryCode : <Text copyable>{`${record.order_ebay.buyer.taxAddress.countryCode}`}</Text>
+              AddressLine1: <Text copyable>{`${addressLine1}`}</Text>
             </Text>
             <Text type="secondary">
-            postalCode : <Text copyable>{`${record.order_ebay.buyer.taxAddress.postalCode}`}</Text>
+              PostalCode: <Text copyable>{`${postalCode}`}</Text>
             </Text>
             <Text type="secondary">
-            stateOrProvince : <Text copyable>{`${record.order_ebay.buyer.taxAddress.stateOrProvince}`}</Text>
+              City: <Text copyable>{`${city}`}</Text>
+            </Text>
+            <Text type="secondary">
+              StateOrProvince: <Text copyable>{`${stateOrProvince}`}</Text>
+            </Text>
+            <Text type="secondary">
+              Phone: <Text copyable>{`${phoneNumber}`}</Text>
+            </Text>
+            <Text type="secondary">
+              Email: <Text copyable>{`${email}`}</Text>
+            </Text>
+            <Text type="secondary">
+              <Tag color="#2db7f5">{countryCode}</Tag>
+              {record.is_return ? <Tag color="#f50">Is return</Tag> : null}
             </Text>
           </Space>
         </>
@@ -192,36 +221,36 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
     valueType: 'date',
     width: 250,
     search: false,
-    render: (_,record) => {
+    render: (_, record) => {
       return (
         <>
           <Space direction="vertical">
             <Text type="secondary">
-            creationDate :{' '}
+              creationDate:
               <Text>
-                {moment(parseInt(`${record.order_ebay.creationDate  }000`)).format(
+                {moment(parseInt(`${record.order_ebay.creationDate}000`)).format(
                   'YYYY-MM-DD HH:mm:ss',
                 )}
               </Text>
             </Text>
             <Text type="secondary">
-            lastModifiedDate :{' '}
+              lastModifiedDate:
               <Text>
-                {moment(parseInt(`${record.order_ebay.lastModifiedDate  }000`)).format('YYYY-MM-DD HH:mm:ss')}
+                {moment(parseInt(`${record.order_ebay.lastModifiedDate}000`)).format('YYYY-MM-DD HH:mm:ss')}
               </Text>
             </Text>
             <Text type="secondary">
-            add_time :{' '}
+              add_time :
               <Text>
-                {moment(parseInt(`${record.order_ebay.add_time  }000`)).format(
+                {moment(parseInt(`${record.order_ebay.add_time}000`)).format(
                   'YYYY-MM-DD HH:mm:ss',
                 )}
               </Text>
             </Text>
             <Text type="secondary">
-            update_at :{' '}
+              update_at:
               <Text>
-                {moment(parseInt(`${record.order_ebay.update_at  }000`)).format('YYYY-MM-DD HH:mm:ss')}
+                {moment(parseInt(`${record.order_ebay.update_at}000`)).format('YYYY-MM-DD HH:mm:ss')}
               </Text>
             </Text>
           </Space>
@@ -251,13 +280,31 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
     hideInTable: true
   },
   {
-    title: 'Vendor price',
-    dataIndex: 'vendor_price',
-    width: 100,
-    align: 'center',
+    title: 'Price',
+    dataIndex: 'price',
+    width: 170,
     search: false,
     render: (_, record) => {
-        return `${record.listing?.vendor_price || ""}`
+      return (<Space direction="vertical">
+        <Text type="secondary">
+          Vendor price:
+          <Text>
+            {record.listing?.vendor_price || ""}
+          </Text>
+        </Text>
+        <Text type="secondary">
+          ItemPrice amount:
+          <Text>
+            {record.listing.after_algorithm_price || ""}
+          </Text>
+        </Text>
+        <Text type="secondary">
+          Store price now:
+          <Text>
+            {record.listing.store_price_now}
+          </Text>
+        </Text>
+      </Space>)
     }
   },
   {
@@ -265,14 +312,6 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
     dataIndex: 'quantity',
     align: 'center',
     width: 150,
-  },
-  {
-    title: 'ItemPrice amount',
-    dataIndex: 'ItemPriceAmount',
-    width: 120,
-    render: (_,record) => {
-      return record.listing.after_algorithm_price
-    }
   },
   {
     title: 'Store',
@@ -316,7 +355,7 @@ export default () => {
         tagName: tagName,
       };
     });
-    exportReport(tableData,1);
+    exportReport(tableData, 1);
   }
   return (
     <>
@@ -356,19 +395,19 @@ export default () => {
             };
             ebayOrders(tempParams).then((res) => {
               var tempData = []
-              if (res.code){
+              if (res.code) {
                 tempData = res.data.list.map((item: GithubIssueItem, index: number) => {
-                    return {
-                        ...item,
-                        order_ebay: {
-                          ...item.order_ebay,
-                          buyer: JSON.parse((item.order_ebay as any).buyer)
-                        },
-                        vendor_id: item.listing?.vendor_id,
-                        tag_id: item.listing?.tag_id,
-                        isRepeatFirst: res.data.list[index + 1] ? res.data.list[index + 1].orderId === item.orderId ? 1 : 0 : 0,
-                        isRepeatLaster: res.data.list[index - 1] ? res.data.list[index - 1].orderId === item.orderId ? 1 : 0 : 0
-                    }
+                  return {
+                    ...item,
+                    order_ebay: {
+                      ...item.order_ebay,
+                      buyer: JSON.parse((item.order_ebay as any).buyer)
+                    },
+                    vendor_id: item.listing?.vendor_id,
+                    tag_id: item.listing?.tag_id,
+                    isRepeatFirst: res.data.list[index + 1] ? res.data.list[index + 1].orderId === item.orderId ? 1 : 0 : 0,
+                    isRepeatLaster: res.data.list[index - 1] ? res.data.list[index - 1].orderId === item.orderId ? 1 : 0 : 0
+                  }
                 })
               } else {
                 message.error(res.msg);

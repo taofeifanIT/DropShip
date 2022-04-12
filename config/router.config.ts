@@ -147,6 +147,11 @@ export const routerConfigs = {
     name: 'Zoro',
     component: './distributors/Zoro',
   },
+  Tballs:{
+    path: '/distributors/Tballs',
+    name: 'Tballs',
+    component: './distributors/Tballs',
+  },
   OutSourceManage: {
     path: '/outsource/OutSourceManage',
     name: 'OutSourceManage',

@@ -141,6 +141,11 @@
         name: 'Zoro',
         component: './distributors/Zoro',
       },
+      {
+        path: '/distributors/Tballs',
+        name: 'Tballs',
+        component: './distributors/Tballs',
+      },
     ],
   },
   {

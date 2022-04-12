@@ -187,7 +187,7 @@ const otherHeader = [
 ]
 
 const amazonHeader = [
-  { title: 'OrderID', dataIndex: 'OrderID', key: 'OrderID' },
+  { title: 'Order ID', dataIndex: 'OrderID', key: 'OrderID' },
   { title: 'Date', dataIndex: 'Date', key: 'Date' },
   { title: 'Marketplace', dataIndex: 'Marketplace', key: 'Marketplace' },
   { title: 'SKU', dataIndex: 'SKU', key: 'SKU' },
@@ -195,9 +195,9 @@ const amazonHeader = [
   { title: 'QTY', dataIndex: 'QTY', key: 'QTY',type: 'n'},
   { title: 'TotalRevenue', dataIndex: 'TotalRevenue', key: 'TotalRevenue' },
   { title: 'AmazonFee', dataIndex: 'AmazonFee', key: 'AmazonFee' },
-  { title: 'PurchasePrice', dataIndex: 'PurchasePrice', key: 'PurchasePrice', type: 'number' },
+  { title: 'Purchase Price', dataIndex: 'PurchasePrice', key: 'PurchasePrice', type: 'number' },
   { title: 'Profit', dataIndex: 'Profit', key: 'Profit' },
-  { title: 'PurchasedFrom', dataIndex: 'PurchasedFrom', key: 'PurchasedFrom' },
+  { title: 'Purchased From', dataIndex: 'PurchasedFrom', key: 'PurchasedFrom' },
   { title: 'Notes', dataIndex: 'Notes', key: 'Notes' },
   { title: 'tagName', dataIndex: 'tagName', key: 'tagName' },
   { title: 'ack_status', dataIndex: 'ack_status', key: 'ack_status' },

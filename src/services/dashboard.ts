@@ -54,6 +54,10 @@ export async function marketplaceRanking() {
   return request('/api/dashboard/marketplace_ranking');
 }
 
+export async function NewMarketplaceRanking() {
+  return request('/api/dashboard/new_marketplace_ranking');
+}
+
 export async function countryRanking() {
   return request('/api/dashboard/country_ranking');
 }

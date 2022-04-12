@@ -64,7 +64,7 @@ export async function updateTrial(params: updateItem) {
   });
 }
 
-export async function autoOrder(params: { amazonOrderId: string }) {
+export async function autoOrder(params: { amazonOrderId: string,is_sure?: number }) {
   return request('/api/amazon/manual_order', {
     method: 'POST',
     data: params,

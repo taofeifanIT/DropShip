@@ -4,6 +4,7 @@ export default {
   'menu.Distributors.Eldorado': 'Eldorado',
   'menu.Ebay': 'Ebay auth',
   'menu.Distributors.Zoro': 'Zoro',
+  'menu.Distributors.Tballs': 'Tballs',
   'menu.Distributors.Ebay': 'Ebay',
   'menu.Distributors.Synnex': 'Synnex',
   'menu.Distributors.Scansource': 'Scansource',

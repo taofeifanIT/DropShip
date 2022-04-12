@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Row, Col, Card, Typography, Input, List, Spin, Tabs, DatePicker, Select,Badge } from 'antd';
-import { Rose, Line, Column,G2,Liquid,Pie } from '@ant-design/charts';
+import { Rose, Line, Column,G2,Pie } from '@ant-design/charts';
 import ProTable from '@ant-design/pro-table';
 import type { ProColumns } from '@ant-design/pro-table';
 import {
   matchAndListing,
+  NewMarketplaceRanking,
   total,
   storeRanking,
   saleRanking,
   tagRanking,
-  marketplaceRanking,
   mqDataStatus
 } from '../../services/dashboard';
 import moment from 'moment';
@@ -24,6 +24,7 @@ import { getKesGroup } from '@/utils/utils';
 const { RangePicker } = DatePicker;
 
 const { Text } = Typography;
+
 
 const DemoColumn: React.FC = () => {
   const [loading, setLoading] = useState<boolean | undefined>(false);
@@ -193,25 +194,22 @@ const TagMatchData = () => {
     {
       title: 'Total sales',
       dataIndex: 'total_sales',
-      width: 150,
       sorter: true,
     },
     {
       title: 'Total order',
       dataIndex: 'total_order',
-      width: 150,
       sorter: true,
     },
     {
       title: 'Total listing',
       dataIndex: 'total_listing',
-      width: 150,
       sorter: true,
     },
     {
       title: 'Match Rate',
       dataIndex: 'matchRate',
-      with: 300,
+      width: 200,
       valueType: (item: { matchRate: number }) => ({
         type: 'progress',
         status: ProcessMap(item.matchRate),
@@ -498,17 +496,57 @@ const DemoLine: React.FC = () => {
   );
 };
 
+const HistoryInventory = (props: {
+  data: any
+}) => {
+  const config: any = {
+    data:props.data.data,
+    padding: 'auto',
+    xField: 'time',
+    yField: 'value',
+    seriesField: 'category',
+    style: {
+      height: '260px'
+    },
+  };
+
+  return <>
+  <h3>{props.data.type} inventory historical data</h3>
+  <Line {...config} />
+  </>;
+};
+
 const DemoRose: React.FC = () => {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<any>([]);
   const [loading, setLoading] = useState(false);
+  const [subLine, setSubLine] = useState({type:"",data: []})
+  const ref: any = React.useRef()
+  const initSubLine = () => {
+    if(!data.length){
+      return
+    }
+    setSubLine(data[0])
+  }
   const init = () => {
     setLoading(true);
-    marketplaceRanking()
+    NewMarketplaceRanking()
       .then((res) => {
         const tempData: any = Object.keys(res.data).map(key => {
+          let tempHistoryData: any[] = []
+          res.data[key]?.history?.forEach(({online_num,offline_num,total_num,current_date,after_algorithm_price}: any) => {
+            let obj = {online_num,offline_num,total_num,average_price:after_algorithm_price}
+            Object.keys(obj).forEach(key => {
+              tempHistoryData.push({
+                time:current_date,
+                value: obj[key],
+                category: key
+              })
+            })
+          })
           return {
             type: key,
-            value: res.data[key]
+            value: res.data[key].total,
+            data: tempHistoryData
           }
         })
         setData(tempData);
@@ -526,15 +564,28 @@ const DemoRose: React.FC = () => {
     style: { height: '35vh' },
     label: { offset: -15 },
   };
+  const onReadyColumn = (plot: any) => {
+    plot.on('plot:click', (evt) => {
+      const { x, y } = evt;
+      const tooltipData = plot.chart.getTooltipItems({ x, y });
+      if(!tooltipData[0]){
+        return
+      }
+      setSubLine(tooltipData[0].data)
+    });
+  };
   useEffect(() => {
     init();
   }, []);
-  // Product volume of each market
+  useEffect(() => {
+    initSubLine();
+  }, [data]);
   return (
     <>
-      <h4>Product volume of each market</h4>
+      <h4>Active products of each market</h4>
       <Spin spinning={loading}>
-        <Rose {...config} />
+        <Rose {...config} onReady={onReadyColumn} ref={ref}  />
+        <HistoryInventory data={subLine} />
       </Spin>
     </>
   );
@@ -877,6 +928,7 @@ export default () => {
                 <div style={{ height: '35vh' }}>
                   <DemoColumn></DemoColumn>
                 </div>
+                <TagMatchData />
               </Col>
               <Col className="gutter-row" span={8}>
                 <div style={{ height: '35vh' }}>
@@ -887,11 +939,11 @@ export default () => {
           </Card>
         </Col>
       </Row>
-      <Row gutter={16} style={{ marginTop: '10px' }}>
+      {/* <Row gutter={16} style={{ marginTop: '10px' }}>
         <Col className="gutter-row" span={24}>
           <TagMatchData />
         </Col>
-      </Row>
+      </Row> */}
     </div>
   );
 };

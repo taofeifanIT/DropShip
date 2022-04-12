@@ -30,6 +30,7 @@ type GithubIssueItem = {
   walmart_price_algorithm_id: number;
   shopify_price_algorithm_id: number;
   ebay_price_algorithm_id: number;
+  spapi_price_algorithm_id: number;
   listing_num: number;
   total_num: number;
 };
@@ -125,6 +126,15 @@ const columns = (editFn: (visible: boolean, id: number) => void): ProColumns<Git
     width: 240,
     render: (_,record) => {
       return getKesValue('priceAlgorithmsData', record.shopify_price_algorithm_id).name;
+    },
+  },
+  {
+    title: 'spapi price algorithm',
+    dataIndex: 'spapi_price_algorithm_id',
+    search: false,
+    width: 240,
+    render: (_,record) => {
+      return getKesValue('priceAlgorithmsData', record.spapi_price_algorithm_id).name;
     },
   },
   {
@@ -298,6 +308,21 @@ const BatchPriceModal = (props: {
           </Select>
         </Form.Item>
         <Form.Item
+          label="spapi price algorithm"
+          name="spapi_price_algorithm_id"
+          rules={[{ required: true, message: 'Please input your price algorithm!' }]}
+        >
+          <Select placeholder="Select a option and change input text above" allowClear>
+            {getKesGroup('priceAlgorithmsData').map((item: priceAlgorithms) => {
+              return (
+                <Option key={`option${item.id}`} value={item.id}>
+                  {item.name}
+                </Option>
+              );
+            })}
+          </Select>
+        </Form.Item>
+        <Form.Item
           label="quantity_offset"
           name="quantity_offset"
           rules={[{ required: true, message: 'Please input your quantity_offset!' }]}
@@ -328,6 +353,7 @@ export default () => {
     <>
       <ProTable<GithubIssueItem>
         size="small"
+        bordered
         columns={columns(editFn)}
         actionRef={actionRef}
         request={async (params = {}, sort) =>

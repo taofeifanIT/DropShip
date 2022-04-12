@@ -18,7 +18,6 @@ import {
   Tooltip,
   Table,
   Empty,
-  Switch,
   Spin,
   Tabs,
   Dropdown,
@@ -46,6 +45,7 @@ import styles from './style.less';
 import ParagraphText from '@/components/ParagraphText';
 import Edit from '@/components/Edit'
 import { exportReport } from '@/utils/utils';
+import OrderSwitch from './components/OrderSwitch';
 const { Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
 
@@ -628,72 +628,6 @@ const ManualorderBtn = (props: { record: GithubIssueItem }) => {
   return <Button type="primary" loading={loading} disabled={issueStatus} size='small' onClick={chagneManualOrderStatus}>Manual order</Button>
 }
 
-
-
-const OrderSwitch = (props: {
-  params: any;
-  targetKey: string;
-  targetValue: number;
-  checkedChildren: string;
-  unCheckedChildren: string;
-  api: any;
-  isFalseDisbled?: boolean;
-  isTrueDisbled?: boolean;
-}) => {
-  const {
-    params,
-    targetKey,
-    targetValue,
-    checkedChildren,
-    unCheckedChildren,
-    api,
-    isFalseDisbled = false,
-    isTrueDisbled = false
-  } = props;
-  const [issueStatus, setIssueStatus] = useState<boolean>(!!targetValue);
-  const [switchLoading, setSwaitchLoading] = useState(false);
-  let inlineDisabled = false
-  if (isFalseDisbled && !issueStatus) {
-    inlineDisabled = true
-  }
-  if (isTrueDisbled && issueStatus) {
-    inlineDisabled = true
-  }
-  const changeIssueType = (val: number) => {
-    params[targetKey] = val
-    setSwaitchLoading(true);
-    api(params)
-      .then((res: any) => {
-        if (res.code) {
-          message.success('operation successful!');
-          setIssueStatus(!!val);
-        }
-      })
-      .finally(() => {
-        setSwaitchLoading(false);
-      });
-  };
-  useEffect(() => {
-    setIssueStatus(!!targetValue);
-  }, [targetValue]);
-  return (
-    <div>
-      <Switch
-        checkedChildren={checkedChildren}
-        unCheckedChildren={unCheckedChildren}
-        loading={switchLoading}
-        checked={issueStatus}
-        disabled={inlineDisabled}
-        style={{ width: 90 }}
-        onChange={() => {
-          changeIssueType(+!issueStatus);
-        }}
-      />
-    </div>
-  );
-};
-
-
 type feedbackDataType = {
   key: string;
   items: {
@@ -841,7 +775,7 @@ const FeedbackModel = (props: { onRef: any }) => {
                       size="small"
                       bordered
                       key={'table' + item.key}
-                      rowKey="AmazonOrderId"
+                      rowKey="id"
                       columns={columns}
                       expandable={{
                         expandedRowRender: record => <p style={{ margin: 0 }}>{record.t1}</p>,
