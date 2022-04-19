@@ -204,8 +204,28 @@ const amazonHeader = [
   { title: 'ShipperTrackingNumber', dataIndex: 'ShipperTrackingNumber', key: 'ShipperTrackingNumber' },
 ]
 
+const shopifyHeader = [
+  { title: 'Order ID', dataIndex: 'OrderID', key: 'OrderID' },
+  { title: 'Date', dataIndex: 'Date', key: 'Date' },
+  { title: 'Marketplace', dataIndex: 'Marketplace', key: 'Marketplace' },
+  { title: 'SKU', dataIndex: 'SKU', key: 'SKU' },
+  { title: 'PricePerUnit', dataIndex: 'PricePerUnit', key: 'PricePerUnit', type: 'n' },
+  { title: 'QTY', dataIndex: 'QTY', key: 'QTY',type: 'n'},
+  { title: 'TotalRevenue', dataIndex: 'TotalRevenue', key: 'TotalRevenue' },
+  { title: 'AmazonFee', dataIndex: 'AmazonFee', key: 'AmazonFee' },
+  { title: 'Purchase Price', dataIndex: 'PurchasePrice', key: 'PurchasePrice', type: 'number' },
+  { title: 'Profit', dataIndex: 'Profit', key: 'Profit' },
+  { title: 'Purchased From', dataIndex: 'PurchasedFrom', key: 'PurchasedFrom' },
+  { title: 'Notes', dataIndex: 'Notes', key: 'Notes' },
+  { title: 'tagName', dataIndex: 'tagName', key: 'tagName' },
+  { title: 'ack_status', dataIndex: 'ack_status', key: 'ack_status' },
+  { title: 'ShipperTrackingNumber', dataIndex: 'ShipperTrackingNumber', key: 'ShipperTrackingNumber' },
+  { title: 'Source', dataIndex: 'source', key: 'source' },
+]
+
 export function exportReport(data: any, store = 0) {
   let header:any = otherHeader
-  if(store === 1) header = amazonHeader
+  if(store === 1) header = amazonHeader;
+  if(store === 2) header = shopifyHeader;
   exportExcel(header, data, `Orders ${moment().format('MMDD')}.xlsx`);
 }

@@ -1,10 +1,10 @@
 /* eslint-disable radix */
-import { useRef, useState,useImperativeHandle, useEffect,createRef } from 'react';
-import { Typography, Space, message,Button,Tabs,Dropdown,Menu, Modal, Spin,Table} from 'antd';
+import { useRef, useState, useImperativeHandle, useEffect, createRef } from 'react';
+import { Typography, Space, message, Button, Tabs, Dropdown, Menu, Modal, Spin, Table, Tooltip } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
-import { shopifyOrders, manualOrder, setPurchasePrice,getList } from '../../services/order/shopifyorder';
-import { getKesGroup, getKesValue,getPurchaseFromTitle } from '@/utils/utils';
+import { shopifyOrders, manualOrder, setPurchasePrice, getList } from '../../services/order/shopifyorder';
+import { getKesGroup, getKesValue, getPurchaseFromTitle } from '@/utils/utils';
 import type { vendors } from '@/services/publicKeys';
 import { getPageHeight } from '@/utils/utils';
 import { getTargetHref, getAsonHref } from '@/utils/jumpUrl';
@@ -77,7 +77,8 @@ type GithubIssueItem = {
   ack_status: string;
   order_status: number;
   status: string;
-  shipping: { code: string, title: string, source: string }
+  shipping: { code: string, title: string, source: string },
+  other_platform_order_number:number;
 }
 
 
@@ -126,9 +127,20 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
               <Paragraph style={{ display: 'inline' }} copyable={{ text: record.listing.asin }}></Paragraph>
             </Text>
             <Text type="secondary">
-              order ID : <Text><a href={`https://i-t-mars.myshopify.com/admin/orders/${record.order_id}`} target="_blank">{record.order_id}</a></Text>
+              order ID :
+              <Tooltip
+                  placement="top"
+                  title={record.isRepeatFirst === 1 || record.isRepeatLaster ? 'Repeat order!' : undefined}
+                >
+                  <Text>
+                    <a  
+                      style={record.isRepeatFirst === 1 || record.isRepeatLaster ? { color: 'red', width: '160px' } : undefined}
+                      href={`https://i-t-mars.myshopify.com/admin/orders/${record.order_id}`} target="_blank">{record.order_id}</a>
+                  </Text>
+                </Tooltip>
               <Paragraph style={{ display: 'inline' }} copyable={{ text: record.order_id }}></Paragraph>
             </Text>
+            {record.other_platform_order_number ? (<Text type="secondary">Source order ID: <Text copyable>{record.other_platform_order_number}</Text></Text>): null}
             <Text type="secondary">
               Order item ID : <Text copyable>{record.order_item_id}</Text>
             </Text>
@@ -298,8 +310,8 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
     valueType: 'money',
     search: false,
     width: 150,
-    render: (text,record) => {
-      return <Edit id={record.id} pramsKey={"purchase_price"} api={setPurchasePrice} record={record}  refresh={init} children={text} />
+    render: (text, record) => {
+      return <Edit id={record.id} pramsKey={"purchase_price"} api={setPurchasePrice} record={record} refresh={init} children={text} />
     }
   },
   {
@@ -573,21 +585,21 @@ const FeedbackModel = (props: { onRef: any }) => {
             <Tabs
             >
               {data.map((item, index) => (
-                  <TabPane tab={item.key} key={index + 'tab'}>
-                    <Table<any>
-                      dataSource={item.items}
-                      size="small"
-                      bordered
-                      key={'table' + item.key}
-                      rowKey="id"
-                      columns={columns}
-                      expandable={{
-                        expandedRowRender: record => <p style={{ margin: 0 }}>{record.t1}</p>,
-                        rowExpandable: record => !!record.t1,
-                      }}
-                    />
-                  </TabPane>
-                ))}
+                <TabPane tab={item.key} key={index + 'tab'}>
+                  <Table<any>
+                    dataSource={item.items}
+                    size="small"
+                    bordered
+                    key={'table' + item.key}
+                    rowKey="id"
+                    columns={columns}
+                    expandable={{
+                      expandedRowRender: record => <p style={{ margin: 0 }}>{record.t1}</p>,
+                      rowExpandable: record => !!record.t1,
+                    }}
+                  />
+                </TabPane>
+              ))}
             </Tabs>
           </Spin>
         </Dropdown>
@@ -608,7 +620,7 @@ export default () => {
       let storeName = getKesValue('storeData', item.store_id)?.name;
       let tagName = getKesValue('tagsData', item.tag_id)?.tag_name;
       return {
-        OrderID: item.order_id.replace(/(^\s*)|(\s*$)/g, ''),
+        OrderID: item.shipping.source === "walmart" ? item.other_platform_order_number : item.order_id.replace(/(^\s*)|(\s*$)/g, ''),
         Date: moment().format('M/D/YYYY'),
         Marketplace: storeName.replace(/(^\s*)|(\s*$)/g, ''),
         SKU: item.sku.replace(/(^\s*)|(\s*$)/g, ''),
@@ -622,10 +634,11 @@ export default () => {
         Notes: "",
         tagName: tagName,
         ack_status: item.ack_status || "",
-        ShipperTrackingNumber: item.tracking_numbe || ""
+        ShipperTrackingNumber: item.tracking_numbe || "",
+        source: item.shipping.source
       };
     });
-    exportReport(tableData, 1);
+    exportReport(tableData, 2);
   }
   return (
     <>
@@ -671,7 +684,9 @@ export default () => {
                     vendor_id: item.listing?.vendor_id,
                     tag_id: item.listing?.tag_id,
                     store_id: item.listing?.store_id,
-                    userInfo: JSON.parse(item.order_shopify.shipping_address)
+                    userInfo: JSON.parse(item.order_shopify.shipping_address),
+                    isRepeatFirst: res.data.list[index + 1] ? res.data.list[index + 1].order_id === item.order_id ? 1 : 0 : 0,
+                    isRepeatLaster: res.data.list[index - 1] ? res.data.list[index - 1].order_id === item.order_id ? 1 : 0 : 0
                   }
                 })
               } else {
@@ -728,8 +743,8 @@ export default () => {
         toolBarRender={() => [
           <Button key="exporttoolBtn" disabled={!selectedRowKeys.length} onClick={clickDown}>
             export
-            </Button>,
-            <Button
+          </Button>,
+          <Button
             key="OrderProcessingFeedback"
             onClick={() => {
               feedbackModelRef?.current.func();

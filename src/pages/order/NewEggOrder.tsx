@@ -1,6 +1,6 @@
 /* eslint-disable radix */
 import { useEffect, useRef, useState } from 'react';
-import { Button, Typography, Space, Form, Modal, InputNumber, message, Input } from 'antd';
+import { Button, Typography, Space, Form, Modal, InputNumber, message, Input,Tooltip } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import { newEggListing, shipOrder } from '@/services/order/newEggOrder';
@@ -48,6 +48,8 @@ type GithubIssueItem = {
     OrderDate: string;
   }
   update_at: string;
+  isRepeatFirst: number;
+  isRepeatLaster: number;
 };
 
 const ActionModal = (props: {
@@ -188,7 +190,18 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
               </Text>
             </Text>
             <Text type="secondary">
-              OrderNumber : <Text copyable>{record.OrderNumber}</Text>
+              OrderNumber :
+              <Tooltip
+                  placement="top"
+                  title={record.isRepeatFirst === 1 || record.isRepeatLaster ? 'Repeat order!' : undefined}
+                >
+                  <Text
+                    copyable
+                    style={record.isRepeatFirst === 1 || record.isRepeatLaster ? { color: 'red', width: '160px' } : undefined}
+                  >
+                    {record.OrderNumber}
+                  </Text>
+                </Tooltip>
             </Text>
             <Text type="secondary">
               OrderItemId : <Text copyable>{record.OrderItemId}</Text>
@@ -267,7 +280,7 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
         <>
           <Space direction="vertical">
             <Text type="secondary">
-              Order Date :{' '}
+              Order Date :
               <Text>
                 {moment(parseInt(`${record.order_newegg.OrderDate}000`)).format(
                   'YYYY-MM-DD HH:mm:ss',
@@ -275,7 +288,7 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
               </Text>
             </Text>
             <Text type="secondary">
-              update_at :{' '}
+              update_at :
               <Text>
                 {moment(parseInt(`${record.update_at}000`)).format('YYYY-MM-DD HH:mm:ss')}
               </Text>
@@ -440,7 +453,7 @@ export default () => {
               limit: params.pageSize,
             };
             newEggListing(tempParams).then((res) => {
-              const tempData: GithubIssueItem[] = res.data.list.map((item: any) => {
+              const tempData: GithubIssueItem[] = res.data.list.map((item: any, index: number) => {
                 return {
                   ...item,
                   CustomerName: item.order_newegg.CustomerName,
@@ -463,6 +476,8 @@ export default () => {
                   vendor_id: item.listing.vendor_id,
                   vendor_price: item.listing.vendor_price,
                   vendor_sku: item.listing.vendor_sku,
+                  isRepeatFirst: res.data.list[index + 1] ? res.data.list[index + 1].OrderNumber === item.OrderNumber ? 1 : 0 : 0,
+                  isRepeatLaster: res.data.list[index - 1] ? res.data.list[index - 1].OrderNumber === item.OrderNumber ? 1 : 0 : 0
                 };
               });
               resolve({

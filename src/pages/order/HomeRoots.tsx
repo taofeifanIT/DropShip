@@ -1,6 +1,6 @@
 /* eslint-disable radix */
 import { useRef, useState } from 'react';
-import { Typography, Space, message} from 'antd';
+import { Typography, Space, message,Tooltip} from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import { homeRootsOrders } from '../../services/order/homeRoots';
@@ -111,7 +111,19 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
               </Text>
             </Text>
             <Text type="secondary">
-                orderId : <Text copyable>{record.orderId} </Text>
+                orderId : 
+                <Tooltip
+                  placement="top"
+                  title={record.isRepeatFirst === 1 || record.isRepeatLaster ? 'Repeat order!' : undefined}
+                >
+                  <Text
+                    copyable
+                    style={record.isRepeatFirst === 1 || record.isRepeatLaster ? { color: 'red', width: '160px' } : undefined}
+                  >
+                    {record.orderId}
+                  </Text>
+                </Tooltip>
+
             </Text>
             <Text type="secondary">
                 lineItemId : <Text copyable>{record.lineItemId}</Text>
@@ -297,7 +309,9 @@ export default () => {
                           ...item.order_ebay,
                           buyer: JSON.parse((item.order_ebay as any).buyer)
                         },
-                        total: JSON.parse(item.total)
+                        total: JSON.parse(item.total),
+                        isRepeatFirst: res.data.list[index + 1] ? res.data.list[index + 1].orderId === item.orderId ? 1 : 0 : 0,
+                        isRepeatLaster: res.data.list[index - 1] ? res.data.list[index - 1].orderId === item.orderId ? 1 : 0 : 0
                     }
                 })
               } else {
