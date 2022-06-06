@@ -89,6 +89,7 @@ type GithubIssueItem = {
     issue_tracking: number;
     OrderStatus: number;
     id: number;
+    OrderTotalAmount: string;
   };
   update_at: number;
   vendor_change_time: number;
@@ -242,6 +243,10 @@ const columns = (refresh?: (localUpdate?:boolean) => void): ProColumns<GithubIss
     width: 305,
     render: (_, record) => {
       let isExitOpBox = record.AddressLine1.toUpperCase().includes("PO BOX".toUpperCase())
+      let phone = record.phone
+      if(phone && !/^(\+\d) (\d{3}-\d{3}-\d{4}) (ext\.) (\d{5})$/.test(phone)){
+        phone = "+" + phone[0] + " " + phone.slice(1,4) + '-' + phone.slice(4,7) + '-' + phone.slice(7,11) + ' ' + 'ext. ' + phone.substring(11)
+      }
       return (
         <>
           <Space direction="vertical">
@@ -253,7 +258,7 @@ const columns = (refresh?: (localUpdate?:boolean) => void): ProColumns<GithubIss
             </Text>
             <Text type="secondary">
               PostalCode:
-              <Text copyable={{ text: record.PostalCode.split('-')[0] }}>{record.PostalCode}</Text>
+              <Text copyable>{record.PostalCode}</Text>
             </Text>
             <Text type="secondary">
               City: <Text copyable>{record.City}</Text>
@@ -262,7 +267,7 @@ const columns = (refresh?: (localUpdate?:boolean) => void): ProColumns<GithubIss
               StateOrRegion: <Text copyable>{record.StateOrRegion}</Text>
             </Text>
             <Text type="secondary">
-              phone: <Text copyable={{ text: record.phone.split(' ')[1] }}>{record.phone}</Text>
+              phone: <Text copyable={{ text: phone.split(' ')[1] }}>{phone}</Text>
             </Text>
             <Text type="secondary">
               <Tag color="#2db7f5">{record.CountryCode}</Tag>
@@ -984,7 +989,7 @@ export default () => {
                     vendor_price: item.listing ? item?.listing.vendor_price : '-',
                     vendor: item.listing ? item?.listing.vendor_id : -10000,
                     City: JSON.parse(item.order_amazon.ShippingAddress).City || '-',
-                    amount: item.order_item_record?.amount,
+                    amount: item.order_amazon?.OrderTotalAmount,
                     AddressType: JSON.parse(item.order_amazon.ShippingAddress).AddressType || '-',
                     PostalCode: JSON.parse(item.order_amazon.ShippingAddress).PostalCode || '-',
                     StateOrRegion:

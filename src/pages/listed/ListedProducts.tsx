@@ -20,7 +20,8 @@ import {
   Cascader,
   DatePicker,
   Tooltip,
-  Switch
+  Switch,
+  Radio
 } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
@@ -933,7 +934,7 @@ const RelistingFrame = React.forwardRef((props: listingArugment, ref) => {
     showModal: (type: string) => {
       setIsModalVisible(true)
       setApiType(type)
-      const tempTitle = type === "unlist" ? "batch unlist" : "batch relisting"
+      let tempTitle = type === "unlist" ? "batch unlist" : "batch relisting"
       setTitle(tempTitle)
     }
   }));
@@ -989,6 +990,12 @@ const RelistingFrame = React.forwardRef((props: listingArugment, ref) => {
           })}
         </Select>
       </Form.Item>
+      {apiType === "unlist" && (<Form.Item name="not_match" label="match status" initialValue={"0"}>
+        <Radio.Group>
+          <Radio value="1">not match</Radio>
+          <Radio value="0">initial status</Radio>
+        </Radio.Group>
+      </Form.Item>)}
       {title !== "batch unlist" ? (<>
         <Form.Item label="start time" name="unlisting_time_after">
           <DatePicker showTime />
@@ -1071,9 +1078,9 @@ export default () => {
   // 生成 intl 对象
   // const enUSIntl = createIntl('en_US', enUS);
   const refresh = (localUpdate = false): void => {
-    if(localUpdate){
+    if (localUpdate) {
       setTime(moment().unix())
-    }else {
+    } else {
       actionRef.current?.reload();
     }
   };

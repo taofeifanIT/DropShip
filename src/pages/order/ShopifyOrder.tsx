@@ -620,7 +620,7 @@ export default () => {
       let storeName = getKesValue('storeData', item.store_id)?.name;
       let tagName = getKesValue('tagsData', item.tag_id)?.tag_name;
       return {
-        OrderID: item.shipping.source === "walmart" ? item.other_platform_order_number : item.order_id.replace(/(^\s*)|(\s*$)/g, ''),
+        sourceOrderID: item.shipping.source === "walmart" ? item.other_platform_order_number : item.order_id.replace(/(^\s*)|(\s*$)/g, ''),
         Date: moment().format('M/D/YYYY'),
         Marketplace: storeName.replace(/(^\s*)|(\s*$)/g, ''),
         SKU: item.sku.replace(/(^\s*)|(\s*$)/g, ''),
@@ -635,7 +635,8 @@ export default () => {
         tagName: tagName,
         ack_status: item.ack_status || "",
         ShipperTrackingNumber: item.tracking_numbe || "",
-        source: item.shipping.source
+        source: item.shipping.source,
+        orderId: item.order_id
       };
     });
     exportReport(tableData, 2);

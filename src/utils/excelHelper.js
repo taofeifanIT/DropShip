@@ -33,7 +33,7 @@ const exportExcel = (headers, data, fileName = 'demo.xlsx') => {
         output,
         {
           '!ref': ref,
-          '!cols': [{ wpx: 80 }, { wpx: 100 }, { wpx: 110 }, { wpx: 100 }, { wpx: 100 }, { wpx: 50 }, { wpx: 80 }, { wpx: 80 }, { wpx: 80 }],
+          '!cols': [{ wpx: 100 }, { wpx: 100 }, { wpx: 110 }, { wpx: 100 }, { wpx: 100 }, { wpx: 100 }, { wpx: 100 }, { wpx: 100 }, { wpx: 100 }],
         },
       ),
     },

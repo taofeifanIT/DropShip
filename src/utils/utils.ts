@@ -205,7 +205,7 @@ const amazonHeader = [
 ]
 
 const shopifyHeader = [
-  { title: 'Order ID', dataIndex: 'OrderID', key: 'OrderID' },
+  { title: 'Source order ID', dataIndex: 'sourceOrderID', key: 'sourceOrderID' },
   { title: 'Date', dataIndex: 'Date', key: 'Date' },
   { title: 'Marketplace', dataIndex: 'Marketplace', key: 'Marketplace' },
   { title: 'SKU', dataIndex: 'SKU', key: 'SKU' },
@@ -221,6 +221,7 @@ const shopifyHeader = [
   { title: 'ack_status', dataIndex: 'ack_status', key: 'ack_status' },
   { title: 'ShipperTrackingNumber', dataIndex: 'ShipperTrackingNumber', key: 'ShipperTrackingNumber' },
   { title: 'Source', dataIndex: 'source', key: 'source' },
+  { title: 'Order ID', dataIndex: 'orderId', key: 'orderId' },
 ]
 
 export function exportReport(data: any, store = 0) {

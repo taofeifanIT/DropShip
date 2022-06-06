@@ -344,7 +344,7 @@ export default () => {
         Date: moment().format('M/D/YYYY'),
         Marketplace: storeName.replace(/(^\s*)|(\s*$)/g, ''),
         SKU: item.sku.replace(/(^\s*)|(\s*$)/g, ''),
-        PricePerUnit: item.listing.after_algorithm_price,
+        PricePerUnit: item.listing.store_price_now,
         QTY: item.quantity.toString().replace(/(^\s*)|(\s*$)/g, ''),
         TotalRevenue: '',
         AmazonFee: '',
