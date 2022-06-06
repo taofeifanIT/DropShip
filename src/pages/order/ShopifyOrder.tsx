@@ -392,13 +392,19 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
     },
   },
   {
-    title: 'OrderId',
+    title: 'Order ID',
     dataIndex: 'order_id',
+    hideInTable: true
+  },
+  {
+    title: 'Source order ID',
+    dataIndex: 'other_platform_order_number',
     hideInTable: true
   },
   {
     title: 'quantity',
     dataIndex: 'quantity',
+    valueType: 'digit',
     width: 120,
   },
   {
