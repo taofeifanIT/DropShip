@@ -1,128 +1,134 @@
 import { useEffect, useState } from 'react';
-import { message} from 'antd';
+import { message, Tag, Button } from 'antd';
 import moment from 'moment';
+import { FrownOutlined,SmileFilled } from '@ant-design/icons';
 import { useModel, history } from 'umi';
 import NoticeIcon from './NoticeIcon';
 import styles from './index.less';
-import { cancelOrderTotal} from '@/services/order/order';
+import { getKesValue } from '@/utils/utils';
+import { getCancelOrder, updateCancelStatus } from '@/services/order/order';
 export type GlobalHeaderRightProps = {
   fetchingNotices?: boolean;
   onNoticeVisibleChange?: (visible: boolean) => void;
   onNoticeClear?: (tabName?: string) => void;
 };
 
-
+let data: any[] = []
 const NoticeIconView = () => {
   const { initialState, setInitialState } = useModel('@@initialState');
   const [notices, setNotices] = useState<any[]>([]);
-  const [errorInfo, setError] = useState<any[]>([]);
-  let tempNoticesInfo: any[] = [];
-  let tempErrorInfo: any[] = [];
-  const changeReadState = (id: string) => {
-    cancelOrderTotal()
-      .then((res) => {
-        if (res.code) {
-          if (id !== 'message') {
-            setNotices([]);
-          } else {
-            setError([]);
-          }
-          message.success(`All cleared!`);
-        } else {
-          throw res.msg;
-        }
-      })
-      .catch(() => {
-        message.error(`clear faild!`);
-      });
-  };
-  const setInfos = (pop: any) => {
-    // voiceAnnouncements(`You have ${pop.NewOrderTotal} new orders`);
-    const noticesObj = [
-      {
-        id: moment().format('X'),
-        avatar:
-          'https://i-1-lanrentuku.qqxzb-img.com/2020/10/27/34cb1163-184e-4795-b3f9-60a08e6d8e3f.png?imageView2/2/w/500/',
-        title: `You have ${pop.AmazonNewOrderTotal} new orders from Amazon`,
-        datetime: moment().format('YYYY-MM-DD HH:mm:ss'),
-        type: 'Amazon',
-      },
-      {
-        id: moment().format('X'),
-        avatar:
-          'https://i-1-lanrentuku.qqxzb-img.com/2020/10/27/34cb1163-184e-4795-b3f9-60a08e6d8e3f.png?imageView2/2/w/500/',
-        title: `You have ${pop.AmazonReturnsTotal} returned orders`,
-        datetime: moment().format('YYYY-MM-DD HH:mm:ss'),
-        type: 'AmazonReturn',
-      },
-      {
-        id: moment().format('X'),
-        avatar:
-          'https://ss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=3422433930,2354587291&fm=26&gp=0.jpg',
-        title: `You have ${pop.EbayNewOrderTotal} new orders from Ebay`,
-        datetime: moment().format('YYYY-MM-DD HH:mm:ss'),
-        type: 'Ebay',
-      },
-      {
-        id: moment().format('X'),
-        avatar:
-          'https://ss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=3422433930,2354587291&fm=26&gp=0.jpg',
-        title: `You have ${pop.EbayReturnsTotal} returned orders`,
-        datetime: moment().format('YYYY-MM-DD HH:mm:ss'),
-        type: 'EbayReturn',
-      },
-      {
-        id: moment().format('X'),
-        avatar: 'https://c1.neweggimages.com/WebResource/Themes/Nest/logos/logo_424x210.png',
-        title: `You have ${pop.NewEggOrderTotal} new orders`,
-        datetime: moment().format('YYYY-MM-DD HH:mm:ss'),
-        type: 'NewEgg',
-      },
-      {
-        id: moment().format('X'),
-        avatar: 'https://c1.neweggimages.com/WebResource/Themes/Nest/logos/logo_424x210.png',
-        title: `You have ${pop.NewEggReturnsTotal} returned orders`,
-        datetime: moment().format('YYYY-MM-DD HH:mm:ss'),
-        type: 'NewEggReturn',
-      },
-      {
-        id: moment().format('X'),
-        avatar:
-          'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3373182569,2386066999&fm=26&gp=0.jpg',
-        title: `You have ${pop.WalmartNewOrderTotal} new orders`,
-        datetime: moment().format('YYYY-MM-DD HH:mm:ss'),
-        type: 'Walmart',
-      },
-      {
-        id: moment().format('X'),
-        avatar:
-          'https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3373182569,2386066999&fm=26&gp=0.jpg',
-        title: `You have ${pop.WalmartReturnsTotal} returned orders`,
-        datetime: moment().format('YYYY-MM-DD HH:mm:ss'),
-        type: 'WalmartReturn',
-      },
-    ];
-    const errorObj = {
-      id: moment().format('X') + 'e',
-      title: 'Log Level',
-      avatar:
-        'https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=1949023656,1845515095&fm=26&gp=0.jpg',
-      description: `ALotAttention：${pop.LogLevel.LogLevelALotAttention} / 
-                      Fulfilled：${pop.LogLevel.LogLevelFulfilled} /
-                      Info：${pop.LogLevel.LogLevelInfo} /
-                      LittleAttention：${pop.LogLevel.LogLevelLittleAttention} /
-                      Shipped：${pop.LogLevel.LogLevelShipped} /
-                      Urgent：${pop.LogLevel.LogLevelUrgent}`,
-      datetime: moment().format('YYYY-MM-DD HH:mm:ss'),
-      type: 'message',
-      clickClose: true,
-    };
-    tempNoticesInfo = noticesObj;
-    tempErrorInfo = [errorObj];
-    setNotices(tempNoticesInfo);
-    setError(tempErrorInfo);
-  };
   let listTimes = ""
+
+  const getMarketTag = (marketplace_id: number) => {
+    let color = {
+      1: 'orange',
+      2: 'magenta',
+      3: 'lime',
+      4: 'cyan',
+      5: 'geekblue',
+      6: 'red',
+      7: 'volcano',
+    }
+    let marketplace = getKesValue("marketPlaceData", marketplace_id).marketplace
+    return <Tag color={color[marketplace_id]}>{marketplace}</Tag>
+  }
+
+
+  const changeReadState = (item: any) => {
+    updateCancelStatus({
+      id: item.id,
+      marketplace_id: item.marketplace_id,
+      is_cancel: 2
+    }).then(res => {
+      if (res.code) {
+        setNotices(
+          data.map((item) => {
+            let notice = { ...item };
+            if (notice.id === item.id) {
+              notice.read = true;
+            }
+            return notice;
+          }),
+        );
+      } else {
+        throw res.msg
+      }
+    }).catch(e=>{
+      message.error(e)
+    })
+  };
+
+  const toOrderPage = (marketplaceId: number, orderId: string) => {
+    if (marketplaceId === 1) {
+      history.push({
+        pathname: '/order/AmazonOrder',
+        query: {
+          AmazonOrderId: orderId
+        }
+      });
+    }
+    if (marketplaceId === 2) {
+      history.push({
+        pathname: '/order/Walmart',
+        query: {
+          AmazonOrderId: orderId
+        }
+      });
+    }
+    if (marketplaceId === 3) {
+      history.push({
+        pathname: '/order/EbayOrder',
+        query: {
+          AmazonOrderId: orderId
+        }
+      });
+    }
+    if (marketplaceId === 4) {
+      history.push({
+        pathname: '/order/NewEggOrder',
+        query: {
+          NeweggItemNumber: orderId
+        }
+      });
+    }
+    if (marketplaceId === 5) {
+      history.push({
+        pathname: '/order/ShopifyOrder',
+        query: {
+          AmazonOrderId: orderId
+        }
+      });
+    }
+    if (marketplaceId === 6) {
+      history.push({
+        pathname: '/order/Amazon-SP-API',
+        query: {
+          AmazonOrderId: orderId
+        }
+      });
+    }
+  }
+  const getNotice = () => {
+    getCancelOrder().then(res => {
+      if (res.code) {
+        data = res.data.map((item: any) => {
+          return {
+            ...item,
+            id: item.id,
+            avatar: item.is_cancel === 1 ?<FrownOutlined style={{ color: '#ff5e44' }} /> : <SmileFilled  />,
+            title: <>Order <a onClick={() => toOrderPage(item.marketplace_id, item.order_id)}>{item.order_id}</a> has been cancelled <br></br>{getMarketTag(item.marketplace_id)}</>,
+            datetime: moment(item.cancel_time * 1000).format('YYYY-MM-DD HH:mm:ss'),
+            read: item.is_cancel === 2,
+            type: item.marketplace_id,
+            extra: <Button size='small' disabled={item.is_cancel === 2} onClick={() => changeReadState(item)}>processed</Button>
+          }
+        })
+        setNotices(data)
+
+      }
+    })
+  }
+
   const getOccupancyRate = () => {
     const tempSockek: any = new WebSocket(
       'wss://api-multi.itmars.net:2345?token=' + localStorage.getItem('token'),
@@ -139,7 +145,6 @@ const NoticeIconView = () => {
         });
         listTimes = pop.DeliverTime.getAmazonNormalDeliverTime
       }
-      setInfos(pop);
     };
     tempSockek.onerror = function (error: any) {
       console.log('Error: ' + error.name + error.number);
@@ -148,53 +153,39 @@ const NoticeIconView = () => {
       console.log('WebSocket closed!');
     };
   };
+
+  const clearReadState = (title: string, key: string) => {
+    setNotices([{
+      id:'none'
+    }]);
+    // message.success(`${'cleal'} ${title}`);
+  };
   useEffect(() => {
+    getNotice();
     getOccupancyRate();
   }, []);
   return (
     <>
       <NoticeIcon
         className={styles.action}
-        count={notices.length + errorInfo.length}
+        count={notices.filter(item=> item.is_cancel===1).length}
         onItemClick={(item: any) => {
-          if (item.type === 'message') {
-            history.push('/log/AlarmLog');
-          }
-          if (item.type === 'Amazon') {
-            history.push('/order/AmazonOrder');
-          }
-          if (item.type === 'AmazonReturn') {
-            history.push('/returns/AmazonReturns');
-          }
-          if (item.type === 'NewEgg') {
-            history.push('/order/NewEggOrder');
-          }
-          if (item.type === 'NewEggReturn') {
-            history.push('/returns/NeweggReturns');
-          }
+          // if (item.type === 'message') {
+          //   history.push('/log/AlarmLog');
+          // }
         }}
-        onClear={(title: string, key: string) => {
-          changeReadState(key);
-        }}
+        onClear={(title: string, key: string) => clearReadState(title, key)}
         loading={false}
         clearText="clear"
-        viewMoreText="All read"
-        onViewMore={() => null}
-        clearClose
+        viewMoreText="refresh"
+        onViewMore={() => getNotice()}
       >
+        {/* @ts-ignore */}
         <NoticeIcon.Tab
           tabKey="notification"
           count={notices.length}
           list={notices}
           title="Order notification"
-          emptyText="You've seen all the notifications"
-          showViewMore
-        />
-        <NoticeIcon.Tab
-          tabKey="message"
-          count={errorInfo.length}
-          list={errorInfo}
-          title="Abnormal"
           emptyText="You've seen all the notifications"
           showViewMore
         />

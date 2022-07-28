@@ -222,7 +222,7 @@ const authHeaderInterceptor = (url: string, options: RequestOptionsInit) => {
   }
   return {
     url: `${lastUrl}`,
-    options: { ...tempOption, interceptors: true, headers: authHeader,timeout: 30 * 1000 },
+    options: { ...tempOption, interceptors: true, headers: authHeader,timeout: 80 * 1000 },
   };
 };
 // https://umijs.org/zh-CN/plugins/plugin-request

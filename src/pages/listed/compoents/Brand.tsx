@@ -12,7 +12,10 @@ import {
   asinBlackDelete,
   skuBlackAdd,
   skuBlackDelete,
-  skuBlacklists
+  skuBlacklists,
+  autoOrderWhiteList,
+  autoOrderWhiteAdd,
+  autoOrderWhiteDelete
 } from '@/services/listedProduct'
 const { TabPane } = Tabs
 
@@ -44,6 +47,10 @@ const EditableTable = () => {
         </TabPane>
         <TabPane tab="Auto_order black list" key="2">
           <InputPlusTable listApi={autolistBlackBrand} addBrandApi={autoAddBlackBrand} deleteBlackApi={autoDeleteBlackBrand} />
+          <h3>
+          Auto order white list
+          </h3>
+          <InputPlusTable listApi={autoOrderWhiteList} addBrandApi={autoOrderWhiteAdd} deleteBlackApi={autoOrderWhiteDelete} />
         </TabPane>
         <TabPane tab="Asin black list" key="3">
           <InputPlusTable listApi={asinBlacklists} addBrandApi={asinBlackAdd} deleteBlackApi={asinBlackDelete} />

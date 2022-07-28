@@ -4,14 +4,14 @@ import React, { useState } from 'react';
 import { RocketOutlined } from '@ant-design/icons';
 import ProForm, { ProFormCheckbox, ProFormText } from '@ant-design/pro-form';
 import { useIntl, Link, history, SelectLang, useModel } from 'umi';
-import { setToken } from '../../../utils/cookes';
+import { setToken } from '@/utils/cookes';
 import Footer from '@/components/Footer';
 import { login, currentUser } from '@/services/user';
 import styles from './index.less';
-import { getMenu, findIndexPage } from '../../../utils/utils';
-import { getAllPop } from '../../../services/publicKeys';
+import { getMenu, findIndexPage } from '@/utils/utils';
+import { getAllPop } from '@/services/publicKeys';
 // const isDev = process.env.NODE_ENV === 'development';
-import { setPublicKeys } from '../../../utils/cookes';
+import { setPublicKeys } from '@/utils/cookes';
 
 /** 此方法会跳转到 redirect 参数所在的位置 */
 let INDEX_PAGE: string = '';

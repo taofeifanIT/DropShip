@@ -7,6 +7,9 @@ import { ebayOrders } from '@/services/order/ebay';
 import { getKesGroup, getKesValue } from '@/utils/utils';
 import type { vendors } from '@/services/publicKeys';
 import { getPageHeight, exportReport, getPurchaseFromTitle } from '@/utils/utils';
+import {
+  CloseCircleOutlined
+} from '@ant-design/icons';
 import { getTargetHref } from '@/utils/jumpUrl';
 import ParagraphText from '@/components/ParagraphText'
 import moment from 'moment';
@@ -87,6 +90,7 @@ type GithubIssueItem = {
     stateOrProvince: string;
   }
   is_return?: number;
+  cancel_reason: string;
 }
 
 
@@ -138,7 +142,12 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
                     style={record.isRepeatFirst === 1 || record.isRepeatLaster ? { color: 'red', width: '160px' } : undefined}
                   >
                     {record.orderId}
-                  </Text>
+                  </Text> 
+                  {record.cancel_reason  ?    (
+                <Tooltip placement="top" title={record.cancel_reason}>
+                  <CloseCircleOutlined style={{ color: 'red', marginLeft: '2px' }} />
+                </Tooltip>
+              ) : null}
                 </Tooltip>
 
               </Text>

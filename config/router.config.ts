@@ -182,6 +182,16 @@ export const routerConfigs = {
     path: '/returns/Inventory',
     component: './returns/Inventory',
   },
+  Asi:{
+    path: '/distributors/Asi',
+    name: 'Asi',
+    component: './distributors/Asi',
+  },
+  FragranceX: {
+    path: '/distributors/FragranceX',
+    name: 'FragranceX',
+    component: './distributors/FragranceX',
+  },
 };
 export const indexRouterMap = (routers: any) => {
   return [

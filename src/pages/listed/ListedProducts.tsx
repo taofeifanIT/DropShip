@@ -1,3 +1,45 @@
+/*
+ *                                |~~~~~~~|
+ *                                |       |
+ *                                |       |
+ *                                |       |
+ *                                |       |
+ *                                |       |
+ *     |~.\\\_\~~~~~~~~~~~~~~xx~~~         ~~~~~~~~~~~~~~~~~~~~~/_//;~|
+ *     |  \  o \_         ,XXXXX),                         _..-~ o /  |
+ *     |    ~~\  ~-.     XXXXX`)))),                 _.--~~   .-~~~   |
+ *      ~~~~~~~`\   ~\~~~XXX' _/ ';))     |~~~~~~..-~     _.-~ ~~~~~~~
+ *               `\   ~~--`_\~\, ;;;\)__.---.~~~      _.-~
+ *                 ~-.       `:;;/;; \          _..-~~
+ *                    ~-._      `''        /-~-~
+ *                        `\              /  /
+ *                          |         ,   | |
+ *                           |  '        /  |
+ *                            \/;          |
+ *                             ;;          |
+ *                             `;   .       |
+ *                             |~~~-----.....|
+ *                            | \             \
+ *                           | /\~~--...__    |
+ *                           (|  `\       __-\|
+ *                           ||    \_   /~    |
+ *                           |)     \~-'      |
+ *                            |      | \      '
+ *                            |      |  \    :
+ *                             \     |  |    |
+ *                              |    )  (    )
+ *                               \  /;  /\  |
+ *                               |    |/   |
+ *                               |    |   |
+ *                                \  .'  ||
+ *                                |  |  | |
+ *                                (  | |  |
+ *                                |   \ \ |
+ *                                || o `.)|
+ *                                |`\\) |
+ *                                |       |
+ *                                |       |
+ */
 import React, { useEffect, useRef, useState, useImperativeHandle } from 'react';
 import {
   ReconciliationOutlined,
@@ -193,79 +235,6 @@ const BatchPriceModal = (props: {
   );
 };
 
-// const EditLinKStr = (props: {
-//   record: {
-//     id: number;
-//     country_id: number;
-//     asin: string;
-//   };
-// }) => {
-//   const { country_id, asin, id } = props.record;
-//   const [editStatus, setEditStates] = useState(false);
-//   const [editAsin, setEditAsin] = useState(asin);
-//   const inputEl = useRef(null);
-//   const updateApi = (title: string) => {
-//     if (title.trim() === asin) {
-//       setEditStates(false);
-//       return;
-//     }
-//     update({
-//       id,
-//       asin: title,
-//     }).then((res) => {
-//       if (res.code) {
-//         message.success('operation successful!');
-//       } else {
-//         message.error(res.msg);
-//         setEditAsin(asin);
-//       }
-//     });
-//   };
-//   useEffect(() => {
-//     if (editStatus) {
-//       (inputEl?.current as any).focus();
-//     }
-//   }, [editStatus]);
-//   return (
-//     <>
-//       {editStatus ? (
-//         <>
-//           <Input
-//             ref={inputEl}
-//             size={'small'}
-//             style={{ width: '120px' }}
-//             suffix={<EnterOutlined />}
-//             value={editAsin}
-//             onPressEnter={(e: any) => {
-//               setEditAsin(e.target.value);
-//               setEditStates(false);
-//               updateApi(e.target.value);
-//             }}
-//             onChange={(e) => {
-//               setEditAsin(e.target.value);
-//             }}
-//             onBlur={() => {
-//               setEditStates(false);
-//               updateApi(editAsin);
-//             }}
-//           ></Input>
-//         </>
-//       ) : (
-//         <>
-//           <Link href={`${getAsonHref(country_id)}${asin}`} target="_blank">
-//             {editAsin}
-//           </Link>
-//           <EditOutlined
-//             style={{ color: '#1890ff', cursor: 'pointer', marginLeft: '6px' }}
-//             onClick={() => {
-//               setEditStates(true);
-//             }}
-//           />
-//         </>
-//       )}
-//     </>
-//   );
-// };
 const columns = (
   refresh: () => void,
   callback?: (record: any) => void
@@ -352,7 +321,7 @@ const columns = (
               )}
               {record.newegg_id && (
                 <Text type="secondary">
-                  newegg:{' '}
+                  newegg:
                   <Text>
                     <a target="_Blank" href={getNewEggHref(record.newegg_id)}>
                       {record.newegg_id}
@@ -361,7 +330,7 @@ const columns = (
                 </Text>
               )}
               <Text type="secondary">
-                Tag Name:{' '}
+                Tag Name:
                 <Text style={{ width: '210px' }} title={tagTitle} ellipsis>
                   {tagTitle}
                 </Text>
@@ -529,7 +498,7 @@ const columns = (
                 </Text>
               </Text>
               <Text type="secondary">
-                update_at:{' '}
+                update_at:
                 <Text>
                   <a
                     onClick={() => {

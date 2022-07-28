@@ -1,3 +1,11 @@
+/*
+ * @Author: taofeifanIT 3553447302@qq.com
+ * @Date: 2021-08-16 10:19:37
+ * @LastEditors: taofeifanIT 3553447302@qq.com
+ * @LastEditTime: 2022-07-28 15:19:42
+ * @FilePath: \DropShip01\src\services\order\order.ts
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 import { request } from 'umi';
 
 type listItem = {
@@ -12,6 +20,7 @@ type updateItem = {
   vendor_id: number;
   vendor_sku: string;
   is_trial: number;
+  marketplace_id?: number;
 };
 
 export async function list(params: listItem) {
@@ -35,7 +44,7 @@ export async function saleLimit(data: { order_quantity_limit: number }) {
   });
 }
 
-export async function updateIssueTrack(data: { id: number; issue_tracking: number }) {
+export async function updateIssueTrack(data: { id: number; type: number,issue_tracking?: number, is_cancel?: number }) {
   return request('/api/amazon/update_issue_track', {
     method: 'POST',
     data,
@@ -86,3 +95,15 @@ export async function setPurchasePrice(params: { id: string,purchase_price: stri
 }
 
 
+export async function getCancelOrder() {
+  return request('/api/app/getCancelOrder', {
+    method: 'POST'
+  });
+}
+
+export async function updateCancelStatus(params: {id: number,marketplace_id: number,is_cancel: number}) {
+  return request('/api/app/updateCancelStatus', {
+    method: 'POST',
+    data: params,
+  });
+}

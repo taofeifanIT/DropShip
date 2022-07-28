@@ -110,9 +110,9 @@ export function getKesValue(
   const allKeys = JSON.parse(getPublicKey());
   const group = allKeys[parentKey];
   if (group instanceof Array) {
-    return group.find((item) => item.id === key);
+    return group.find((item) => item.id === key) || {tag_name: 'not yet'};
   } else {
-    return group[key];
+    return group[key] || {tag_name: 'not yet'};
   }
 }
 

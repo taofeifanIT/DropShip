@@ -1,5 +1,5 @@
 import { Tag, Space, Popover, Form, Select, Button,notification} from 'antd';
-import { ControlOutlined,BellOutlined } from '@ant-design/icons';
+import { ControlOutlined,BellOutlined,FrownOutlined } from '@ant-design/icons';
 import React from 'react';
 import { useModel } from 'umi';
 import Avatar from './AvatarDropdown';
@@ -14,7 +14,9 @@ type OrderMessage = {
   order_id: number,
   amazon_order_id: string,
   vendor_sku: string,
-  vendor_quantity: number
+  vendor_quantity: number,
+  is_cancel:number,
+  type: number
 }
 
 const ENVTagColor = {
@@ -72,11 +74,12 @@ const GlobalHeaderRight: React.FC = () => {
   };
   const openNotification = (item:OrderMessage) => {
     const key = `open${item.order_id}`;
-    const btn = (
+    const btn = item.type === 1 ? (
       <Button type="primary" size="small" onClick={() => {
         updateIssueTrack({
           id: item.order_id,
-          issue_tracking: 0
+          issue_tracking: 0,
+          type: item.type
         }).then(res => {
           if(res.code){
             notification.close(key)
@@ -87,9 +90,23 @@ const GlobalHeaderRight: React.FC = () => {
       }}>
         Confirm
       </Button>
-    );
+    ) : (<Button onClick={() => {
+      updateIssueTrack({
+        id: item.order_id,
+        is_cancel: 2,
+        type: item.type
+      }).then(res => {
+        if(res.code){
+          notification.close(key)
+        }
+      }).finally(() => {
+        notification.close(key)
+      })
+    }} style={{ color: '#ff5e44' }} >Close</Button>)
+    let message = item.type === 1 ? "The order in question is in stock" : "One order was cancelled by a customer"
+    let icon = item.type === 1 ? <BellOutlined  style={{ color: '#108ee9' }} /> : <FrownOutlined style={{ color: '#ff5e44' }}  />
     notification.open({
-      message: 'The order in question is in stock',
+      message,
       description: (<>
        <div>sku: {item.vendor_sku}</div>
        <div>quantity: {item.vendor_quantity}</div>
@@ -98,7 +115,7 @@ const GlobalHeaderRight: React.FC = () => {
       btn,
       key,
       duration: null,
-      icon: <BellOutlined  style={{ color: '#108ee9' }} />,
+      icon,
       onClose: close,
     });
   };
@@ -106,7 +123,9 @@ const GlobalHeaderRight: React.FC = () => {
     checkIssueOrder().then(res => {
       if(res.data.length > 0){
         res.data.forEach((item:OrderMessage) => {
-          openNotification(item)
+          if(item.type === 1 || (item.type === 2 && item.is_cancel === 1)){
+            openNotification(item)
+          }
         })
       }
     })

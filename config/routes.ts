@@ -146,6 +146,16 @@
         name: 'Tballs',
         component: './distributors/Tballs',
       },
+      {
+        path: '/distributors/Asi',
+        name: 'Asi',
+        component: './distributors/Asi',
+      },
+      {
+        path: '/distributors/FragranceX',
+        name: 'FragranceX',
+        component: './distributors/FragranceX',
+      },
     ],
   },
   {

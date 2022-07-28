@@ -10,7 +10,6 @@ import {
   InputNumber,
   message,
   Divider,
-  Select,
   Popconfirm,
   Tag,
 } from 'antd';

@@ -5,6 +5,7 @@ import {
   BellOutlined,
   CloudDownloadOutlined,
   InfoCircleOutlined,
+  CloseCircleOutlined
 } from '@ant-design/icons';
 import {
   Button,
@@ -45,6 +46,7 @@ import styles from './style.less';
 import ParagraphText from '@/components/ParagraphText';
 import Edit from '@/components/Edit'
 import { exportReport } from '@/utils/utils';
+import type { FormInstance } from 'antd';
 import OrderSwitch from './components/OrderSwitch';
 const { Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -96,7 +98,7 @@ type GithubIssueItem = {
   QuantityOrdered: number;
   vendor_price: string;
   sku_num: number;
-  is_trial: number;
+  is_trial_amazon: number;
   store_id: number;
   ack_reason: string;
   ack_status: string;
@@ -114,6 +116,7 @@ type GithubIssueItem = {
   order_item_record: {
     product_info: string;
     amount: string;
+    marketplace_id: number;
   };
   tagName: string;
   storeName: string;
@@ -123,9 +126,10 @@ type GithubIssueItem = {
   purchase_price: number;
   isRepeatFirst: number;
   isRepeatLaster: number;
+  cancel_reason: string;
 };
 // https://www.google.com.hk/search?q=aini+13
-const columns = (refresh?: (localUpdate?:boolean) => void): ProColumns<GithubIssueItem>[] =>  [
+const columns = (refresh?: (localUpdate?: boolean) => void): ProColumns<GithubIssueItem>[] => [
   {
     dataIndex: 'index',
     valueType: 'indexBorder',
@@ -187,7 +191,12 @@ const columns = (refresh?: (localUpdate?:boolean) => void): ProColumns<GithubIss
               <Text copyable>{record.OrderItemId}</Text>
               {record.auto_order === 0 ? (
                 <Tooltip placement="top" title={'No automatic ordering'}>
-                  <InfoCircleOutlined style={{ color: 'red' }} />
+                  <InfoCircleOutlined style={{ color: '#f39d00' }} />
+                </Tooltip>
+              ) : null}
+              {record.cancel_reason ? (
+                <Tooltip placement="top" title={record.cancel_reason}>
+                  <CloseCircleOutlined style={{ color: 'red', marginLeft: '2px' }} />
                 </Tooltip>
               ) : null}
             </Text>
@@ -244,8 +253,8 @@ const columns = (refresh?: (localUpdate?:boolean) => void): ProColumns<GithubIss
     render: (_, record) => {
       let isExitOpBox = record.AddressLine1.toUpperCase().includes("PO BOX".toUpperCase())
       let phone = record.phone
-      if(phone && !/^(\+\d) (\d{3}-\d{3}-\d{4}) (ext\.) (\d{5})$/.test(phone)){
-        phone = "+" + phone[0] + " " + phone.slice(1,4) + '-' + phone.slice(4,7) + '-' + phone.slice(7,11) + ' ' + 'ext. ' + phone.substring(11)
+      if (phone && !/^(\+\d) (\d{3}-\d{3}-\d{4}) (ext\.) (\d{5})$/.test(phone)) {
+        phone = "+" + phone[0] + " " + phone.slice(1, 4) + '-' + phone.slice(4, 7) + '-' + phone.slice(7, 11) + ' ' + 'ext. ' + phone.substring(11)
       }
       return (
         <>
@@ -441,7 +450,7 @@ const columns = (refresh?: (localUpdate?:boolean) => void): ProColumns<GithubIss
   },
   {
     title: 'Trial status',
-    dataIndex: 'is_trial',
+    dataIndex: 'is_trial_amazon',
     hideInTable: true,
     valueEnum: {
       '1': { text: 'open', status: 'Error' },
@@ -507,8 +516,8 @@ const columns = (refresh?: (localUpdate?:boolean) => void): ProColumns<GithubIss
     valueType: 'money',
     search: false,
     width: 150,
-    render: (text,record) => {
-      return <Edit id={record.id} pramsKey={"purchase_price"} api={setPurchasePrice} record={record}  refresh={refresh} children={text} />
+    render: (text, record) => {
+      return <Edit id={record.id} pramsKey={"purchase_price"} api={setPurchasePrice} record={record} refresh={refresh} children={text} />
     }
   },
   {
@@ -579,10 +588,11 @@ const columns = (refresh?: (localUpdate?:boolean) => void): ProColumns<GithubIss
           <OrderSwitch
             params={{
               vendor_id: record.listing.vendor_id,
-              vendor_sku: record.listing.vendor_sku
+              vendor_sku: record.listing.vendor_sku,
+              marketplace_id: record.order_item_record.marketplace_id
             }}
-            targetKey={"is_trial"}
-            targetValue={record.is_trial}
+            targetKey={"is_trial_amazon"}
+            targetValue={record.is_trial_amazon}
             checkedChildren={"Trial to sell"}
             unCheckedChildren={"normal sales"}
             api={updateTrial}
@@ -773,24 +783,23 @@ const FeedbackModel = (props: { onRef: any }) => {
       >
         <Dropdown overlay={menu} trigger={['contextMenu']}>
           <Spin spinning={confirmLoading}>
-            <Tabs
-            >
+            <Tabs>
               {data.map((item, index) => (
-                  <TabPane tab={item.key} key={index + 'tab'}>
-                    <Table<any>
-                      dataSource={item.items}
-                      size="small"
-                      bordered
-                      key={'table' + item.key}
-                      rowKey="id"
-                      columns={columns}
-                      expandable={{
-                        expandedRowRender: record => <p style={{ margin: 0 }}>{record.t1}</p>,
-                        rowExpandable: record => !!record.t1,
-                      }}
-                    />
-                  </TabPane>
-                ))}
+                <TabPane tab={item.key} key={index + 'tab'}>
+                  <Table<any>
+                    dataSource={item.items}
+                    size="small"
+                    bordered
+                    key={'table' + item.key}
+                    rowKey="id"
+                    columns={columns}
+                    expandable={{
+                      expandedRowRender: record => <p style={{ margin: 0 }}>{record.t1}</p>,
+                      rowExpandable: record => !!record.t1,
+                    }}
+                  />
+                </TabPane>
+              ))}
             </Tabs>
           </Spin>
         </Dropdown>
@@ -799,7 +808,7 @@ const FeedbackModel = (props: { onRef: any }) => {
   );
 };
 
-export default () => {
+export default (props: any) => {
   const actionRef = useRef<ActionType>();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [twHouseInfoVisible, setTwHouseInfoVisible] = useState(false);
@@ -812,13 +821,14 @@ export default () => {
   const [tableRows, setTableRows] = useState<GithubIssueItem[]>([]);
   const [pullOrderLoading, setPullOrderLoading] = useState(false);
   const [time, setTime] = useState(moment().unix())
+  const ref = useRef<FormInstance>();
   let feedbackModelRef: any = createRef<HTMLElement>();
 
 
   const refresh = (localUpdate = false): void => {
-    if(localUpdate){
+    if (localUpdate) {
       setTime(moment().unix())
-    }else {
+    } else {
       actionRef.current?.reload();
     }
   };
@@ -889,7 +899,7 @@ export default () => {
             <p style={{ marginBottom: 0 }}>Price: {item.vendor_price}</p>
             <br />
             <p style={{ marginBottom: 0 }}>
-              Reference Number:{' '}
+              Reference Number:
               {item.AmazonOrderId.split('-')[item.AmazonOrderId.split('-').length - 1]}
             </p>
             <br />
@@ -933,12 +943,21 @@ export default () => {
       <Menu.Item key="2">Tow day</Menu.Item>
     </Menu>
   );
+  useEffect(() => {
+    if(props.location.query.AmazonOrderId){
+      ref.current?.setFieldsValue({
+        AmazonOrderId: props.location.query.AmazonOrderId
+      })
+      ref.current?.submit()
+    }
+  }, [props.location.query])
   return (
     <>
       <ProTable<GithubIssueItem>
         size="small"
         columns={columns(refresh)}
         actionRef={actionRef}
+        formRef={ref}
         className={styles.tableStyle}
         rowSelection={{
           selections: [Table.SELECTION_ALL, Table.SELECTION_INVERT],

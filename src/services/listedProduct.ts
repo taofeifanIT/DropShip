@@ -123,3 +123,16 @@ export async function skuBlackAdd(obj: addBlackListItem) {
 export async function skuBlackDelete(id: string) {
   return request(`/api/sku_blacklist/delete?id=${id}`);
 }
+
+export async function autoOrderWhiteList() {
+  return request(`/api/auto_order_whitelist/lists`);
+}
+
+export async function autoOrderWhiteAdd(obj: addBlackListItem) {
+  return request(`/api/auto_order_whitelist/add?name=${obj[Object.keys(obj)[0]]}`);
+}
+
+export async function autoOrderWhiteDelete(id: string) {
+  return request(`/api/auto_order_whitelist/delete?id=${id}`);
+}
+

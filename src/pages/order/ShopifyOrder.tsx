@@ -1,9 +1,11 @@
-/* eslint-disable radix */
 import { useRef, useState, useImperativeHandle, useEffect, createRef } from 'react';
 import { Typography, Space, message, Button, Tabs, Dropdown, Menu, Modal, Spin, Table, Tooltip } from 'antd';
 import type { ProColumns, ActionType } from '@ant-design/pro-table';
 import ProTable from '@ant-design/pro-table';
 import { shopifyOrders, manualOrder, setPurchasePrice, getList } from '../../services/order/shopifyorder';
+import {
+  updateTrial,
+} from '@/services/order/order';
 import { getKesGroup, getKesValue, getPurchaseFromTitle } from '@/utils/utils';
 import type { vendors } from '@/services/publicKeys';
 import { getPageHeight } from '@/utils/utils';
@@ -35,6 +37,7 @@ type GithubIssueItem = {
   variant_id: string;
   listing_id: number;
   order_item_id: string;
+  sku_num: number;
   listing: {
     vendor_id?: number;
     tag_id?: number;
@@ -61,6 +64,7 @@ type GithubIssueItem = {
   },
   order_item_record: {
     title: string;
+    marketplace_id: number;
   },
   country_id: number;
   vendor_id: number;
@@ -79,6 +83,7 @@ type GithubIssueItem = {
   status: string;
   shipping: { code: string, title: string, source: string },
   other_platform_order_number:number;
+  is_trial_shopify: number;
 }
 
 
@@ -142,7 +147,16 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
             </Text>
             {record.other_platform_order_number ? (<Text type="secondary">Source order ID: <Text copyable>{record.other_platform_order_number}</Text></Text>): null}
             <Text type="secondary">
-              Order item ID : <Text copyable>{record.order_item_id}</Text>
+                  Number of sold:
+                  <a
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ marginRight: 10 }}
+                    href={`/order/ShopifyOrder?sku=${record.sku}`}
+                  >
+                    {record.sku_num}
+                    </a>
+            Order item ID : <Text copyable>{record.order_item_id}</Text>
             </Text>
             {record.tag_id && (<Text type="secondary">
               Tag Name:
@@ -432,6 +446,7 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
       // is_auto:  0: 不可以一键下单  1： 可以一键下单  
       return (
         <>
+          Automatic order:
           {record.is_auto ? (<OrderSwitch
             params={{
               order_id: record.order_id,
@@ -444,6 +459,20 @@ const columns = (init?: () => void): ProColumns<GithubIssueItem>[] => [
             isTrueDisbled
           />) : null
           }
+          Trial to sell:
+           <OrderSwitch
+            params={{
+              vendor_id: record.listing.vendor_id,
+              vendor_sku: record.sku,
+              marketplace_id: record.order_item_record.marketplace_id
+            }}
+            targetKey={"is_trial_shopify"}
+            targetValue={record.is_trial_shopify}
+            checkedChildren={"Trial to sell"}
+            unCheckedChildren={"normal sales"}
+            api={updateTrial}
+            isFalseDisbled
+          />
         </>
       );
     },
@@ -662,6 +691,18 @@ export default () => {
           onChange: (RowKeys: any[] | number[], selectRows: any[]) => {
             setSelectedRowKeys(RowKeys);
             setTableRows(selectRows);
+          },
+        }}
+        form={{
+          // 由于配置了 transform，提交的参与与定义的不同这里需要转化一下
+          syncToUrl: (values, type) => {
+            if (type === 'get') {
+              return {
+                ...values,
+                created_at: [values.startTime, values.endTime],
+              };
+            }
+            return values;
           },
         }}
         request={async (params = {}, sort) =>
