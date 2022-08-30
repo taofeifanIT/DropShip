@@ -166,6 +166,8 @@ export function getPurchaseFromTitle(key:number){
     11: '[Tels] Scansource',
     13: '[Tels] Zoro',
     1: '[Tels] Ingram Micro USA',
+    17: '[Tels] Asi',
+    18: '[Tels] FragranceX'
   };
   return excelStore[key]
 }

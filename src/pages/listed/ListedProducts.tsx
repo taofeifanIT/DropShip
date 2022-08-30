@@ -132,7 +132,8 @@ type GithubIssueItem = {
     ListingPrice: {
       Amount: number | string
     }
-  } | string | any
+  } | string | any;
+  shipping_cost: string;
 };
 
 
@@ -389,7 +390,10 @@ const columns = (
                 Lowest Listed: <Text>{getText('LandedPrice')}</Text>
               </Text>
               <Text type="secondary">
-                Buy Box: <Text>{getText('ListingPrice')}</Text>
+                Buy box: <Text>{getText('ListingPrice')}</Text>
+              </Text>
+              <Text type="secondary">
+                Shipping cost: <Text>${record.shipping_cost}</Text>
               </Text>
             </Space>
           </>

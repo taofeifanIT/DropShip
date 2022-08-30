@@ -133,19 +133,22 @@ const GlobalHeaderRight: React.FC = () => {
   var loopTask: any = null
   const loopGetOrder = () => {
     var currentUser = initialState?.currentUser
-    if(currentUser){
-      if(currentUser.auth_group?.title == 'Super Admin'){
-         if(!loopTask){
-          getCheckIssueOrder();
-          loopTask = setInterval(() => {
+    try {
+      if(currentUser){
+        if(currentUser.auth_group?.title == 'Super Admin'){
+           if(!loopTask){
             getCheckIssueOrder();
-          }, 1000 * 60 * 3);
-        } 
-      } else {
-        window.clearInterval(loopTask)
+            loopTask = setInterval(() => {
+              getCheckIssueOrder();
+            }, 1000 * 60 * 3);
+          } 
+        } else {
+          window.clearInterval(loopTask)
+        }
       }
+    } catch (error) {
+      console.info(error)
     }
-    
   }
   React.useEffect(() => {
     let publicParms = getPublicParams();

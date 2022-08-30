@@ -124,7 +124,11 @@ const NoticeIconView = () => {
           }
         })
         setNotices(data)
-
+        if(data.filter(item => item.is_cancel !==2).length > 0){
+          setTimeout(() => {
+            getNotice()
+          }, 1000 * 10);
+        }
       }
     })
   }
@@ -169,11 +173,6 @@ const NoticeIconView = () => {
       <NoticeIcon
         className={styles.action}
         count={notices.filter(item=> item.is_cancel===1).length}
-        onItemClick={(item: any) => {
-          // if (item.type === 'message') {
-          //   history.push('/log/AlarmLog');
-          // }
-        }}
         onClear={(title: string, key: string) => clearReadState(title, key)}
         loading={false}
         clearText="clear"

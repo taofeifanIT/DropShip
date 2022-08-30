@@ -127,6 +127,7 @@ type GithubIssueItem = {
   isRepeatFirst: number;
   isRepeatLaster: number;
   cancel_reason: string;
+  ItemTaxAmount: string;
 };
 // https://www.google.com.hk/search?q=aini+13
 const columns = (refresh?: (localUpdate?: boolean) => void): ProColumns<GithubIssueItem>[] => [
@@ -589,7 +590,7 @@ const columns = (refresh?: (localUpdate?: boolean) => void): ProColumns<GithubIs
             params={{
               vendor_id: record.listing.vendor_id,
               vendor_sku: record.listing.vendor_sku,
-              marketplace_id: record.order_item_record.marketplace_id
+              marketplace_id: record?.order_item_record?.marketplace_id
             }}
             targetKey={"is_trial_amazon"}
             targetValue={record.is_trial_amazon}

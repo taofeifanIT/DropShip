@@ -560,7 +560,7 @@ const ButtonGroup = (props: {
           wrapperCol={{ span: 18 }}
           onFinish={onMatchFinish}
         >
-          {getKesGroup('marketPlaceData')?.map((item: { id: number; marketplace: string }) => {
+          {getKesGroup('marketPlaceData')?.filter((filterItem:any) => filterItem.marketplace !== 'Shopify' && filterItem.marketplace !== 'Amazon-SP-API').map((item: { id: number; marketplace: string }) => {
             return (
               <Form.Item name={`match_${item.marketplace.toLowerCase()}`} label={item.marketplace}>
                 <Select

@@ -1,3 +1,11 @@
+/*
+ * @Author: taofeifanIT 3553447302@qq.com
+ * @Date: 2021-08-16 10:19:37
+ * @LastEditors: taofeifanIT 3553447302@qq.com
+ * @LastEditTime: 2022-07-29 10:09:09
+ * @FilePath: \DropShip01\src\utils\jumpUrl.ts
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 export const getHref = (contryId: number) => {
   let srcObj = {};
   // eslint-disable-next-line default-case
@@ -37,7 +45,9 @@ export const getTargetHref = (venderId: number | string, sku: string) => {
     11: `https://www.scansource.com/product?sku=${sku}`,
     12: `https://ec.synnex.com/ecx/part/techNote.html?skuNo=${sku}`,
     13: `https://www.zoro.com/search?q=${sku.replace("-zoro","")}`,
-    14: `https://www.homeroots.co/inventory/${sku}`
+    14: `https://www.homeroots.co/inventory/${sku}`,
+    17: `https://www.asipartner.com/partneraccess/search.aspx?skey=${sku}`,
+    18: `https://www.fragrancex.com/widgets/topmenu/search.html?k=${sku}`,
   };
   return srcObj[venderId];
 };

@@ -84,6 +84,7 @@ type GithubIssueItem = {
   shipping: { code: string, title: string, source: string },
   other_platform_order_number:number;
   is_trial_shopify: number;
+  shopify_fee: number;
 }
 
 
@@ -659,7 +660,7 @@ export default () => {
         Date: moment().format('M/D/YYYY'),
         Marketplace: storeName.replace(/(^\s*)|(\s*$)/g, ''),
         SKU: item.sku.replace(/(^\s*)|(\s*$)/g, ''),
-        PricePerUnit: parseFloat(item.order_shopify?.subtotal_price) / item.quantity,
+        PricePerUnit: (parseFloat(item.order_shopify?.subtotal_price) / item.quantity) + parseFloat(item.shopify_fee),
         QTY: item.quantity.toString().replace(/(^\s*)|(\s*$)/g, ''),
         TotalRevenue: '',
         AmazonFee: '',
