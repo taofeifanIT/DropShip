@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, createRef, useImperativeHandle } from 'react';
+import { useEffect, useRef, useState, createRef, useImperativeHandle, memo } from 'react';
 import {
   AmazonOutlined,
   LockOutlined,
@@ -36,10 +36,11 @@ import {
   autoOrder,
   tagStatus,
   setPurchasePrice,
+  downloadFile
 } from '@/services/order/order';
 import { getPageHeight } from '@/utils/utils';
 import { getTargetHref, getAsonHref } from '@/utils/jumpUrl';
-import { getKesGroup, getKesValue, getPurchaseFromTitle } from '@/utils/utils';
+import { getKesGroup, getKesValue, getPurchaseFromTitle,convertToCsv } from '@/utils/utils';
 import { vendors, configs } from '@/services/publicKeys';
 import moment from 'moment';
 import styles from './style.less';
@@ -71,7 +72,7 @@ type GithubIssueItem = {
   Title: string;
   SellerSKU: string;
   OrderItemTotal: number;
-  OrderItemId: number;
+  OrderItemId: string;
   IsReplacementOrder: number;
   vpn: string;
   brand: string;
@@ -612,13 +613,36 @@ const columns = (refresh?: (localUpdate?: boolean) => void): ProColumns<GithubIs
               api={autoOrder}
               isTrueDisbled
             /></>) :
-            (<><br /><ManualorderBtn record={record} /></>)
+            (<><br /><ManualorderBtn record={record} /><br /></>)
           }
+          <br />
+          <DownloadBtn OrderItemId={record.OrderItemId} />
         </>
       );
     },
   },
 ];
+
+const DownloadBtn:any = memo((props:any) => {
+  const { OrderItemId } = props
+  const [loading, setLoading] = useState(false)
+  const downloadReport = () => {
+    setLoading(true)
+    downloadFile(OrderItemId).then(res => {
+        if(res.code){
+          convertToCsv(`${moment().format('YYYYMMDD')}-${OrderItemId}`,res.data)
+        } else{
+          message.error(res.msg)
+        }
+        
+    }).finally(() => {
+        setLoading(false)
+    })
+}
+  return <Button size='small' loading={loading} onClick={downloadReport}>Download</Button>
+}, (prevProps, nextProps) => {
+  return prevProps.OrderItemId === nextProps.OrderItemId
+})
 
 const ManualorderBtn = (props: { record: GithubIssueItem }) => {
   const [loading, setLoading] = useState(false);
@@ -875,6 +899,7 @@ export default (props: any) => {
         Notes: item.is_return ? "Is return(clean)" : "",
         tagName: item.tagName,
         ack_status: item.ack_status || "",
+        ack_reason: item.ack_reason || "",
         ShipperTrackingNumber: item.ShipperTrackingNumber || ""
       };
     });

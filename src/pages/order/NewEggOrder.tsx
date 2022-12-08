@@ -403,7 +403,7 @@ export default () => {
         Date: moment().format('M/D/YYYY'),
         Marketplace: storeName.replace(/(^\s*)|(\s*$)/g, ''),
         SKU: sku,
-        PricePerUnit: parseFloat(item.UnitPrice) / item.QuantityOrdered,
+        PricePerUnit: item.UnitPrice,
         QTY: item.QuantityOrdered.toString().replace(/(^\s*)|(\s*$)/g, ''),
         TotalRevenue: '',
         AmazonFee: '',

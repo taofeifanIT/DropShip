@@ -72,6 +72,13 @@ const GlobalHeaderRight: React.FC = () => {
     setPublicParams({})
     history.go(0)
   };
+  const close = (key:any) => {
+    try {
+      notification.close(key)
+    } catch (error) {
+      console.log(error)
+    }
+  }
   const openNotification = (item:OrderMessage) => {
     const key = `open${item.order_id}`;
     const btn = item.type === 1 ? (
@@ -82,10 +89,10 @@ const GlobalHeaderRight: React.FC = () => {
           type: item.type
         }).then(res => {
           if(res.code){
-            notification.close(key)
+            close(key)
           }
         }).finally(() => {
-          notification.close(key)
+          close(key)
         })
       }}>
         Confirm

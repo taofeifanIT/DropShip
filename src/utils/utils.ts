@@ -110,9 +110,9 @@ export function getKesValue(
   const allKeys = JSON.parse(getPublicKey());
   const group = allKeys[parentKey];
   if (group instanceof Array) {
-    return group.find((item) => item.id === key) || {tag_name: 'not yet'};
+    return group.find((item) => item.id === key) || { tag_name: 'not yet' };
   } else {
-    return group[key] || {tag_name: 'not yet'};
+    return group[key] || { tag_name: 'not yet' };
   }
 }
 
@@ -154,7 +154,7 @@ export function findIndexPage(arr: any[]) {
   return path;
 }
 
-export function getPurchaseFromTitle(key:number){
+export function getPurchaseFromTitle(key: number) {
   const excelStore = {
     10: '[Tels] Newegg',
     5: '[Tels] TWHouse',
@@ -177,11 +177,11 @@ const otherHeader = [
   { title: 'Marketplace', dataIndex: 'Marketplace', key: 'Marketplace' },
   { title: 'OrderID', dataIndex: 'OrderID', key: 'OrderID' },
   { title: 'SKU', dataIndex: 'SKU', key: 'SKU' },
-  { title: 'PricePerUnit', dataIndex: 'PricePerUnit', key: 'PricePerUnit',type: 'n'},
-  { title: 'QTY', dataIndex: 'QTY', key: 'QTY',type: 'n'},
-  { title: 'TotalRevenue', dataIndex: 'TotalRevenue', key: 'TotalRevenue'},
+  { title: 'PricePerUnit', dataIndex: 'PricePerUnit', key: 'PricePerUnit', type: 'n' },
+  { title: 'QTY', dataIndex: 'QTY', key: 'QTY', type: 'n' },
+  { title: 'TotalRevenue', dataIndex: 'TotalRevenue', key: 'TotalRevenue' },
   { title: 'AmazonFee', dataIndex: 'AmazonFee', key: 'AmazonFee' },
-  { title: 'PurchasePrice', dataIndex: 'PurchasePrice', key: 'PurchasePrice'},
+  { title: 'PurchasePrice', dataIndex: 'PurchasePrice', key: 'PurchasePrice' },
   { title: 'Profit', dataIndex: 'Profit', key: 'Profit' },
   { title: 'PurchasedFrom', dataIndex: 'PurchasedFrom', key: 'PurchasedFrom' },
   { title: 'Notes', dataIndex: 'Notes', key: 'Notes' },
@@ -194,7 +194,7 @@ const amazonHeader = [
   { title: 'Marketplace', dataIndex: 'Marketplace', key: 'Marketplace' },
   { title: 'SKU', dataIndex: 'SKU', key: 'SKU' },
   { title: 'PricePerUnit', dataIndex: 'PricePerUnit', key: 'PricePerUnit', type: 'n' },
-  { title: 'QTY', dataIndex: 'QTY', key: 'QTY',type: 'n'},
+  { title: 'QTY', dataIndex: 'QTY', key: 'QTY', type: 'n' },
   { title: 'TotalRevenue', dataIndex: 'TotalRevenue', key: 'TotalRevenue' },
   { title: 'AmazonFee', dataIndex: 'AmazonFee', key: 'AmazonFee' },
   { title: 'Purchase Price', dataIndex: 'PurchasePrice', key: 'PurchasePrice', type: 'number' },
@@ -203,6 +203,7 @@ const amazonHeader = [
   { title: 'Notes', dataIndex: 'Notes', key: 'Notes' },
   { title: 'tagName', dataIndex: 'tagName', key: 'tagName' },
   { title: 'ack_status', dataIndex: 'ack_status', key: 'ack_status' },
+  { title: 'ack_reason', dataIndex: 'ack_reason', key: 'ack_reason' },
   { title: 'ShipperTrackingNumber', dataIndex: 'ShipperTrackingNumber', key: 'ShipperTrackingNumber' },
 ]
 
@@ -212,7 +213,7 @@ const shopifyHeader = [
   { title: 'Marketplace', dataIndex: 'Marketplace', key: 'Marketplace' },
   { title: 'SKU', dataIndex: 'SKU', key: 'SKU' },
   { title: 'PricePerUnit', dataIndex: 'PricePerUnit', key: 'PricePerUnit', type: 'n' },
-  { title: 'QTY', dataIndex: 'QTY', key: 'QTY',type: 'n'},
+  { title: 'QTY', dataIndex: 'QTY', key: 'QTY', type: 'n' },
   { title: 'TotalRevenue', dataIndex: 'TotalRevenue', key: 'TotalRevenue' },
   { title: 'AmazonFee', dataIndex: 'AmazonFee', key: 'AmazonFee' },
   { title: 'Purchase Price', dataIndex: 'PurchasePrice', key: 'PurchasePrice', type: 'number' },
@@ -227,8 +228,47 @@ const shopifyHeader = [
 ]
 
 export function exportReport(data: any, store = 0) {
-  let header:any = otherHeader
-  if(store === 1) header = amazonHeader;
-  if(store === 2) header = shopifyHeader;
+  let header: any = otherHeader
+  if (store === 1) header = amazonHeader;
+  if (store === 2) header = shopifyHeader;
   exportExcel(header, data, `Orders ${moment().format('MMDD')}.xlsx`);
+}
+
+
+export function convertToCsv(fName: string, rows: Array<any>) {
+  var csv = '';
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    for (var j = 0; j < row.length; j++) {
+      var val = row[j].toString();
+      val = val.replace(/\t/gi, " ");
+      if (j > 0)
+        csv += '\t';
+      csv += val;
+    }
+    csv += '\n';
+  }
+
+  // for UTF-16
+  var cCode, bArr = [];
+  bArr.push(255, 254);
+  for (var i = 0; i < csv.length; ++i) {
+    cCode = csv.charCodeAt(i);
+    bArr.push(cCode & 0xff);
+    
+    bArr.push(cCode / 256 >>> 0);
+  }
+
+  var blob = new Blob([new Uint8Array(bArr)], { type: 'text/csv;charset=UTF-16LE;' });
+  var link = document.createElement("a");
+  if (link.download !== undefined) {
+    var url = window.URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", fName);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  }
 }

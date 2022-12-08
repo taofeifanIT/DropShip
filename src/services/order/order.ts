@@ -107,3 +107,9 @@ export async function updateCancelStatus(params: {id: number,marketplace_id: num
     data: params,
   });
 }
+
+export async function downloadFile(OrderItemId: string) {
+  return request(`/api/amazon/download_template?OrderItemId=${OrderItemId}`, {
+      method: 'post'
+  });
+}
